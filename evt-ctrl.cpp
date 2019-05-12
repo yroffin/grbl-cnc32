@@ -1,24 +1,32 @@
 #include "evt-ctrl.hpp"
 #include "config.h"
 
-EvtCtrl::EvtCtrl(TFT_eSPI& _tft) : tft(_tft) {
+EvtCtrl::EvtCtrl(TFT_eSPI &_tft) : tft(_tft)
+{
 }
 
-void EvtCtrl::init() {
+void EvtCtrl::init()
+{
 }
 
-void EvtCtrl::capture() {
-    int16_t x , y;
-    if(tft.getTouch( &x,  &y, 800)) {
+void EvtCtrl::capture()
+{
+    int16_t x, y;
+    if (tft.getTouch(&x, &y, 800))
+    {
         // screen is pressed
-        if(!touched) {
-            touchEvent(x,y);
+        if (!touched)
+        {
+            touchEvent(x, y);
             touched = true;
             touchedTimestamp = millis();
         }
-    } else {
+    }
+    else
+    {
         // no action on screen
-        if(touched && (millis() - touchedTimestamp) > 100) {
+        if (touched && (millis() - touchedTimestamp) > 100)
+        {
             // screen is unpressed after 100 ms
             releaseEvent();
             touched = false;
@@ -27,7 +35,8 @@ void EvtCtrl::capture() {
 }
 
 // Register a touch event
-void EvtCtrl::touchEvent(int16_t _x, int16_t _y) {
+void EvtCtrl::touchEvent(int16_t _x, int16_t _y)
+{
     eventStore[count].type = touch;
     eventStore[count].timestamp = millis();
     eventStore[count].touch.x = _x;
@@ -36,21 +45,25 @@ void EvtCtrl::touchEvent(int16_t _x, int16_t _y) {
 }
 
 // Register a release touch event
-void EvtCtrl::releaseEvent() {
+void EvtCtrl::releaseEvent()
+{
     eventStore[count].type = release;
     eventStore[count].timestamp = millis();
     count++;
 }
 
-int16_t EvtCtrl::countEvents() {
+int16_t EvtCtrl::countEvents()
+{
     return count;
 }
 
 // retrieve event with given index
-const Event *EvtCtrl::getEvent(int16_t index) {
+const Event *EvtCtrl::getEvent(int16_t index)
+{
     return &eventStore[index];
 }
 
-void EvtCtrl::flush() {
+void EvtCtrl::flush()
+{
     count = 0;
 }

@@ -1,34 +1,51 @@
-#include "TFT_eSPI_ms/TFT_eSPI.cpp"   // setup file has to be edited for some parameters like screen device, pins
+#include "TFT_eSPI_ms/TFT_eSPI.cpp" // setup file has to be edited for some parameters like screen device, pins
 
 #include "config.h"
 #include "widget.hpp"
 #include "evt-ctrl.hpp"
+#include "wifi-ctrl.hpp"
+#include "storage-ctrl.hpp"
 
 // create for touchscreeen
 TFT_eSPI tft = TFT_eSPI();
 // event controller
 EvtCtrl evtCtrl(tft);
 // screen controller
-TFT_Screen screen(tft, evtCtrl);
+TFT_Screen screenCtrl(tft, evtCtrl);
+// screen controller
+WifiCtrl wifiCtrl(tft, evtCtrl);
+// storage controller
+StorageCtrl storageCtrl(tft, evtCtrl);
 
-void setup() {
+void setup()
+{
     // Setup TFT
-    pinMode(TFT_LED_PIN , OUTPUT) ;
-    digitalWrite(TFT_LED_PIN , HIGH) ;
+    pinMode(TFT_LED_PIN, OUTPUT);
+    digitalWrite(TFT_LED_PIN, HIGH);
 
     // TFT init
-    screen.init();
+    screenCtrl.init();
 
     // Event controller init
     evtCtrl.init();
+
+    // Storage controller init
+    storageCtrl.mount();
+
+    // Wifi
+    wifiCtrl.connect();
 }
 
-void loop() {
+void loop()
+{
     // capture events
     evtCtrl.capture();
+    // capture http request
+    wifiCtrl.serve();
     // notify, then render screen if invalidate state
-    if(screen.isInvalidated()) {
-        screen.render();
+    if (screenCtrl.isInvalidated())
+    {
+        screenCtrl.render();
     }
     // flush events
     evtCtrl.flush();

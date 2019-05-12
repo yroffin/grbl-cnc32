@@ -3,24 +3,30 @@
 
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 
-enum EventType {
-  touch, release, buttonDown
+enum EventType
+{
+  touch,
+  release,
+  buttonDown
 };
 
-struct Event {
+struct Event
+{
   EventType type;
   int16_t timestamp;
   int16_t sender;
-  union  {
-    struct {
+  union {
+    struct
+    {
       int16_t x, y;
     } touch;
   };
 };
 
-class EvtCtrl {
+class EvtCtrl
+{
 public:
-  EvtCtrl(TFT_eSPI& _tft);
+  EvtCtrl(TFT_eSPI &_tft);
   void init();
   void capture();
   void touchEvent(int16_t _x, int16_t _y);
@@ -28,8 +34,9 @@ public:
   void flush();
   int16_t countEvents();
   const Event *getEvent(int16_t index);
+
 protected:
-  TFT_eSPI& tft;
+  TFT_eSPI &tft;
   struct Event eventStore[128];
   int16_t count = 0;
   bool touched = false;
