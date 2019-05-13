@@ -22,6 +22,7 @@
 #define WIDGET_ID_LAYER_CTRL_BTNZM 0x02007
 
 #define WIDGET_ID_LAYER_STAT 0x03001
+#define WIDGET_ID_LAYER_STAT_GRBL_STATUS 0x03011
 
 class TFT_Widget
 {
@@ -40,7 +41,7 @@ public:
   {
     this->visible = _active;
   }
-  virtual void setLabel(char *_label)
+  virtual void setLabel(const char *_label)
   {
     strcpy(this->label, _label);
   }
@@ -51,7 +52,7 @@ public:
   // Registry manipulation
   virtual TFT_Widget *findById(int16_t _id);
   virtual void setVisibleById(int16_t _id, bool _active);
-  virtual void setLabelById(int16_t _id, char *label);
+  virtual void setLabelById(int16_t _id, const char *label);
 
 protected:
   void init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
@@ -62,7 +63,7 @@ protected:
   TFT_Widget *owner = 0;
   int16_t id;
   char name[32];
-  char label[32];
+  char label[128];
   bool visible = false;
 };
 
@@ -89,7 +90,7 @@ enum ButtonState
 class TFT_Button : public TFT_Widget
 {
 public:
-  TFT_Button(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 32, int16_t _h = 32);
+  TFT_Button(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
   virtual bool notify(const Event *event);
   virtual void render();
 
@@ -122,6 +123,7 @@ public:
   void statLayer();
   virtual void submit(Event *event);
   TFT_Layer *add(TFT_Layer *layer);
+  void status(const char *message);
 
 private:
   TFT_eSPI &tft;

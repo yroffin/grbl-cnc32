@@ -42,7 +42,7 @@ void TFT_Screen::controlLayer()
 {
     // Init all layer
     static TFT_Layer layer(tft, WIDGET_ID_LAYER_CTRL, 40, 0);
-    add(&layer)->setVisible(true);
+    add(&layer)->setVisible(false);
     static TFT_Label title(tft, WIDGET_ID_DEFAULT, "Control", 0, 0);
     layer.add(&title);
     static TFT_Button xp(tft, WIDGET_ID_LAYER_CTRL_BTNXM, "x+", 10, 10);
@@ -63,9 +63,14 @@ void TFT_Screen::controlLayer()
 void TFT_Screen::statLayer()
 {
     // Init all layer
-    static TFT_Layer layer(tft, WIDGET_ID_LAYER_STAT, 40, 0);
+    static TFT_Layer layer(tft, WIDGET_ID_LAYER_STAT, 100, 0);
+    add(&layer)->setVisible(true);
     static TFT_Label title(tft, WIDGET_ID_DEFAULT, "Stat", 0, 0);
     layer.add(&title);
+    static TFT_Label grblStatus(tft, WIDGET_ID_DEFAULT, "status", 0, 16);
+    layer.add(&grblStatus);
+    static TFT_Label grblStatusValue(tft, WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 24, 16);
+    layer.add(&grblStatusValue);
 }
 
 // touch calibration
@@ -113,9 +118,6 @@ TFT_Layer *TFT_Screen::add(TFT_Layer *layer)
 // Submit event localy created by widget
 void TFT_Screen::submit(Event *event)
 {
-    char buffer[64];
-    sprintf(buffer, "e %d, 0x%08x\n", event->type, event->sender);
-    this->setLabelById(WIDGET_ID_LAYER_MENU_FOOTER, buffer);
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNA)
     {
         this->setVisibleById(WIDGET_ID_LAYER_CTRL, true);
@@ -128,10 +130,26 @@ void TFT_Screen::submit(Event *event)
     }
 }
 
+// Update screen status
+void TFT_Screen::status(const char *message)
+{
+    this->setLabelById(WIDGET_ID_LAYER_MENU_FOOTER, message);
+}
+
 // Notify event
 bool TFT_Screen::notify(const Event *event)
 {
     bool invalidate = false;
+
+    // Handle event on screen level
+    if (event->type == grblStatus)
+    {
+        log_i("EEEE: %s", event->message);
+        this->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_STATUS, event->message);
+        invalidate = true;
+    }
+
+    // Dispatch to layers
     for (int index = 0; index < count; index++)
     {
         if (layers[index]->notify(event))
@@ -161,7 +179,7 @@ bool TFT_Screen::isInvalidated()
 void TFT_Screen::render()
 {
     // Clear
-    tft.fillScreen(SCREEN_BACKGROUND);
+    tft.fillScreen(TFT_BLACK);
     // Display
     for (int index = 0; index < count; index++)
     {
@@ -214,7 +232,7 @@ TFT_Widget *TFT_Widget::findById(int16_t _id)
     }
 }
 
-void TFT_Widget::setLabelById(int16_t _id, char *_label)
+void TFT_Widget::setLabelById(int16_t _id, const char *_label)
 {
     findById(_id)->setLabel(_label);
 }
@@ -319,14 +337,14 @@ bool TFT_Button::notify(const Event *event)
 
 void TFT_Button::render()
 {
+    tft.setTextFont(1);
     tft.setTextColor(BUTTON_TEXT);
     tft.setTextSize(1);
-    uint8_t r = state == on ? min(w, h) / 4 : min(w, h) / 2; // Corner radius
+    uint8_t r = state == on ? min(w, h) / 2 : min(w, h) / 4; // Corner radius
     tft.fillRoundRect(x, y, w, h, r, BUTTON_BACKGROUND);
     tft.drawRoundRect(x, y, w, h, r, BUTTON_BORDER_NOT_PRESSED);
     uint8_t tempdatum = tft.getTextDatum();
     tft.setTextDatum(MC_DATUM);
-    tft.setFreeFont(&FreeSans9pt7b);
     tft.drawString(label, x + (w / 2), y + (h / 2));
 }
 
@@ -339,10 +357,9 @@ TFT_Label::TFT_Label(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x
 
 void TFT_Label::render()
 {
-    tft.setTextFont(2);                                      // use Font2 = 16 pixel X 7 probably
-    tft.setTextSize(1);                                      // char is 2 X magnified =>
-    tft.setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND); // when only 1 parameter, background = fond);
-    tft.setTextDatum(TR_DATUM);                              // align rigth ( option la plus pratique pour les float ou le statut GRBL)
-    tft.setTextPadding(80);                                  // expect to clear 70 pixel when drawing text or
+    tft.setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
+    tft.setTextSize(1);                              // char is 2 X magnified =>
+    tft.setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
+    tft.setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
     tft.drawString(label, x, y);
 }

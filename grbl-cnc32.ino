@@ -5,6 +5,7 @@
 #include "evt-ctrl.hpp"
 #include "wifi-ctrl.hpp"
 #include "storage-ctrl.hpp"
+#include "grbl-ctrl.hpp"
 
 // create for touchscreeen
 TFT_eSPI tft = TFT_eSPI();
@@ -16,6 +17,8 @@ TFT_Screen screenCtrl(tft, evtCtrl);
 WifiCtrl wifiCtrl(tft, evtCtrl);
 // storage controller
 StorageCtrl storageCtrl(tft, evtCtrl);
+// grbl controller
+GrblCtrl grblCtrl(screenCtrl, evtCtrl);
 
 void setup()
 {
@@ -34,6 +37,9 @@ void setup()
 
     // Wifi
     wifiCtrl.connect();
+
+    // Grbl
+    grblCtrl.init();
 }
 
 void loop()
@@ -42,6 +48,8 @@ void loop()
     evtCtrl.capture();
     // capture http request
     wifiCtrl.serve();
+    // flush grbl events
+    grblCtrl.capture();
     // notify, then render screen if invalidate state
     if (screenCtrl.isInvalidated())
     {

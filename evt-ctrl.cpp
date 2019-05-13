@@ -52,6 +52,16 @@ void EvtCtrl::releaseEvent()
     count++;
 }
 
+// Register a release GRBL status event
+void EvtCtrl::grblStatusEvent(const char *status)
+{
+    eventStore[count].type = grblStatus;
+    eventStore[count].timestamp = millis();
+    strcpy(eventStore[count].message, status);
+    log_i("EVENT: '%s'", status);
+    count++;
+}
+
 int16_t EvtCtrl::countEvents()
 {
     return count;

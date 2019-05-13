@@ -7,7 +7,9 @@ enum EventType
 {
   touch,
   release,
-  buttonDown
+  buttonDown,
+  grblStatus,
+  grblProperty
 };
 
 struct Event
@@ -20,6 +22,7 @@ struct Event
     {
       int16_t x, y;
     } touch;
+    char message[32];
   };
 };
 
@@ -29,11 +32,14 @@ public:
   EvtCtrl(TFT_eSPI &_tft);
   void init();
   void capture();
-  void touchEvent(int16_t _x, int16_t _y);
-  void releaseEvent();
   void flush();
   int16_t countEvents();
   const Event *getEvent(int16_t index);
+
+  // Events
+  void touchEvent(int16_t _x, int16_t _y);
+  void releaseEvent();
+  void grblStatusEvent(const char *status);
 
 protected:
   TFT_eSPI &tft;

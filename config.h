@@ -13,17 +13,18 @@
 // MOSI=13, MISO=12, SCK=14
 // Those are used for the display, the touch panel and the SD card reader.
 
-#define TFT_LED_PIN 25       // pin connected to led of lcd; pin has to be high to set led ON
+#define TFT_LED_PIN 25 // pin connected to led of lcd; pin has to be high to set led ON
 
 // other TFT pins are defined in tft_espi User_Setup.h file
 
-#define SD_CHIPSELECT_PIN 26  //5  // pin for SD card selection // to change probably
+#define SD_CHIPSELECT_PIN 26 //5  // pin for SD card selection // to change probably
 
 // pins for Serial to GRBL (it uses Serial2 UART)
 #define SERIAL2_RXPIN 16
 #define SERIAL2_TXPIN 17
+#define SERIAL2_SIMULATION 1
 
-// select color between (or define your own) 
+// select color between (or define your own)
 // TFT_BLACK       0x0000      /*   0,   0,   0 */
 // TFT_NAVY        0x000F      /*   0,   0, 128 */
 // TFT_DARKGREEN   0x03E0      /*   0, 128,   0 */
@@ -42,7 +43,7 @@
 // TFT_WHITE       0xFFFF      /* 255, 255, 255 */
 // TFT_ORANGE      0xFDA0      /* 255, 180,   0 */
 // TFT_GREENYELLOW 0xB7E0      /* 180, 255,   0 */
-// TFT_PINK        0xFC9F 
+// TFT_PINK        0xFC9F
 
 #define BUTTON_BORDER_NOT_PRESSED TFT_BLACK
 #define BUTTON_BORDER_PRESSED TFT_RED

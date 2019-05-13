@@ -99,11 +99,9 @@ bool IniFile::validate()
         if (*key)
         {
             // store data in optimized way
-            log_i("<s:'%s' k:'%s' v:'%s'\n", section, key, value);
             this->sections[count] = store(this->data, section, &pos);
             this->keys[count] = store(this->data, key, &pos);
             this->values[count] = store(this->data, value, &pos);
-            log_i(">s:'%s' k:'%s' v:'%s'\n", this->sections[count], this->keys[count], this->values[count]);
             count++;
         }
     }

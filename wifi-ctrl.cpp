@@ -38,7 +38,7 @@ void WifiCtrl::connect()
         ini.getValue((const char *)"wifi", (const char *)"pass", (char *)pass, 32);
     }
 
-    log_i("Wifi controller begin with '%s'/'%s'", ssid, pass);
+    log_i("Wifi controller begin with '%s'", ssid);
     WiFi.begin(ssid, pass);
     uint8_t initWifiCnt = 40;
     log_i("Wifi controller status ...");
