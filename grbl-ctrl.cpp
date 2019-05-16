@@ -1,15 +1,38 @@
 #include "grbl-ctrl.hpp"
 
-GrblCtrl::GrblCtrl(TFT_Screen &_tft, EvtCtrl &_evtCtrl) : tft(_tft), evtCtrl(_evtCtrl)
+// GRBL controller
+GrblCtrl *__instance_grbl = 0;
+
+// singleton
+GrblCtrl *GrblCtrl::instance()
 {
-    log_i("Grbl controller ok.");
+    if (__instance_grbl == 0)
+    {
+        __instance_grbl = new GrblCtrl();
+    }
+    return __instance_grbl;
+}
+
+GrblCtrl::GrblCtrl()
+{
 }
 
 void GrblCtrl::init()
 {
+#ifdef SERIAL2_SIMULATION
     strcpy(sim, "");
     idx = sim;
+#endif
     strGrblIdx = 0;
+
+    // initialise le port série vers grbl
+    Serial2.begin(115200, SERIAL_8N1, SERIAL2_RXPIN, SERIAL2_TXPIN); // initialise le port série vers grbl
+    Serial2.print(0X18);                                             // send a soft reset
+    Serial2.println(" ");
+    Serial2.print("$10=3");
+    Serial2.println(" "); // $10=3 is used in order to get available space in GRBL buffer in GRBL status messages; il also means we are asking GRBL to sent always MPos.
+    Serial2.flush();      // this is used to avoid sending to many jogging movements when using the nunchuk
+
     log_i("Grbl system ok.");
 }
 
@@ -27,57 +50,51 @@ void GrblCtrl::status(const char *message)
 
 int GrblCtrl::available()
 {
-    if (SERIAL2_SIMULATION)
+#ifdef SERIAL2_SIMULATION
+    if (*idx == 0)
     {
-        if (*idx == 0)
+        int r = random(0, 65536);
+        switch (r)
         {
-            int r = random(0, 65536);
-            switch (r)
-            {
-            case 0:
-                strcpy(sim, "<Idle|MPos:0.000,0.000,0.000|FS:0.0,0|WCO:0.000,0.000,0.000>\n");
-                idx = sim;
-                break;
-            case 1:
-                strcpy(sim, "<Jog|WPos:1329.142,0.000,0.000|Bf:32,254|FS:2000,0|Ov:100,100,100|A:FM>\n");
-                idx = sim;
-                break;
-            case 2:
-                strcpy(sim, "[Caution: Unlocked]\r\n");
-                idx = sim;
-                break;
-            case 3:
-                strcpy(sim, "error:Modal group violation\n\r");
-                idx = sim;
-                break;
-            case 4:
-                strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
-                idx = sim;
-                break;
-            default:
-                return 0;
-            }
+        case 0:
+            strcpy(sim, "<Idle|MPos:0.000,0.000,0.000|FS:0.0,0|WCO:0.000,0.000,0.000>\n");
+            idx = sim;
+            break;
+        case 1:
+            strcpy(sim, "<Jog|WPos:1329.142,0.000,0.000|Bf:32,254|FS:2000,0|Ov:100,100,100|A:FM>\n");
+            idx = sim;
+            break;
+        case 2:
+            strcpy(sim, "[Caution: Unlocked]\r\n");
+            idx = sim;
+            break;
+        case 3:
+            strcpy(sim, "error:Modal group violation\n\r");
+            idx = sim;
+            break;
+        case 4:
+            strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
+            idx = sim;
+            break;
+        default:
+            return 0;
         }
-        return 1;
     }
-    else
-    {
-        return Serial2.available();
-    }
+    return 1;
+#else
+    return Serial2.available();
+#endif
 }
 
 int GrblCtrl::read()
 {
-    if (SERIAL2_SIMULATION)
-    {
-        int c = *idx;
-        idx++;
-        return c;
-    }
-    else
-    {
-        return Serial2.read();
-    }
+#ifdef SERIAL2_SIMULATION
+    int c = *idx;
+    idx++;
+    return c;
+#else
+    return Serial2.read();
+#endif
 }
 
 // Capture serial data
@@ -125,7 +142,7 @@ void GrblCtrl::flush(void)
             strGrblBufNoCase[i] = tolower(strGrblBuf[i]);
         }
         // Display data on TFT
-        tft.status(strGrblBuf);
+        TFT_Screen::instance()->status(strGrblBuf);
         if (*strGrblBuf == '<')
         {
             decodeStatus(strGrblBuf, strGrblBufNoCase);
@@ -193,7 +210,7 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     for (; isLetter(msgTolower[index]); index++)
         ;
     log_i("STATUS/ext: '%s'", extract(&(msgTolower[1]), index - indexStatus));
-    evtCtrl.grblStatusEvent(extract(&(msgTolower[1]), index - indexStatus));
+    EvtCtrl::instance()->grblStatusEvent(extract(&(msgTolower[1]), index - indexStatus));
     sep = msgTolower[index];
 }
 
@@ -211,4 +228,100 @@ void GrblCtrl::decodeOk(const char *msg, const char *msgTolower)
 
 void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
 {
+}
+
+bool GrblCtrl::canWrite()
+{
+    return true;
+}
+
+void GrblCtrl::home()
+{
+    if (canWrite())
+    {
+        Serial2.println("$H");
+    }
+}
+
+void GrblCtrl::unlock()
+{
+    if (canWrite())
+    {
+        Serial2.println("$X");
+    }
+}
+
+void GrblCtrl::reset()
+{
+    if (canWrite())
+    {
+        Serial2.print((char)0x18);
+    }
+}
+
+void GrblCtrl::pause()
+{
+    if (canWrite())
+    {
+        Serial2.print((char)'!');
+    }
+}
+
+void GrblCtrl::resume()
+{
+    if (canWrite())
+    {
+        Serial2.print((char)'~');
+    }
+}
+
+void GrblCtrl::move(GrblWay sens, float distance)
+{
+    if (canWrite())
+    {
+        Serial2.println("");
+        Serial2.print("$J=G91 G21 ");
+        switch (sens)
+        { // we convert the position of the button into the type of button
+        case XP:
+            Serial2.print("X");
+            break;
+        case XM:
+            Serial2.print("X-");
+            break;
+        case YP:
+            Serial2.print("Y");
+            break;
+        case YM:
+            Serial2.print("Y-");
+            break;
+        case ZP:
+            Serial2.print("Z");
+            break;
+        case ZM:
+            Serial2.print("Z-");
+            break;
+        }
+        Serial2.print(distance);
+        Serial2.println(" F100");
+    }
+}
+
+void GrblCtrl::setXYZ(GrblWay param)
+{ // param contient le n° de la commande
+    switch (param)
+    {
+    case SETX:
+        Serial2.println("G10 L20 P1 X0");
+        break;
+    case SETY:
+        Serial2.println("G10 L20 P1 Y0");
+        break;
+    case SETZ:
+        Serial2.println("G10 L20 P1 Z0");
+        break;
+    case SETXYZ:
+        Serial2.println("G10 L20 P1 X0 Y0 Z0");
+        break;
+    }
 }

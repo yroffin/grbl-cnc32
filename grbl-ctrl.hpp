@@ -4,7 +4,6 @@
 #include "config.h"
 #include "widget.hpp"
 #include "evt-ctrl.hpp"
-#include "grbl-ctrl.hpp"
 
 // GRBL status are : Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep
 // a message should look like (note : GRBL sent or WPOS or MPos depending on grbl parameter : to get WPos, we have to set "$10=0"
@@ -35,17 +34,39 @@
 
 #define STR_GRBL_BUF_MAX_SIZE 256 // size has been increased from 10 to 50 to support grbl [Msg:]
 
+enum GrblWay
+{
+  XP,
+  XM,
+  YP,
+  YM,
+  ZP,
+  ZM,
+  SETX,
+  SETY,
+  SETZ,
+  SETXYZ
+};
+
 class GrblCtrl
 {
 public:
-  GrblCtrl(TFT_Screen &_tft, EvtCtrl &evtCtrl);
+  GrblCtrl();
+
   void init();
   void capture();
 
-protected:
-  TFT_Screen &tft;
-  EvtCtrl &evtCtrl;
+  void home();
+  void unlock();
+  void reset();
+  void pause();
+  void resume();
+  void move(GrblWay sens, float distance);
+  void setXYZ(GrblWay param);
 
+  static GrblCtrl *instance();
+
+protected:
   void error(const char *message);
   void alarm(const char *message);
   void status(const char *message);
@@ -57,6 +78,8 @@ protected:
   void decodeAlarm(const char *, const char *);
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
+
+  bool canWrite();
 
 private:
   char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];       // this buffer is used to store a few char received from GRBL before decoding them

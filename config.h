@@ -22,7 +22,7 @@
 // pins for Serial to GRBL (it uses Serial2 UART)
 #define SERIAL2_RXPIN 16
 #define SERIAL2_TXPIN 17
-#define SERIAL2_SIMULATION 1
+#define SERIAL2_SIMULATION
 
 // select color between (or define your own)
 // TFT_BLACK       0x0000      /*   0,   0,   0 */

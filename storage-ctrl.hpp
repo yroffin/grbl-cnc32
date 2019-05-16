@@ -10,13 +10,13 @@
 class StorageCtrl
 {
 public:
-  StorageCtrl(TFT_eSPI &_tft, EvtCtrl &evtCtrl);
-  void mount();
+  StorageCtrl();
+  void init();
   void config();
 
+  static StorageCtrl *instance();
+
 protected:
-  TFT_eSPI &tft;
-  EvtCtrl &evtCtrl;
 };
 
 #endif

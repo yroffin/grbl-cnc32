@@ -1,75 +1,103 @@
-#include "evt-ctrl.hpp"
 #include "widget.hpp"
-#include "config.h"
+#include "evt-ctrl.hpp"
 
-TFT_Screen::TFT_Screen(TFT_eSPI &_tft, EvtCtrl &_evtCtrl) : tft(_tft), evtCtrl(_evtCtrl)
+// screen controller
+TFT_Screen *__instance_tft = 0;
+
+// singleton
+TFT_Screen *TFT_Screen::instance()
 {
+    if (__instance_tft == 0)
+    {
+        __instance_tft = new TFT_Screen();
+    }
+    return __instance_tft;
+}
+
+TFT_eSPI _tft = TFT_eSPI();
+
+TFT_Screen::TFT_Screen()
+{
+    // create instance for touchscreeen
+    this->tft = &_tft;
+    log_i("TFT_Screen allocated ...");
 }
 
 // init screen
 void TFT_Screen::init()
 {
-    tft.init(); // Initialise l'écran avec les pins définies dans setup
+    // Setup TFT
+    pinMode(TFT_LED_PIN, OUTPUT);
+    digitalWrite(TFT_LED_PIN, HIGH);
+
+    log_i("TFT_Screen init ...");
+    this->tft->init(); // Initialise l'écran avec les pins définies dans setup
     // Set the rotation before we calibrate
-    tft.setRotation(1); // normally, this is already done in tft.int() but it is not clear how is rotation set (probably 0); so it can be usefull to change it here
-    calibrate();        // call screen calibration
+    this->tft->setRotation(1); // normally, this is already done in this->tft->int() but it is not clear how is rotation set (probably 0); so it can be usefull to change it here
+
+    log_i("TFT_Screen calibration ...");
+    calibrate(); // call screen calibration
+
+    this->TFT_Widget::init(0, 0, 0, 320, 200);
+
     // Init all layer
+    log_i("TFT_Screen widget ...");
     menuLayer();
     controlLayer();
     statLayer();
+
     // First render
+    log_i("TFT_Screen render ...");
     render();
+}
+
+boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
+{
+    return this->tft->getTouch(x, y, 800);
 }
 
 // menu layer
 void TFT_Screen::menuLayer()
 {
+    log_i("TFT_Screen menu layer ...");
     // Init all layer
-    static TFT_Layer layer(tft, WIDGET_ID_LAYER_MENU, 0, 0);
+    static TFT_Layer layer(WIDGET_ID_LAYER_MENU, 0, 0);
     add(&layer)->setVisible(true);
-    static TFT_Label title(tft, WIDGET_ID_DEFAULT, "Menu", 0, 0);
+    static TFT_Label title(WIDGET_ID_DEFAULT, "Menu", 0, 0);
     layer.add(&title);
-    static TFT_Button a(tft, WIDGET_ID_LAYER_MENU_BTNA, "a", 10, 10);
+    static TFT_Button a(WIDGET_ID_LAYER_MENU_BTNA, "a", 10, 10);
     layer.add(&a);
-    static TFT_Button b(tft, WIDGET_ID_LAYER_MENU_BTNB, "b", 10, 100);
+    static TFT_Button b(WIDGET_ID_LAYER_MENU_BTNB, "b", 10, 100);
     layer.add(&b);
-    static TFT_Label footer(tft, WIDGET_ID_LAYER_MENU_FOOTER, "Footer", 0, 400);
+    static TFT_Label footer(WIDGET_ID_LAYER_MENU_FOOTER, "......", 0, 210);
     layer.add(&footer);
 }
 
 // control layer
 void TFT_Screen::controlLayer()
 {
+    log_i("TFT_Screen control layer ...");
     // Init all layer
-    static TFT_Layer layer(tft, WIDGET_ID_LAYER_CTRL, 40, 0);
+    static TFT_Layer layer(WIDGET_ID_LAYER_CTRL, 60, 0);
     add(&layer)->setVisible(false);
-    static TFT_Label title(tft, WIDGET_ID_DEFAULT, "Control", 0, 0);
+    static TFT_Label title(WIDGET_ID_DEFAULT, "Control", 0, 0);
     layer.add(&title);
-    static TFT_Button xp(tft, WIDGET_ID_LAYER_CTRL_BTNXM, "x+", 10, 10);
-    layer.add(&xp);
-    static TFT_Button xm(tft, WIDGET_ID_LAYER_CTRL_BTNXM, "x-", 10, 100);
-    layer.add(&xm);
-    static TFT_Button yp(tft, WIDGET_ID_LAYER_CTRL_BTNYM, "y+", 50, 10);
-    layer.add(&yp);
-    static TFT_Button ym(tft, WIDGET_ID_LAYER_CTRL_BTNYM, "y-", 50, 100);
-    layer.add(&ym);
-    static TFT_Button zp(tft, WIDGET_ID_LAYER_CTRL_BTNZM, "z+", 100, 10);
-    layer.add(&zp);
-    static TFT_Button zm(tft, WIDGET_ID_LAYER_CTRL_BTNZM, "z-", 100, 100);
-    layer.add(&zm);
+    static TFT_Joystick joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 20);
+    layer.add(&joystick);
 }
 
 // stat layer
 void TFT_Screen::statLayer()
 {
+    log_i("TFT_Screen statistics layer ...");
     // Init all layer
-    static TFT_Layer layer(tft, WIDGET_ID_LAYER_STAT, 100, 0);
+    static TFT_Layer layer(WIDGET_ID_LAYER_STAT, 100, 0);
     add(&layer)->setVisible(true);
-    static TFT_Label title(tft, WIDGET_ID_DEFAULT, "Stat", 0, 0);
+    static TFT_Label title(WIDGET_ID_DEFAULT, "Stat", 0, 0);
     layer.add(&title);
-    static TFT_Label grblStatus(tft, WIDGET_ID_DEFAULT, "status", 0, 16);
+    static TFT_Label grblStatus(WIDGET_ID_DEFAULT, "status", 0, 16);
     layer.add(&grblStatus);
-    static TFT_Label grblStatusValue(tft, WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 24, 16);
+    static TFT_Label grblStatusValue(WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 24, 16);
     layer.add(&grblStatusValue);
 }
 
@@ -82,37 +110,29 @@ void TFT_Screen::calibrate()
     if (calDataOK)
     {
         // calibration data valid
-        tft.setTouch(calData);
+        this->tft->setTouch(calData);
     }
     else
     {
         // data not valid so recalibrate
-        tft.fillScreen(SCREEN_BACKGROUND);
-        tft.setCursor(20, 0);
-        tft.setTextFont(2);
-        tft.setTextSize(1);
-        tft.setTextColor(SCREEN_HEADER_TEXT, SCREEN_BACKGROUND);
+        this->tft->fillScreen(SCREEN_BACKGROUND);
+        this->tft->setCursor(20, 0);
+        this->tft->setTextFont(2);
+        this->tft->setTextSize(1);
+        this->tft->setTextColor(SCREEN_HEADER_TEXT, SCREEN_BACKGROUND);
 
-        tft.println(__TOUCH_CORNER);
+        this->tft->println(__TOUCH_CORNER);
 
-        tft.setTextFont(1);
-        tft.println();
+        this->tft->setTextFont(1);
+        this->tft->println();
 
-        tft.calibrateTouch(calData, SCREEN_ALERT_TEXT, SCREEN_BACKGROUND, 15);
-        tft.setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
-        tft.println(__CAL_COMPLETED);
-        //tft.printf("Cal data %d %d %d %d %d\n", calData[0], calData[1], calData[2], calData[3], calData[4]);
+        this->tft->calibrateTouch(calData, SCREEN_ALERT_TEXT, SCREEN_BACKGROUND, 15);
+        this->tft->setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
+        this->tft->println(__CAL_COMPLETED);
+        //this->tft->printf("Cal data %d %d %d %d %d\n", calData[0], calData[1], calData[2], calData[3], calData[4]);
 
         TFT_Widget::init(WIDGET_ID_LAYER_MENU, 0, 0, calData[0], calData[1]);
     }
-}
-
-// Add a new layer
-TFT_Layer *TFT_Screen::add(TFT_Layer *layer)
-{
-    layers[count++] = layer;
-    layer->setOwner(this);
-    return layer;
 }
 
 // Submit event localy created by widget
@@ -128,6 +148,13 @@ void TFT_Screen::submit(Event *event)
         this->setVisibleById(WIDGET_ID_LAYER_CTRL, false);
         this->setVisibleById(WIDGET_ID_LAYER_STAT, true);
     }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 1)
+    {
+        GrblCtrl::instance()->move(XM, 1.0);
+    }
+    char msg[128];
+    sprintf(msg, "event: %d sender: %08x", event->type, event->sender);
+    this->status(msg);
 }
 
 // Update screen status
@@ -144,30 +171,22 @@ bool TFT_Screen::notify(const Event *event)
     // Handle event on screen level
     if (event->type == grblStatus)
     {
-        log_i("EEEE: %s", event->message);
         this->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_STATUS, event->message);
         invalidate = true;
     }
 
     // Dispatch to layers
-    for (int index = 0; index < count; index++)
-    {
-        if (layers[index]->notify(event))
-        {
-            invalidate = true;
-        }
-    }
-    return invalidate;
+    return this->TFT_Widget::notify(event) || invalidate;
 }
 
 // Notify each event to each layer
 bool TFT_Screen::isInvalidated()
 {
     bool invalidate = false;
-    int16_t maxEvents = evtCtrl.countEvents();
+    int16_t maxEvents = EvtCtrl::instance()->countEvents();
     for (int e = 0; e < maxEvents; e++)
     {
-        if (notify(evtCtrl.getEvent(e)))
+        if (notify(EvtCtrl::instance()->getEvent(e)))
         {
             invalidate = true;
         }
@@ -179,21 +198,18 @@ bool TFT_Screen::isInvalidated()
 void TFT_Screen::render()
 {
     // Clear
-    tft.fillScreen(TFT_BLACK);
+    this->tft->fillScreen(TFT_BLACK);
     // Display
-    for (int index = 0; index < count; index++)
-    {
-        layers[index]->render();
-    }
-    // Debug
-    int16_t maxEvents = evtCtrl.countEvents();
+    this->TFT_Widget::render();
+    // Event
+    int16_t maxEvents = EvtCtrl::instance()->countEvents();
     for (int e = 0; e < maxEvents; e++)
     {
-        if (evtCtrl.getEvent(e)->type == touch)
+        if (EvtCtrl::instance()->getEvent(e)->type == touch)
         {
-            const Event *evt = evtCtrl.getEvent(e);
-            tft.drawFastHLine(0, evt->touch.y, 1024, TFT_RED);
-            tft.drawFastVLine(evt->touch.x, 0, 1024, TFT_RED);
+            const Event *evt = EvtCtrl::instance()->getEvent(e);
+            this->tft->drawFastHLine(0, evt->touch.y, 1024, TFT_RED);
+            this->tft->drawFastVLine(evt->touch.x, 0, 1024, TFT_RED);
         }
     }
 }
@@ -218,6 +234,8 @@ void TFT_Widget::init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _
     this->h = _h;
     sprintf(this->name, "widget-%08x", _id);
     this->id = _id;
+    this->visible = true;
+    this->tft = &_tft;
 }
 
 // Find widget by its id
@@ -242,8 +260,50 @@ void TFT_Widget::setVisibleById(int16_t _id, bool _active)
     findById(_id)->setVisible(_active);
 }
 
+// Add this widget to widgets
+TFT_Widget *TFT_Widget::add(TFT_Widget *widget)
+{
+    children[child++] = widget;
+    widget->setOwner(this);
+    // Fix new position relative to owner x and y position
+    widget->setPosition(x, y);
+    return widget;
+}
+
+void TFT_Widget::setPosition(int16_t _x, int16_t _y)
+{
+    this->x += _x;
+    this->y += _y;
+    for (int index = 0; index < child; index++)
+    {
+        children[index]->setPosition(this->x, this->y);
+    }
+}
+
+// Notify and detect invalidate state
+bool TFT_Widget::notify(const Event *event)
+{
+    bool invalidate = false;
+    for (int index = 0; index < child; index++)
+    {
+        if (children[index]->notify(event))
+        {
+            invalidate = true;
+        }
+    }
+    return invalidate;
+}
+
+// Render this widget
 void TFT_Widget::render()
 {
+    if (visible)
+    {
+        for (int index = 0; index < child; index++)
+        {
+            children[index]->render();
+        }
+    }
 }
 
 void TFT_Widget::setOwner(TFT_Widget *_owner)
@@ -259,49 +319,13 @@ void TFT_Widget::submit(Event *event)
     }
 }
 
-TFT_Layer::TFT_Layer(TFT_eSPI &_tft, int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : tft(_tft)
+TFT_Layer::TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
 }
 
-// Add this widget to widgets
-TFT_Widget *TFT_Layer::add(TFT_Widget *widget)
-{
-    widgets[count++] = widget;
-    widget->setOwner(this);
-    // Fix new position relative to owner x and y position
-    widget->setPosition(x, y);
-    return widget;
-}
-
-// Notify and detect invalidate state
-bool TFT_Layer::notify(const Event *event)
-{
-    bool invalidate = false;
-    for (int index = 0; index < count; index++)
-    {
-        if (widgets[index]->notify(event))
-        {
-            invalidate = true;
-        }
-    }
-    return invalidate;
-}
-
-// Render only if visible
-void TFT_Layer::render()
-{
-    if (visible)
-    {
-        for (int index = 0; index < count; index++)
-        {
-            widgets[index]->render();
-        }
-    }
-}
-
 // Constructor
-TFT_Button::TFT_Button(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : tft(_tft)
+TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
@@ -337,19 +361,40 @@ bool TFT_Button::notify(const Event *event)
 
 void TFT_Button::render()
 {
-    tft.setTextFont(1);
-    tft.setTextColor(BUTTON_TEXT);
-    tft.setTextSize(1);
+    this->tft->setTextFont(1);
+    this->tft->setTextColor(BUTTON_TEXT);
+    this->tft->setTextSize(1);
     uint8_t r = state == on ? min(w, h) / 2 : min(w, h) / 4; // Corner radius
-    tft.fillRoundRect(x, y, w, h, r, BUTTON_BACKGROUND);
-    tft.drawRoundRect(x, y, w, h, r, BUTTON_BORDER_NOT_PRESSED);
-    uint8_t tempdatum = tft.getTextDatum();
-    tft.setTextDatum(MC_DATUM);
-    tft.drawString(label, x + (w / 2), y + (h / 2));
+    this->tft->fillRoundRect(x, y, w, h, r, BUTTON_BACKGROUND);
+    this->tft->drawRoundRect(x, y, w, h, r, BUTTON_BORDER_NOT_PRESSED);
+    uint8_t tempdatum = this->tft->getTextDatum();
+    this->tft->setTextDatum(MC_DATUM);
+    this->tft->drawString(label, x + (w / 2), y + (h / 2));
 }
 
 // Constructor
-TFT_Label::TFT_Label(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y) : tft(_tft)
+TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+{
+    init(_id, _x, _y, _w, _h);
+    strcpy(label, _label);
+
+    // Init all button
+    static TFT_Button xleft(_id + 1, "Left", 0, 50);
+    this->add(&xleft);
+    static TFT_Button xright(_id + 2, "Right", 100, 50);
+    this->add(&xright);
+    static TFT_Button yup(_id + 3, "Up", 50, 0);
+    this->add(&yup);
+    static TFT_Button ydown(_id + 4, "Down", 50, 100);
+    this->add(&ydown);
+    static TFT_Button zup(_id + 5, "Up", 150, 0);
+    this->add(&zup);
+    static TFT_Button zdown(_id + 6, "Down", 150, 100);
+    this->add(&zdown);
+}
+
+// Constructor
+TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 {
     init(_id, _x, _y, 0, 0);
     strcpy(label, _label);
@@ -357,9 +402,9 @@ TFT_Label::TFT_Label(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x
 
 void TFT_Label::render()
 {
-    tft.setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
-    tft.setTextSize(1);                              // char is 2 X magnified =>
-    tft.setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
-    tft.setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
-    tft.drawString(label, x, y);
+    this->tft->setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
+    this->tft->setTextSize(1);                              // char is 2 X magnified =>
+    this->tft->setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
+    this->tft->setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
+    this->tft->drawString(label, x, y);
 }

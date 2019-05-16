@@ -7,54 +7,42 @@
 #include "storage-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 
-// create for touchscreeen
-TFT_eSPI tft = TFT_eSPI();
-// event controller
-EvtCtrl evtCtrl(tft);
-// screen controller
-TFT_Screen screenCtrl(tft, evtCtrl);
-// screen controller
-WifiCtrl wifiCtrl(tft, evtCtrl);
-// storage controller
-StorageCtrl storageCtrl(tft, evtCtrl);
-// grbl controller
-GrblCtrl grblCtrl(screenCtrl, evtCtrl);
-
 void setup()
 {
-    // Setup TFT
-    pinMode(TFT_LED_PIN, OUTPUT);
-    digitalWrite(TFT_LED_PIN, HIGH);
+    // screen controller
+    log_i("TFT_Screen init ...");
+    TFT_Screen::instance()->init();
 
-    // TFT init
-    screenCtrl.init();
+    // event controller
+    log_i("EvtCtrl init ...");
+    EvtCtrl::instance()->init();
 
-    // Event controller init
-    evtCtrl.init();
+    // storage controller
+    log_i("StorageCtrl init ...");
+    StorageCtrl::instance()->init();
 
-    // Storage controller init
-    storageCtrl.mount();
+    // wifi controller
+    log_i("WifiCtrl init ...");
+    WifiCtrl::instance()->init();
 
-    // Wifi
-    wifiCtrl.connect();
-
-    // Grbl
-    grblCtrl.init();
+    // grbl controller
+    log_i("GrblCtrl init ...");
+    GrblCtrl::instance()->init();
 }
 
 void loop()
 {
     // capture events
-    evtCtrl.capture();
+    EvtCtrl::instance()->capture();
     // capture http request
-    wifiCtrl.serve();
+    WifiCtrl::instance()->serve();
     // flush grbl events
-    grblCtrl.capture();
+    GrblCtrl::instance()->capture();
     // notify, then render screen if invalidate state
-    if (screenCtrl.isInvalidated())
+    if (TFT_Screen::instance()->isInvalidated())
     {
-        screenCtrl.render();
+        TFT_Screen::instance()->render();
     }
     // flush events
-    evtCtrl.flush();
+    EvtCtrl::instance()->flush();
 }

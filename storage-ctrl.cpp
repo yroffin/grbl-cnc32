@@ -1,12 +1,24 @@
 #include "storage-ctrl.hpp"
 #include "iniFile.h"
 
-StorageCtrl::StorageCtrl(TFT_eSPI &_tft, EvtCtrl &_evtCtrl) : tft(_tft), evtCtrl(_evtCtrl)
+// Storage controller
+StorageCtrl *__instance_storage = 0;
+
+// singleton
+StorageCtrl *StorageCtrl::instance()
 {
-    log_i("Storage controller ok.");
+    if (__instance_storage == 0)
+    {
+        __instance_storage = new StorageCtrl();
+    }
+    return __instance_storage;
 }
 
-void StorageCtrl::mount()
+StorageCtrl::StorageCtrl()
+{
+}
+
+void StorageCtrl::init()
 {
     if (!SD.begin(SD_CHIPSELECT_PIN))
     {

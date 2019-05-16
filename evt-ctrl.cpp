@@ -1,7 +1,21 @@
+#include "widget.hpp"
 #include "evt-ctrl.hpp"
 #include "config.h"
 
-EvtCtrl::EvtCtrl(TFT_eSPI &_tft) : tft(_tft)
+// Event controller
+EvtCtrl *__instance_evt = 0;
+
+// singleton
+EvtCtrl *EvtCtrl::instance()
+{
+    if (__instance_evt == 0)
+    {
+        __instance_evt = new EvtCtrl();
+    }
+    return __instance_evt;
+}
+
+EvtCtrl::EvtCtrl()
 {
 }
 
@@ -12,7 +26,7 @@ void EvtCtrl::init()
 void EvtCtrl::capture()
 {
     int16_t x, y;
-    if (tft.getTouch(&x, &y, 800))
+    if (TFT_Screen::instance()->getTouch(&x, &y))
     {
         // screen is pressed
         if (!touched)

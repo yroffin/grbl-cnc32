@@ -1,9 +1,11 @@
 #ifndef _WIDGET_TFT_
 #define _WIDGET_TFT_
 
-#include "evt-ctrl.hpp"
+#include "config.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "language.h"
+#include "grbl-ctrl.hpp"
+#include "evt-ctrl.hpp"
 
 #define WIDGET_ID_DEFAULT 0x00000
 
@@ -14,12 +16,7 @@
 #define WIDGET_ID_LAYER_MENU_BTNB 0x01005
 
 #define WIDGET_ID_LAYER_CTRL 0x02001
-#define WIDGET_ID_LAYER_CTRL_BTNXP 0x02001
-#define WIDGET_ID_LAYER_CTRL_BTNXM 0x02003
-#define WIDGET_ID_LAYER_CTRL_BTNYP 0x02004
-#define WIDGET_ID_LAYER_CTRL_BTNYM 0x02005
-#define WIDGET_ID_LAYER_CTRL_BTNZP 0x02005
-#define WIDGET_ID_LAYER_CTRL_BTNZM 0x02007
+#define WIDGET_ID_LAYER_CTRL_JOYSTICK 0x02002
 
 #define WIDGET_ID_LAYER_STAT 0x03001
 #define WIDGET_ID_LAYER_STAT_GRBL_STATUS 0x03011
@@ -28,15 +25,11 @@ class TFT_Widget
 {
 public:
   TFT_Widget();
-  virtual bool notify(const Event *event){};
-  virtual void render() = 0;
+  virtual bool notify(const Event *event);
+  virtual void render();
   virtual void setOwner(TFT_Widget *owner);
   virtual void submit(Event *event);
-  virtual void setPosition(int16_t _x, int16_t _y)
-  {
-    this->x += _x;
-    this->y += _y;
-  }
+  virtual void setPosition(int16_t _x, int16_t _y);
   virtual void setVisible(bool _active)
   {
     this->visible = _active;
@@ -53,6 +46,7 @@ public:
   virtual TFT_Widget *findById(int16_t _id);
   virtual void setVisibleById(int16_t _id, bool _active);
   virtual void setLabelById(int16_t _id, const char *label);
+  TFT_Widget *add(TFT_Widget *widget);
 
 protected:
   void init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
@@ -60,25 +54,23 @@ protected:
   int16_t y;
   int16_t w;
   int16_t h;
-  TFT_Widget *owner = 0;
   int16_t id;
   char name[32];
   char label[128];
-  bool visible = false;
+  bool visible = true;
+  // child
+  TFT_Widget *owner = 0;
+  TFT_Widget *children[32];
+  int8_t child = 0;
+  TFT_eSPI *tft;
 };
 
 class TFT_Layer : public TFT_Widget
 {
 public:
-  TFT_Layer(TFT_eSPI &_tft, int16_t _id, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
-  virtual bool notify(const Event *event);
-  virtual void render();
-  TFT_Widget *add(TFT_Widget *widget);
+  TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
 
 private:
-  TFT_eSPI &tft;
-  TFT_Widget *widgets[16];
-  int8_t count = 0;
 };
 
 enum ButtonState
@@ -90,29 +82,35 @@ enum ButtonState
 class TFT_Button : public TFT_Widget
 {
 public:
-  TFT_Button(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
   virtual bool notify(const Event *event);
   virtual void render();
 
 private:
-  TFT_eSPI &tft;
   ButtonState state = off;
+};
+
+class TFT_Joystick : public TFT_Widget
+{
+public:
+  TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+
+private:
 };
 
 class TFT_Label : public TFT_Widget
 {
 public:
-  TFT_Label(TFT_eSPI &_tft, int16_t _id, const char *_label, int16_t _x, int16_t _y);
+  TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y);
   virtual void render();
 
 private:
-  TFT_eSPI &tft;
 };
 
 class TFT_Screen : public TFT_Widget
 {
 public:
-  TFT_Screen(TFT_eSPI &_tft, EvtCtrl &_evtCtrl);
+  TFT_Screen();
   void init();
   void calibrate();
   virtual bool notify(const Event *event);
@@ -122,14 +120,12 @@ public:
   void controlLayer();
   void statLayer();
   virtual void submit(Event *event);
-  TFT_Layer *add(TFT_Layer *layer);
   void status(const char *message);
+  boolean getTouch(int16_t *x, int16_t *y);
+
+  static TFT_Screen *instance();
 
 private:
-  TFT_eSPI &tft;
-  EvtCtrl &evtCtrl;
-  TFT_Layer *layers[16];
-  int8_t count = 0;
 };
 
 #endif
