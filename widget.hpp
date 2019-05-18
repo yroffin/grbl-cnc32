@@ -1,6 +1,7 @@
 #ifndef _WIDGET_TFT_
 #define _WIDGET_TFT_
 
+#include "stdio.h"
 #include "config.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "language.h"
@@ -20,10 +21,7 @@ public:
   {
     this->visible = _active;
   }
-  virtual void setLabel(const char *_label)
-  {
-    strcpy(this->label, _label);
-  }
+  virtual void setLabel(const char *_label, ...);
   virtual bool isVisible()
   {
     return this->visible;
@@ -31,7 +29,7 @@ public:
   // Registry manipulation
   virtual TFT_Widget *findById(int16_t _id);
   virtual void setVisibleById(int16_t _id, bool _active);
-  virtual void setLabelById(int16_t _id, const char *label);
+  virtual void setLabelById(int16_t _id, const char *label, ...);
   TFT_Widget *add(TFT_Widget *widget);
 
 protected:
@@ -106,7 +104,7 @@ public:
   void controlLayer();
   void statLayer();
   virtual void submit(Event *event);
-  void status(const char *message);
+  void status(const char *message, ...);
   boolean getTouch(int16_t *x, int16_t *y);
 
   static TFT_Screen *instance();

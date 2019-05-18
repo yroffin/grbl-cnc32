@@ -86,10 +86,12 @@ private:
   char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];       // this buffer is used to store a few char received from GRBL before decoding them
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE]; // this buffer is used to store a few char received from GRBL before decoding them
   uint8_t strGrblIdx;
-#ifdef SERIAL2_SIMULATION
+  uint8_t ndRead = 0;
+  uint8_t ndWrite = 0;
+  // only for simulation
   char sim[512];
   char *idx;
-#endif
+  boolean simulation = true;
 };
 
 #endif

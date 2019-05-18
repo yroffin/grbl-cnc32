@@ -19,10 +19,10 @@ GrblCtrl::GrblCtrl()
 
 void GrblCtrl::init()
 {
-#ifdef SERIAL2_SIMULATION
     strcpy(sim, "");
     idx = sim;
-#endif
+    this->simulation = false;
+
     strGrblIdx = 0;
 
     // initialise le port série vers grbl
@@ -50,51 +50,57 @@ void GrblCtrl::status(const char *message)
 
 int GrblCtrl::available()
 {
-#ifdef SERIAL2_SIMULATION
-    if (*idx == 0)
+    if (this->simulation)
     {
-        int r = random(0, 65536);
-        switch (r)
+        if (*idx == 0)
         {
-        case 0:
-            strcpy(sim, "<Idle|MPos:0.000,0.000,0.000|FS:0.0,0|WCO:0.000,0.000,0.000>\n");
-            idx = sim;
-            break;
-        case 1:
-            strcpy(sim, "<Jog|WPos:1329.142,0.000,0.000|Bf:32,254|FS:2000,0|Ov:100,100,100|A:FM>\n");
-            idx = sim;
-            break;
-        case 2:
-            strcpy(sim, "[Caution: Unlocked]\r\n");
-            idx = sim;
-            break;
-        case 3:
-            strcpy(sim, "error:Modal group violation\n\r");
-            idx = sim;
-            break;
-        case 4:
-            strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
-            idx = sim;
-            break;
-        default:
-            return 0;
+            int r = random(0, 65536);
+            switch (r)
+            {
+            case 0:
+                strcpy(sim, "<Idle|MPos:0.000,0.000,0.000|FS:0.0,0|WCO:0.000,0.000,0.000>\n");
+                idx = sim;
+                break;
+            case 1:
+                strcpy(sim, "<Jog|WPos:1329.142,0.000,0.000|Bf:32,254|FS:2000,0|Ov:100,100,100|A:FM>\n");
+                idx = sim;
+                break;
+            case 2:
+                strcpy(sim, "[Caution: Unlocked]\r\n");
+                idx = sim;
+                break;
+            case 3:
+                strcpy(sim, "error:Modal group violation\n\r");
+                idx = sim;
+                break;
+            case 4:
+                strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
+                idx = sim;
+                break;
+            default:
+                return 0;
+            }
         }
+        return 1;
     }
-    return 1;
-#else
-    return Serial2.available();
-#endif
+    else
+    {
+        return Serial2.available();
+    }
 }
 
 int GrblCtrl::read()
 {
-#ifdef SERIAL2_SIMULATION
-    int c = *idx;
-    idx++;
-    return c;
-#else
-    return Serial2.read();
-#endif
+    if (simulation)
+    {
+        int c = *idx;
+        idx++;
+        return c;
+    }
+    else
+    {
+        return Serial2.read();
+    }
 }
 
 // Capture serial data
@@ -136,13 +142,14 @@ void GrblCtrl::flush(void)
 {
     if (strlen(strGrblBuf) > 0)
     {
+        this->ndRead++;
         // Remove case
         for (int i = 0; i < strGrblIdx; i++)
         {
             strGrblBufNoCase[i] = tolower(strGrblBuf[i]);
         }
         // Display data on TFT
-        TFT_Screen::instance()->status(strGrblBuf);
+        TFT_Screen::instance()->status("grbl: %04x %s", this->ndRead & 0xFFFF, strGrblBuf);
         if (*strGrblBuf == '<')
         {
             decodeStatus(strGrblBuf, strGrblBufNoCase);

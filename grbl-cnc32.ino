@@ -14,19 +14,19 @@ void setup()
     TFT_Screen::instance()->init();
 
     // event controller
-    log_i("EvtCtrl init ...");
+    TFT_Screen::instance()->status("EvtCtrl init ...");
     EvtCtrl::instance()->init();
 
     // storage controller
-    log_i("StorageCtrl init ...");
+    TFT_Screen::instance()->status("StorageCtrl init ...");
     StorageCtrl::instance()->init();
 
     // wifi controller
-    log_i("WifiCtrl init ...");
+    TFT_Screen::instance()->status("WifiCtrl init ...");
     WifiCtrl::instance()->init();
 
     // grbl controller
-    log_i("GrblCtrl init ...");
+    TFT_Screen::instance()->status("GrblCtrl init ...");
     GrblCtrl::instance()->init();
 }
 

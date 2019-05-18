@@ -151,15 +151,18 @@ void TFT_Screen::submit(Event *event)
     // Submit event to other controller
     GrblCtrl::instance()->submit(event);
     // Display it
-    char msg[128];
-    sprintf(msg, "event: %d sender: %08x", event->type, event->sender);
-    this->status(msg);
+    this->status("event: %d sender: %08x", event->type, event->sender);
 }
 
 // Update screen status
-void TFT_Screen::status(const char *message)
+void TFT_Screen::status(const char *format, ...)
 {
-    this->setLabelById(WIDGET_ID_LAYER_MENU_FOOTER, message);
+    va_list args;
+    va_start(args, format);
+    char buffer[128];
+    vsprintf(buffer, format, args);
+    va_end(args);
+    this->setLabelById(WIDGET_ID_LAYER_MENU_FOOTER, buffer);
 }
 
 // Notify event
@@ -249,9 +252,22 @@ TFT_Widget *TFT_Widget::findById(int16_t _id)
     }
 }
 
-void TFT_Widget::setLabelById(int16_t _id, const char *_label)
+void TFT_Widget::setLabelById(int16_t _id, const char *format, ...)
 {
-    findById(_id)->setLabel(_label);
+    va_list args;
+    va_start(args, format);
+    char buffer[128];
+    vsprintf(buffer, format, args);
+    va_end(args);
+    findById(_id)->setLabel(buffer);
+}
+
+void TFT_Widget::setLabel(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(this->label, format, args);
+    va_end(args);
 }
 
 void TFT_Widget::setVisibleById(int16_t _id, bool _active)
@@ -382,9 +398,9 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     this->add(&xleft);
     static TFT_Button xright(_id + 2, "Right", 100, 50);
     this->add(&xright);
-    static TFT_Button yup(_id + 3, "Up", 50, 0);
+    static TFT_Button yup(_id + 4, "Up", 50, 0);
     this->add(&yup);
-    static TFT_Button ydown(_id + 4, "Down", 50, 100);
+    static TFT_Button ydown(_id + 3, "Down", 50, 100);
     this->add(&ydown);
     static TFT_Button zup(_id + 6, "Up", 150, 0);
     this->add(&zup);
