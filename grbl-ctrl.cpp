@@ -279,6 +279,7 @@ void GrblCtrl::move(GrblWay sens, float distance)
 {
     if (canWrite())
     {
+        log_i("Write %d %d", sens, distance);
         Serial2.println("");
         Serial2.print("$J=G91 G21 ");
         switch (sens)
@@ -323,5 +324,34 @@ void GrblCtrl::setXYZ(GrblWay param)
     case SETXYZ:
         Serial2.println("G10 L20 P1 X0 Y0 Z0");
         break;
+    }
+}
+
+// Submit event localy created by widget
+void GrblCtrl::submit(Event *event)
+{
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 1)
+    {
+        this->move(XM, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 2)
+    {
+        this->move(XP, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 3)
+    {
+        this->move(YM, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 4)
+    {
+        this->move(YP, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 5)
+    {
+        this->move(ZM, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 6)
+    {
+        this->move(ZP, 1.0);
     }
 }

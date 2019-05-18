@@ -148,10 +148,9 @@ void TFT_Screen::submit(Event *event)
         this->setVisibleById(WIDGET_ID_LAYER_CTRL, false);
         this->setVisibleById(WIDGET_ID_LAYER_STAT, true);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 1)
-    {
-        GrblCtrl::instance()->move(XM, 1.0);
-    }
+    // Submit event to other controller
+    GrblCtrl::instance()->submit(event);
+    // Display it
     char msg[128];
     sprintf(msg, "event: %d sender: %08x", event->type, event->sender);
     this->status(msg);
@@ -387,9 +386,9 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     this->add(&yup);
     static TFT_Button ydown(_id + 4, "Down", 50, 100);
     this->add(&ydown);
-    static TFT_Button zup(_id + 5, "Up", 150, 0);
+    static TFT_Button zup(_id + 6, "Up", 150, 0);
     this->add(&zup);
-    static TFT_Button zdown(_id + 6, "Down", 150, 100);
+    static TFT_Button zdown(_id + 5, "Down", 150, 100);
     this->add(&zdown);
 }
 

@@ -63,6 +63,7 @@ public:
   void resume();
   void move(GrblWay sens, float distance);
   void setXYZ(GrblWay param);
+  void submit(Event *event);
 
   static GrblCtrl *instance();
 
