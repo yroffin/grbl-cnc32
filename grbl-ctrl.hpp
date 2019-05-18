@@ -32,7 +32,8 @@
 #define GET_GRBL_STATUS_BF_DATA 8
 #define GET_GRBL_STATUS_MESSAGE 9
 
-#define STR_GRBL_BUF_MAX_SIZE 256 // size has been increased from 10 to 50 to support grbl [Msg:]
+#define STR_GRBL_BUF_MAX_SIZE 256      // size has been increased from 10 to 50 to support grbl [Msg:]
+#define STR_GRBL_BUF_MAX_WRITE_SIZE 64 // size has been increased from 10 to 50 to support grbl [Msg:]
 
 enum GrblWay
 {
@@ -56,13 +57,16 @@ public:
   void init();
   void capture();
 
-  void home();
-  void unlock();
-  void reset();
-  void pause();
-  void resume();
-  void move(GrblWay sens, float distance);
-  void setXYZ(GrblWay param);
+  boolean home();
+  boolean unlock();
+  boolean reset();
+  boolean pause();
+  boolean resume();
+  boolean status();
+  boolean move(GrblWay sens, float distance);
+  boolean setXYZ(GrblWay param);
+
+  // Event handler
   void submit(Event *event);
 
   static GrblCtrl *instance();
@@ -80,14 +84,17 @@ protected:
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
 
-  bool canWrite();
+  void write(const char *grbl, ...);
+  bool tryWrite(const char *grbl, ...);
 
 private:
   char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];       // this buffer is used to store a few char received from GRBL before decoding them
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE]; // this buffer is used to store a few char received from GRBL before decoding them
   uint8_t strGrblIdx;
-  uint8_t ndRead = 0;
-  uint8_t ndWrite = 0;
+  uint8_t txRead = 0;
+  uint8_t txWrite = 0;
+  uint8_t byteRead = 0;
+  boolean busy = true;
   // only for simulation
   char sim[512];
   char *idx;

@@ -38,11 +38,10 @@ void loop()
     WifiCtrl::instance()->serve();
     // flush grbl events
     GrblCtrl::instance()->capture();
-    // notify, then render screen if invalidate state
-    if (TFT_Screen::instance()->isInvalidated())
-    {
-        TFT_Screen::instance()->render();
-    }
+    // dispatch event
+    TFT_Screen::instance()->dispatch();
+    // render
+    TFT_Screen::instance()->render();
     // flush events
     EvtCtrl::instance()->flush();
 }

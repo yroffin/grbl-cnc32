@@ -1,4 +1,5 @@
 #include "grbl-ctrl.hpp"
+#include "stdio.h"
 
 // GRBL controller
 GrblCtrl *__instance_grbl = 0;
@@ -110,6 +111,7 @@ void GrblCtrl::capture(void)
     while (available())
     {
         c = read();
+        this->byteRead++;
         if (c < 32)
         {
             // control char
@@ -130,6 +132,8 @@ void GrblCtrl::capture(void)
             }
         }
     }
+    // Update statistics
+    TFT_Screen::instance()->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_IO, "bytes: %d read: %d write: %d", this->byteRead, this->txRead, this->txWrite);
 }
 
 bool startWithNoCase(const char *str, const char *pattern)
@@ -142,45 +146,65 @@ void GrblCtrl::flush(void)
 {
     if (strlen(strGrblBuf) > 0)
     {
-        this->ndRead++;
+        this->txRead++;
         // Remove case
         for (int i = 0; i < strGrblIdx; i++)
         {
             strGrblBufNoCase[i] = tolower(strGrblBuf[i]);
         }
-        // Display data on TFT
-        TFT_Screen::instance()->status("grbl: %04x %s", this->ndRead & 0xFFFF, strGrblBuf);
+        uint8_t type = 0;
         if (*strGrblBuf == '<')
         {
-            decodeStatus(strGrblBuf, strGrblBufNoCase);
+            type = 1;
         }
         else
         {
-            if (strncmp(strGrblBufNoCase, "error", 6))
+            if (strncmp(strGrblBufNoCase, "error", 6) == 0)
             {
-                decodeError(strGrblBuf, strGrblBufNoCase);
+                type = 2;
             }
             else
             {
-                if (strncmp(strGrblBufNoCase, "alarm", 5))
+                if (strncmp(strGrblBufNoCase, "alarm", 5) == 0)
                 {
-                    decodeAlarm(strGrblBuf, strGrblBufNoCase);
+                    type = 3;
                 }
                 else
                 {
-                    if (strncmp(strGrblBufNoCase, "ok", 2))
+                    if (strncmp(strGrblBufNoCase, "ok", 2) == 0)
                     {
-                        decodeOk(strGrblBuf, strGrblBufNoCase);
+                        type = 4;
                     }
                     else
                     {
                         if (*strGrblBuf == '[')
                         {
-                            decodeFeedback(strGrblBuf, strGrblBufNoCase);
+                            type = 5;
                         }
                     }
                 }
             }
+        }
+        switch (type)
+        {
+        case 1:
+            decodeStatus(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 2:
+            decodeError(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 3:
+            decodeAlarm(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 4:
+            decodeOk(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 5:
+            decodeFeedback(strGrblBuf, strGrblBufNoCase);
+            break;
+        default:
+            // Display data on TFT
+            TFT_Screen::instance()->status("[GRBL] %04x %s", this->txRead & 0xFFFF, strGrblBuf);
         }
     }
     // Reset index
@@ -223,113 +247,145 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)
 {
+    TFT_Screen::instance()->status("[ERROR] %s", msg);
 }
 
 void GrblCtrl::decodeAlarm(const char *msg, const char *msgTolower)
 {
+    TFT_Screen::instance()->status("[ALARM] %s", msg);
 }
 
 void GrblCtrl::decodeOk(const char *msg, const char *msgTolower)
 {
+    TFT_Screen::instance()->status("[OK] %s", msg);
+    this->busy = false;
 }
 
 void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
 {
+    TFT_Screen::instance()->status("[FEEDBACK] %s", msg);
 }
 
-bool GrblCtrl::canWrite()
+void GrblCtrl::write(const char *grbl, ...)
 {
+    this->txWrite++;
+    va_list args;
+    va_start(args, grbl);
+    char buffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
+    vsprintf(buffer, grbl, args);
+    if (this->simulation)
+    {
+        TFT_Screen::instance()->status("[SIMUL]  %06d %s (force)", this->txWrite, buffer);
+    }
+    else
+    {
+        TFT_Screen::instance()->status("[WRITE] %06d %s (force)", this->txWrite, buffer);
+        Serial2.print(buffer);
+    }
+    va_end(args);
+}
+
+bool GrblCtrl::tryWrite(const char *grbl, ...)
+{
+    va_list args;
+    va_start(args, grbl);
+    char buffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
+    vsprintf(buffer, grbl, args);
+    if (this->busy)
+    {
+        TFT_Screen::instance()->status("[BUSY] %s", buffer);
+        return false;
+    }
+    else
+    {
+        this->txWrite++;
+        if (this->simulation)
+        {
+            TFT_Screen::instance()->status("[SIMUL] %06d %s", this->txWrite, buffer);
+            this->busy = true;
+        }
+        else
+        {
+            TFT_Screen::instance()->status("[WRITE] %06d %s", this->txWrite, buffer);
+            Serial2.print(buffer);
+            this->busy = true;
+        }
+        va_end(args);
+        return true;
+    }
+}
+
+boolean GrblCtrl::home()
+{
+    return this->tryWrite("$H\n");
+}
+
+boolean GrblCtrl::unlock()
+{
+    return this->tryWrite("$X\n");
+}
+
+boolean GrblCtrl::reset()
+{
+    return this->tryWrite("%c\n", 0x18);
+}
+
+boolean GrblCtrl::pause()
+{
+    return this->tryWrite("!\n");
+}
+
+boolean GrblCtrl::resume()
+{
+    return this->tryWrite("~\n");
+}
+
+boolean GrblCtrl::status()
+{
+    this->write("?\n");
     return true;
 }
 
-void GrblCtrl::home()
+boolean GrblCtrl::move(GrblWay sens, float distance)
 {
-    if (canWrite())
-    {
-        Serial2.println("$H");
+    switch (sens)
+    { // we convert the position of the button into the type of button
+    case XP:
+        return this->tryWrite("$J=G91 G21 X%f F100\n", distance);
+        break;
+    case XM:
+        return this->tryWrite("$J=G91 G21 X-%f F100\n", distance);
+        break;
+    case YP:
+        return this->tryWrite("$J=G91 G21 Y%f F100\n", distance);
+        break;
+    case YM:
+        return this->tryWrite("$J=G91 G21 Y-%f F100\n", distance);
+        break;
+    case ZP:
+        return this->tryWrite("$J=G91 G21 Z%f F100\n", distance);
+        break;
+    case ZM:
+        return this->tryWrite("$J=G91 G21 Z-%f F100\n", distance);
+        break;
     }
 }
 
-void GrblCtrl::unlock()
-{
-    if (canWrite())
-    {
-        Serial2.println("$X");
-    }
-}
-
-void GrblCtrl::reset()
-{
-    if (canWrite())
-    {
-        Serial2.print((char)0x18);
-    }
-}
-
-void GrblCtrl::pause()
-{
-    if (canWrite())
-    {
-        Serial2.print((char)'!');
-    }
-}
-
-void GrblCtrl::resume()
-{
-    if (canWrite())
-    {
-        Serial2.print((char)'~');
-    }
-}
-
-void GrblCtrl::move(GrblWay sens, float distance)
-{
-    if (canWrite())
-    {
-        log_i("Write %d %d", sens, distance);
-        Serial2.println("");
-        Serial2.print("$J=G91 G21 ");
-        switch (sens)
-        { // we convert the position of the button into the type of button
-        case XP:
-            Serial2.print("X");
-            break;
-        case XM:
-            Serial2.print("X-");
-            break;
-        case YP:
-            Serial2.print("Y");
-            break;
-        case YM:
-            Serial2.print("Y-");
-            break;
-        case ZP:
-            Serial2.print("Z");
-            break;
-        case ZM:
-            Serial2.print("Z-");
-            break;
-        }
-        Serial2.print(distance);
-        Serial2.println(" F100");
-    }
-}
-
-void GrblCtrl::setXYZ(GrblWay param)
+boolean GrblCtrl::setXYZ(GrblWay param)
 { // param contient le n° de la commande
     switch (param)
     {
     case SETX:
-        Serial2.println("G10 L20 P1 X0");
+        return this->tryWrite("G10 L20 P1 X0\n");
         break;
     case SETY:
-        Serial2.println("G10 L20 P1 Y0");
+        return this->tryWrite("G10 L20 P1 Y0\n");
         break;
     case SETZ:
-        Serial2.println("G10 L20 P1 Z0");
+        return this->tryWrite("G10 L20 P1 Z0\n");
         break;
     case SETXYZ:
-        Serial2.println("G10 L20 P1 X0 Y0 Z0");
+        return this->tryWrite("G10 L20 P1 X0 Y0 Z0\n");
         break;
     }
 }
@@ -360,5 +416,9 @@ void GrblCtrl::submit(Event *event)
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 6)
     {
         this->move(ZP, 1.0);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_GRBL_STATUS)
+    {
+        this->status();
     }
 }
