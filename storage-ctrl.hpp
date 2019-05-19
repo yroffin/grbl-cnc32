@@ -3,21 +3,49 @@
 
 #include "SD.h"
 
-#include "config.h"
-#include "evt-ctrl.hpp"
-#include "storage-ctrl.hpp"
+class StorageEntry
+{
+public:
+  boolean isDirectory()
+  {
+    return dir;
+  }
+  const char *getPath()
+  {
+    return path;
+  }
+
+  void setDirectory(boolean value)
+  {
+    this->dir = value;
+  }
+
+  void setPath(const char *path)
+  {
+    strcpy(this->path, path);
+  }
+
+private:
+  boolean dir;
+  char path[128];
+};
 
 class StorageCtrl
 {
 public:
   StorageCtrl();
   void init();
-  void config();
-  void refresh();
+
+  void scan(const char *base);
+  int16_t getCount();
+  StorageEntry *getEntries(int16_t index);
 
   static StorageCtrl *instance();
 
 protected:
+  char cwd[128];
+  int16_t storageEntryCount = 0;
+  StorageEntry *storageEntry[128];
 };
 
 #endif

@@ -9,7 +9,8 @@ enum EventType
   grblStatus,
   grblProperty,
   hide,
-  show
+  show,
+  fileGrid
 };
 
 class Event

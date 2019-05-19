@@ -141,6 +141,15 @@ void EvtCtrl::buttonDownEvent(int16_t sender)
     count++;
 }
 
+// fileGrid event
+void EvtCtrl::fileGridEvent(int16_t sender)
+{
+    eventStore[count].type = fileGrid;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    count++;
+}
+
 void EvtCtrl::flush()
 {
     count = 0;

@@ -162,16 +162,6 @@ void TFT_LayerStatistic::write(const char *message)
     this->console->write(message);
 }
 
-void onLeft(TFT_FileGrid *p)
-{
-    log_i("left");
-}
-
-void onRight(TFT_FileGrid *p)
-{
-    log_i("right");
-}
-
 // files layer
 TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y)
 {
@@ -185,7 +175,11 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->add(file);
     this->cwf = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 28);
     this->add(cwf);
-    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, onLeft, onRight, "files", 0, 70);
+    this->misc = new TFT_Label(WIDGET_ID_DEFAULT, "Misc", 0, 42);
+    this->add(misc);
+    this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 42);
+    this->add(miscValue);
+    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, "files", 0, 54);
     this->add(files);
 }
 
@@ -194,13 +188,27 @@ void TFT_LayerFile::notify(const Event *event)
 {
     if (event->type == show && event->target == WIDGET_ID_LAYER_FILE)
     {
-        this->files->clear();
-        this->files->set(0, "..");
-        this->files->set(1, "b");
-        this->files->set(2, "c");
-        this->files->set(3, "d");
+        this->refresh();
+    }
+    if (event->type == fileGrid)
+    {
+        this->refresh();
     }
     this->TFT_Widget::notify(event);
+}
+
+// Notification
+void TFT_LayerFile::refresh()
+{
+    this->files->clear();
+    this->miscValue->setLabel("offset: %d", this->files->offset);
+    this->files->count = StorageCtrl::instance()->getCount();
+    int16_t files = min(this->files->count, 3);
+    this->files->set(0, "..");
+    for (int i = 0; i < files; i++)
+    {
+        this->files->set(1 + i, StorageCtrl::instance()->getEntries(i + this->files->offset)->getPath());
+    }
 }
 
 // touch calibration

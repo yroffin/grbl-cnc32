@@ -197,6 +197,32 @@ void TFT_Button::render()
 }
 
 // Constructor
+TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+    : TFT_Button(_id, _label, _x, _y, _w, _h)
+{
+}
+
+void TFT_File::render()
+{
+    // render children
+    this->TFT_Widget::render();
+    // on draw if needed
+    if (this->invalidated)
+    {
+        this->tft->setTextFont(1);
+        this->tft->setTextColor(TFT_DARKGREY);
+        this->tft->setTextSize(1);
+        uint8_t r = min(w, h) / 3;
+        this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
+        this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
+        this->tft->setTextDatum(TL_DATUM);
+        this->tft->drawString("x", x + (w / 2), y + (h / 2));
+        this->tft->drawString(label, x + (w / 2) + 24, y + (h / 2));
+        this->invalidated = false;
+    }
+}
+
+// Constructor
 TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
@@ -253,24 +279,20 @@ void TFT_Console::write(const char *message)
 }
 
 // Constructor
-TFT_FileGrid::TFT_FileGrid(int16_t _id, void (*onLeft)(TFT_FileGrid *), void (*onRight)(TFT_FileGrid *), const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
 
-    // Callback
-    this->onLeftCallback = onLeft;
-    this->onRightCallback = onRight;
-
     this->left = new TFT_Button(_id, "<<", 0, 0);
     this->add(this->left);
-    this->lines[0] = new TFT_Button(_id + 2, ".", 40, 0);
+    this->lines[0] = new TFT_File(_id + 2, ".", 40, 0);
     this->add(this->lines[0]);
-    this->lines[1] = new TFT_Button(_id + 2, ".", 80, 0);
+    this->lines[1] = new TFT_File(_id + 2, ".", 40, 40);
     this->add(this->lines[1]);
-    this->lines[2] = new TFT_Button(_id + 2, ".", 120, 0);
+    this->lines[2] = new TFT_File(_id + 2, ".", 40, 80);
     this->add(this->lines[2]);
-    this->lines[3] = new TFT_Button(_id + 2, ".", 160, 0);
+    this->lines[3] = new TFT_File(_id + 2, ".", 40, 120);
     this->add(this->lines[3]);
     this->right = new TFT_Button(_id + 1, ">>", 200, 0);
     this->add(this->right);
@@ -287,6 +309,7 @@ void TFT_FileGrid::clear()
 void TFT_FileGrid::set(int16_t index, const char *label)
 {
     this->lines[index]->setLabel(label);
+    this->invalidated = true;
 }
 
 void TFT_FileGrid::notify(const Event *event)
@@ -294,13 +317,30 @@ void TFT_FileGrid::notify(const Event *event)
     if (event->type == buttonDown && event->sender == this->id)
     {
         this->onLeft();
+        EvtCtrl::instance()->fileGridEvent(this->id);
+        this->invalidated = true;
     }
     if (event->type == buttonDown && event->sender == this->id + 1)
     {
         this->onRight();
+        EvtCtrl::instance()->fileGridEvent(this->id);
+        this->invalidated = true;
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
+}
+
+void TFT_FileGrid::render()
+{
+    // on draw if needed
+    if (this->invalidated)
+    {
+        log_i("r %d,%d %d,%d", x, y, w, h);
+        this->tft->fillRect(x, y, w, h, TFT_BLACK);
+        // render children
+        this->TFT_Widget::render();
+        this->invalidated = false;
+    }
 }
 
 // Constructor

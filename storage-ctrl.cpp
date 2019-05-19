@@ -1,6 +1,5 @@
+#include "config.h"
 #include "storage-ctrl.hpp"
-#include "ui.hpp"
-#include "iniFile.h"
 
 // Storage controller
 StorageCtrl *__instance_storage = 0;
@@ -31,32 +30,48 @@ void StorageCtrl::init()
         log_e("Root ('/') not found on SD card");
         return;
     }
+    // Set "/" as root folder
+    strcpy(cwd, "/");
+    for (int i = 0; i < 128; i++)
+    {
+        this->storageEntry[i] = 0;
+    }
     log_i("File system ok.");
 }
 
-void StorageCtrl::config()
-{
-    // load configuration files
-}
-
-void explore(const char *base)
+void StorageCtrl::scan(const char *base)
 {
     File root = SD.open(base);
     File entry = root.openNextFile();
     for (; entry; entry = root.openNextFile())
     {
+        if (this->storageEntry[this->storageEntryCount] == 0)
+        {
+            this->storageEntry[this->storageEntryCount] = new StorageEntry();
+        }
         if (entry.isDirectory())
         {
-            TFT_Screen::instance()->status("Dir: %s", entry.name());
+            this->storageEntry[this->storageEntryCount]->setDirectory(true);
+            this->storageEntry[this->storageEntryCount]->setPath(entry.name());
+            this->storageEntryCount++;
         }
         else
         {
-            TFT_Screen::instance()->status("File: %s", entry.name());
+            this->storageEntry[this->storageEntryCount]->setDirectory(false);
+            this->storageEntry[this->storageEntryCount]->setPath(entry.name());
+            this->storageEntryCount++;
         }
     }
 }
 
-void StorageCtrl::refresh()
+int16_t StorageCtrl::getCount()
 {
-    explore("/");
+    this->storageEntryCount = 0;
+    scan(cwd);
+    return this->storageEntryCount;
+}
+
+StorageEntry *StorageCtrl::getEntries(int16_t index)
+{
+    return this->storageEntry[index];
 }

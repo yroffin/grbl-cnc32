@@ -55,6 +55,7 @@ class TFT_LayerFile : public TFT_Layer
 public:
   TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
   void notify(const Event *event);
+  virtual void refresh();
 
 protected:
   TFT_Label *title;
@@ -62,6 +63,8 @@ protected:
   TFT_Label *cwd;
   TFT_Label *file;
   TFT_Label *cwf;
+  TFT_Label *misc;
+  TFT_Label *miscValue;
   TFT_FileGrid *files;
 };
 

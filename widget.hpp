@@ -69,8 +69,17 @@ public:
   virtual void notify(const Event *event);
   virtual void render();
 
-private:
+protected:
   ButtonState state = off;
+};
+
+class TFT_File : public TFT_Button
+{
+public:
+  TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  virtual void render();
+
+private:
 };
 
 class TFT_Joystick : public TFT_Widget
@@ -110,27 +119,40 @@ private:
 class TFT_FileGrid : public TFT_Widget
 {
 public:
-  TFT_FileGrid(int16_t _id, void (*onLeft)(TFT_FileGrid *), void (*onRight)(TFT_FileGrid *), const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
   virtual void notify(const Event *event);
+  virtual void render();
 
   virtual void onRight()
   {
-    this->onRightCallback(this);
+    this->offset++;
+    if (this->offset > this->count)
+    {
+      this->offset = this->count - 1;
+    }
+    this->refresh();
   }
   virtual void onLeft()
   {
-    this->onLeftCallback(this);
+    this->offset--;
+    if (this->offset < 0)
+    {
+      this->offset = 0;
+    }
+    this->refresh();
   }
 
   void clear();
   void set(int16_t index, const char *label);
+  virtual void refresh() {}
+
+public:
+  int16_t offset = 0;
+  int16_t count = 0;
 
 private:
-  void (*onLeftCallback)(TFT_FileGrid *);
-  void (*onRightCallback)(TFT_FileGrid *);
-
   TFT_Button *left;
-  TFT_Button *lines[4];
+  TFT_File *lines[4];
   TFT_Button *right;
 };
 
