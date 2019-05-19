@@ -61,7 +61,7 @@ void WifiCtrl::init()
                     initWifiCnt--;
                     if (initWifiCnt == 0)
                     {
-                        TFT_Screen::instance()->status("Access to %s KO !!!");
+                        TFT_Screen::instance()->status("Access to %s KO !!!", ssid);
                         delay(2000);
                         break;
                     }

@@ -133,7 +133,7 @@ void GrblCtrl::capture(void)
         }
     }
     // Update statistics
-    TFT_Screen::instance()->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_IO, "bytes: %d read: %d write: %d", this->byteRead, this->txRead, this->txWrite);
+    TFT_Screen::instance()->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_IO, "b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
 bool startWithNoCase(const char *str, const char *pattern)
@@ -322,12 +322,14 @@ boolean GrblCtrl::home()
 
 boolean GrblCtrl::unlock()
 {
-    return this->tryWrite("$X\n");
+    this->write("$X\n");
+    return true;
 }
 
 boolean GrblCtrl::reset()
 {
-    return this->tryWrite("%c\n", 0x18);
+    this->write("%c\n", 0x18);
+    return true;
 }
 
 boolean GrblCtrl::pause()
@@ -417,7 +419,27 @@ void GrblCtrl::submit(Event *event)
     {
         this->move(ZP, 1.0);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_GRBL_STATUS)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
+    {
+        this->home();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_UNLOCK)
+    {
+        this->unlock();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_RESET)
+    {
+        this->reset();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_RESUME)
+    {
+        this->resume();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_PAUSE)
+    {
+        this->pause();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_STATUS)
     {
         this->status();
     }

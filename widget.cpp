@@ -65,12 +65,10 @@ void TFT_Screen::menuLayer()
     add(&layer)->setVisible(true);
     static TFT_Label title(WIDGET_ID_DEFAULT, "Menu", 0, 0);
     layer.add(&title);
-    static TFT_Button a(WIDGET_ID_LAYER_MENU_BTNA, "move", 10, 10);
+    static TFT_Button a(WIDGET_ID_LAYER_MENU_BTNA, "move", 8, 10);
     layer.add(&a);
-    static TFT_Button b(WIDGET_ID_LAYER_MENU_BTNB, "stat", 10, 100);
+    static TFT_Button b(WIDGET_ID_LAYER_MENU_BTNB, "stat", 8, 60);
     layer.add(&b);
-    static TFT_Button grblstat(WIDGET_ID_LAYER_MENU_GRBL_STATUS, "?", 10, 150);
-    layer.add(&grblstat);
     static TFT_Label footer(WIDGET_ID_LAYER_MENU_FOOTER, "......", 0, 225);
     layer.add(&footer);
 }
@@ -84,7 +82,19 @@ void TFT_Screen::controlLayer()
     add(&layer)->setVisible(false);
     static TFT_Label title(WIDGET_ID_DEFAULT, "Control", 0, 0);
     layer.add(&title);
-    static TFT_Joystick joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 20);
+    static TFT_Button home(WIDGET_ID_LAYER_CTRL_HOME, "Home", 0, 14);
+    layer.add(&home);
+    static TFT_Button unlock(WIDGET_ID_LAYER_CTRL_UNLOCK, "Unlock", 50, 14);
+    layer.add(&unlock);
+    static TFT_Button reset(WIDGET_ID_LAYER_CTRL_RESET, "Reset", 100, 14);
+    layer.add(&reset);
+    static TFT_Button status(WIDGET_ID_LAYER_CTRL_STATUS, "Status", 150, 14);
+    layer.add(&status);
+    static TFT_Button pause(WIDGET_ID_LAYER_CTRL_PAUSE, "Pause", 200, 14);
+    layer.add(&pause);
+    static TFT_Button resume(WIDGET_ID_LAYER_CTRL_RESUME, "Resume", 200, 64);
+    layer.add(&resume);
+    static TFT_Joystick joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 40);
     layer.add(&joystick);
 }
 
@@ -402,7 +412,7 @@ void TFT_Button::render()
         this->tft->setTextSize(1);
         uint8_t r = min(w, h) / 3;
         this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
-        this->tft->drawRoundRect(x, y, w, h, r, BUTTON_BORDER_NOT_PRESSED);
+        this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
         uint8_t tempdatum = this->tft->getTextDatum();
         this->tft->setTextDatum(MC_DATUM);
         this->tft->drawString(label, x + (w / 2), y + (h / 2));
@@ -425,10 +435,14 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     this->add(&yup);
     static TFT_Button ydown(_id + 3, "Down", 50, 100);
     this->add(&ydown);
-    static TFT_Button zup(_id + 6, "Up", 150, 0);
+    static TFT_Button zup(_id + 6, "Up", 135, 0);
     this->add(&zup);
-    static TFT_Button zdown(_id + 5, "Down", 150, 100);
+    static TFT_Button zdown(_id + 5, "Down", 135, 100);
     this->add(&zdown);
+
+    // Pas 0.1, 1, 10 and 100
+    static TFT_Button pas(_id + 6, "Pas", 50, 50);
+    this->add(&pas);
 }
 
 // Constructor
