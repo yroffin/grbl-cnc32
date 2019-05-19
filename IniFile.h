@@ -26,6 +26,7 @@ private:
     char *keys[128];
     char *values[128];
     char data[512];
+    char output[128];
     int16_t count = 0;
 };
 

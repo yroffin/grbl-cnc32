@@ -13,6 +13,7 @@ public:
   StorageCtrl();
   void init();
   void config();
+  void refresh();
 
   static StorageCtrl *instance();
 

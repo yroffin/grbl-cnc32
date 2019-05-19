@@ -9,20 +9,24 @@ public:
   EvtCtrl();
   void init();
   void capture();
+  void dispatchPrimaryEvents();
+  void dispatchSecondaryEvents();
   void flush();
-  int16_t countEvents();
-  const Event *getEvent(int16_t index);
 
   // Events
-  void touchEvent(int16_t _x, int16_t _y);
-  void releaseEvent();
-  void grblStatusEvent(const char *status);
+  void touchEvent(int16_t sender, int16_t _x, int16_t _y);
+  void releaseEvent(int16_t sender);
+  void grblStatusEvent(int16_t sender, const char *status);
+  void showEvent(int16_t sender, int16_t target);
+  void hideEvent(int16_t sender, int16_t target);
+  void buttonDownEvent(int16_t sender);
 
   static EvtCtrl *instance();
 
 protected:
   struct Event eventStore[128];
   int16_t count = 0;
+  int16_t primaryEvents = 0;
   bool touched = false;
   uint32_t touchedTimestamp = 0;
 };

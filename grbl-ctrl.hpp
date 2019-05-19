@@ -2,7 +2,7 @@
 #define _GRBL_CONTROLLER_
 
 #include "config.h"
-#include "widget.hpp"
+#include "ui.hpp"
 #include "evt-ctrl.hpp"
 
 // GRBL status are : Idle, Run, Hold, Jog, Alarm, Door, Check, Home, Sleep
@@ -67,7 +67,7 @@ public:
   boolean setXYZ(GrblWay param);
 
   // Event handler
-  void submit(Event *event);
+  void notify(const Event *event);
 
   static GrblCtrl *instance();
 

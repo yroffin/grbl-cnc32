@@ -2,7 +2,7 @@
 #define _WIFI_CONTROLLER_
 
 #include "config.h"
-#include "widget.hpp"
+#include "ui.hpp"
 #include "evt-ctrl.hpp"
 #include "WebServer.h"
 #include "WiFi.h"

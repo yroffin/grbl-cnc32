@@ -39,7 +39,9 @@ void loop()
     // flush grbl events
     GrblCtrl::instance()->capture();
     // dispatch event
-    TFT_Screen::instance()->dispatch();
+    EvtCtrl::instance()->dispatchPrimaryEvents();
+    // dispatch event
+    EvtCtrl::instance()->dispatchSecondaryEvents();
     // render
     TFT_Screen::instance()->render();
     // flush events

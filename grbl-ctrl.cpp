@@ -241,7 +241,7 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     for (; isLetter(msgTolower[index]); index++)
         ;
     log_i("STATUS/ext: '%s'", extract(&(msgTolower[1]), index - indexStatus));
-    EvtCtrl::instance()->grblStatusEvent(extract(&(msgTolower[1]), index - indexStatus));
+    EvtCtrl::instance()->grblStatusEvent(WIDGET_ID_GRBL, extract(&(msgTolower[1]), index - indexStatus));
     sep = msgTolower[index];
 }
 
@@ -392,8 +392,8 @@ boolean GrblCtrl::setXYZ(GrblWay param)
     }
 }
 
-// Submit event localy created by widget
-void GrblCtrl::submit(Event *event)
+// Notify
+void GrblCtrl::notify(const Event *event)
 {
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 1)
     {
