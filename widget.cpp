@@ -168,7 +168,7 @@ void TFT_Button::notify(const Event *event)
     // Touch is released
     case release:
         state = off;
-        // draw neede
+        // draw needed
         this->invalidated = true;
         break;
     default:
@@ -178,8 +178,6 @@ void TFT_Button::notify(const Event *event)
 
 void TFT_Button::render()
 {
-    // render children
-    this->TFT_Widget::render();
     // on draw if needed
     if (this->invalidated)
     {
@@ -194,6 +192,8 @@ void TFT_Button::render()
         this->tft->drawString(label, x + (w / 2), y + (h / 2));
         this->invalidated = false;
     }
+    // render children
+    this->TFT_Widget::render();
 }
 
 // Constructor
@@ -204,8 +204,6 @@ TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int1
 
 void TFT_File::render()
 {
-    // render children
-    this->TFT_Widget::render();
     // on draw if needed
     if (this->invalidated)
     {
@@ -220,6 +218,8 @@ void TFT_File::render()
         this->tft->drawString(label, x + (w / 2) + 24, y + (h / 2));
         this->invalidated = false;
     }
+    // render children
+    this->TFT_Widget::render();
 }
 
 // Constructor
@@ -286,16 +286,15 @@ TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t 
 
     this->left = new TFT_Button(_id, "<<", 0, 0);
     this->add(this->left);
-    this->lines[0] = new TFT_File(_id + 2, ".", 40, 0);
-    this->add(this->lines[0]);
-    this->lines[1] = new TFT_File(_id + 2, ".", 40, 40);
-    this->add(this->lines[1]);
-    this->lines[2] = new TFT_File(_id + 2, ".", 40, 80);
-    this->add(this->lines[2]);
-    this->lines[3] = new TFT_File(_id + 2, ".", 40, 120);
-    this->add(this->lines[3]);
     this->right = new TFT_Button(_id + 1, ">>", 200, 0);
     this->add(this->right);
+
+    // add lines
+    for (int l = 0; l < 4; l++)
+    {
+        this->lines[l] = new TFT_File(_id + 2 + l, ".", 40, 40 * l);
+        this->add(this->lines[l]);
+    }
 }
 
 void TFT_FileGrid::clear()
@@ -326,6 +325,14 @@ void TFT_FileGrid::notify(const Event *event)
         EvtCtrl::instance()->fileGridEvent(this->id);
         this->invalidated = true;
     }
+    // select line
+    for (int l = 1; l < 4; l++)
+    {
+        if (event->type == buttonDown && event->sender == this->id + 2 + l)
+        {
+            EvtCtrl::instance()->fileGridSelect(this->id + 2 + l, this->lines[l]->getLabel());
+        }
+    }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
 }
@@ -341,6 +348,8 @@ void TFT_FileGrid::render()
         this->TFT_Widget::render();
         this->invalidated = false;
     }
+    // render children
+    this->TFT_Widget::render();
 }
 
 // Constructor
@@ -352,8 +361,6 @@ TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 
 void TFT_Label::render()
 {
-    // draw children
-    this->TFT_Widget::render();
     // on draw if needed
     if (this->invalidated)
     {
@@ -364,4 +371,6 @@ void TFT_Label::render()
         this->tft->drawString(label, x, y);
         this->invalidated = false;
     }
+    // draw children
+    this->TFT_Widget::render();
 }

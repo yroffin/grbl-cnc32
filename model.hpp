@@ -10,7 +10,8 @@ enum EventType
   grblProperty,
   hide,
   show,
-  fileGrid
+  fileGrid,
+  fileSelect
 };
 
 class Event

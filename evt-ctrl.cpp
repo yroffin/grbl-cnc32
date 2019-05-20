@@ -51,10 +51,10 @@ void EvtCtrl::capture()
 // Phase1
 void EvtCtrl::dispatchPrimaryEvents()
 {
-    this->primaryEvents = count;
     if (count == 0)
         return;
     log_i("Dispatch phase 1 %d/%d", 0, this->primaryEvents);
+    this->primaryEvents = count;
     for (int e = 0; e < this->primaryEvents; e++)
     {
         Event *event = &eventStore[e];
@@ -66,10 +66,10 @@ void EvtCtrl::dispatchPrimaryEvents()
 }
 
 // Phase2
-void EvtCtrl::dispatchSecondaryEvents()
+boolean EvtCtrl::dispatchSecondaryEvents()
 {
     if (this->primaryEvents >= count)
-        return;
+        return false;
     log_i("Dispatch phase 2 %d/%d", this->primaryEvents, count);
     for (int e = this->primaryEvents; e < count; e++)
     {
@@ -79,6 +79,8 @@ void EvtCtrl::dispatchSecondaryEvents()
         TFT_Screen::instance()->notify(event);
         GrblCtrl::instance()->notify(event);
     }
+    this->primaryEvents = count;
+    return (this->primaryEvents >= count);
 }
 
 // Register a touch event
@@ -108,7 +110,6 @@ void EvtCtrl::grblStatusEvent(int16_t sender, const char *status)
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
     strcpy(eventStore[count].message, status);
-    log_i("EVENT: '%s'", status);
     count++;
 }
 
@@ -147,6 +148,16 @@ void EvtCtrl::fileGridEvent(int16_t sender)
     eventStore[count].type = fileGrid;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
+    count++;
+}
+
+// fileGrid event
+void EvtCtrl::fileGridSelect(int16_t sender, const char *file)
+{
+    eventStore[count].type = fileSelect;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    strcpy(eventStore[count].message, file);
     count++;
 }
 

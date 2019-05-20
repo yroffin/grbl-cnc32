@@ -194,6 +194,12 @@ void TFT_LayerFile::notify(const Event *event)
     {
         this->refresh();
     }
+    if (event->type == fileSelect)
+    {
+        log_i("selct %s", event->message);
+        this->cwf->setLabel(event->message);
+        this->invalidated = true;
+    }
     this->TFT_Widget::notify(event);
 }
 

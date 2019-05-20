@@ -40,8 +40,9 @@ void loop()
     GrblCtrl::instance()->capture();
     // dispatch event
     EvtCtrl::instance()->dispatchPrimaryEvents();
-    // dispatch event
-    EvtCtrl::instance()->dispatchSecondaryEvents();
+    // dispatch event (until any)
+    for (; EvtCtrl::instance()->dispatchSecondaryEvents();)
+        ;
     // render
     TFT_Screen::instance()->render();
     // flush events

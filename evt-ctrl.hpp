@@ -10,7 +10,7 @@ public:
   void init();
   void capture();
   void dispatchPrimaryEvents();
-  void dispatchSecondaryEvents();
+  boolean dispatchSecondaryEvents();
   void flush();
 
   // Events
@@ -21,6 +21,7 @@ public:
   void hideEvent(int16_t sender, int16_t target);
   void buttonDownEvent(int16_t sender);
   void fileGridEvent(int16_t sender);
+  void fileGridSelect(int16_t sender, const char *file);
 
   static EvtCtrl *instance();
 
