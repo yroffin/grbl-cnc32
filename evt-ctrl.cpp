@@ -116,7 +116,7 @@ void EvtCtrl::grblStatusEvent(int16_t sender, const char *status)
 // show layer
 void EvtCtrl::showEvent(int16_t sender, int16_t target)
 {
-    eventStore[count].type = show;
+    eventStore[count].type = showComponent;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
     eventStore[count].target = target;
@@ -126,7 +126,7 @@ void EvtCtrl::showEvent(int16_t sender, int16_t target)
 // hide layer
 void EvtCtrl::hideEvent(int16_t sender, int16_t target)
 {
-    eventStore[count].type = hide;
+    eventStore[count].type = hideComponent;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
     eventStore[count].target = target;

@@ -45,6 +45,9 @@ void loop()
         ;
     // render
     TFT_Screen::instance()->render();
+    TFT_Screen::instance()->setInvalidated(false);
+    // printing
+    GrblCtrl::instance()->spool();
     // flush events
     EvtCtrl::instance()->flush();
 }

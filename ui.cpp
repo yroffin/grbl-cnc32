@@ -20,6 +20,7 @@ TFT_Screen::TFT_Screen()
 {
     // create instance for touchscreeen
     this->tft = &_tft;
+    this->background = TFT_BLACK;
     log_i("TFT_Screen allocated ...");
 }
 
@@ -38,22 +39,23 @@ void TFT_Screen::init()
     log_i("TFT_Screen calibration ...");
     calibrate(); // call screen calibration
 
-    this->TFT_Widget::init(0, 0, 0, 320, 200);
+    this->TFT_Widget::init(0, 0, 0, 320, 240);
 
     // Init all layer
     log_i("TFT_Screen widget ...");
-    this->menu = new TFT_LayerMenu(WIDGET_ID_LAYER_MENU, 0, 0);
-    this->add(this->menu)->setVisible(true);
-    this->control = new TFT_LayerControl(WIDGET_ID_LAYER_CTRL, 55, 0);
-    this->add(this->control)->setVisible(false);
-    this->statistic = new TFT_LayerStatistic(WIDGET_ID_LAYER_STAT, 55, 0);
-    this->add(this->statistic)->setVisible(true);
-    this->file = new TFT_LayerFile(WIDGET_ID_LAYER_FILE, 55, 0);
-    this->add(this->file)->setVisible(false);
+    this->menu = new TFT_LayerMenu(WIDGET_ID_LAYER_MENU, 0, 0, 50, 50);
+    this->add(this->menu)->show();
+    // Layer
+    this->control = new TFT_LayerControl(WIDGET_ID_LAYER_CTRL, 55, 0, 50, 100);
+    this->add(this->control)->hide();
+    this->statistic = new TFT_LayerStatistic(WIDGET_ID_LAYER_STAT, 55, 0, 50, 100);
+    this->add(this->statistic)->show();
+    this->file = new TFT_LayerFile(WIDGET_ID_LAYER_FILE, 55, 0, 0, 0);
+    this->add(this->file)->hide();
 
     // First render
     log_i("TFT_Screen render ...");
-    render();
+    draw();
 }
 
 boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
@@ -62,18 +64,16 @@ boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
 }
 
 // menu layer
-TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y)
+TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Menu", 0, 0);
     this->add(this->title);
     this->a = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, "move", 8, 10);
     this->add(this->a);
-    this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, "stat", 8, 60);
+    this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, "stat", 8, 58);
     this->add(this->b);
-    this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, "files", 8, 110);
+    this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, "files", 8, 106);
     this->add(this->c);
-    this->footer = new TFT_Label(WIDGET_ID_LAYER_MENU_FOOTER, "......", 0, 225);
-    this->add(this->footer);
 }
 
 // Notification
@@ -81,68 +81,68 @@ void TFT_LayerMenu::notify(const Event *event)
 {
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNA)
     {
-        TFT_Screen::instance()->setInvalidated(true);
-        this->setVisibleById(WIDGET_ID_LAYER_MENU, true);
-        this->setVisibleById(WIDGET_ID_LAYER_CTRL, true);
-        this->setVisibleById(WIDGET_ID_LAYER_STAT, false);
-        this->setVisibleById(WIDGET_ID_LAYER_FILE, false);
+        TFT_Screen::instance()->control->show();
+        TFT_Screen::instance()->statistic->hide();
+        TFT_Screen::instance()->file->hide();
     }
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNB)
     {
-        TFT_Screen::instance()->setInvalidated(true);
-        this->setVisibleById(WIDGET_ID_LAYER_MENU, true);
-        this->setVisibleById(WIDGET_ID_LAYER_CTRL, false);
-        this->setVisibleById(WIDGET_ID_LAYER_STAT, true);
-        this->setVisibleById(WIDGET_ID_LAYER_FILE, false);
+        TFT_Screen::instance()->control->hide();
+        TFT_Screen::instance()->statistic->show();
+        TFT_Screen::instance()->file->hide();
     }
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNC)
     {
-        TFT_Screen::instance()->setInvalidated(true);
-        this->setVisibleById(WIDGET_ID_LAYER_MENU, true);
-        this->setVisibleById(WIDGET_ID_LAYER_CTRL, false);
-        this->setVisibleById(WIDGET_ID_LAYER_STAT, false);
-        this->setVisibleById(WIDGET_ID_LAYER_FILE, true);
+        TFT_Screen::instance()->control->hide();
+        TFT_Screen::instance()->statistic->hide();
+        TFT_Screen::instance()->file->show();
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
 }
 
 // control layer
-TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y)
+TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
-    add(this->title);
+    this->group->add(this->title);
     this->home = new TFT_Button(WIDGET_ID_LAYER_CTRL_HOME, "Home", 0, 14);
-    add(this->home);
-    this->unlock = new TFT_Button(WIDGET_ID_LAYER_CTRL_UNLOCK, "Unlock", 50, 14);
-    add(this->unlock);
-    this->reset = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESET, "Reset", 100, 14);
-    add(this->reset);
-    this->status = new TFT_Button(WIDGET_ID_LAYER_CTRL_STATUS, "Status", 150, 14);
-    add(this->status);
-    this->pause = new TFT_Button(WIDGET_ID_LAYER_CTRL_PAUSE, "Pause", 200, 14);
-    add(this->pause);
-    this->resume = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESUME, "Resume", 200, 64);
-    add(this->resume);
-    this->joystick = new TFT_Joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 64);
-    add(this->joystick);
+    this->group->add(this->home);
+    this->unlock = new TFT_Button(WIDGET_ID_LAYER_CTRL_UNLOCK, "Unlock", 44, 14);
+    this->group->add(this->unlock);
+    this->reset = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESET, "Reset", 88, 14);
+    this->group->add(this->reset);
+    this->status = new TFT_Button(WIDGET_ID_LAYER_CTRL_STATUS, "Status", 132, 14);
+    this->group->add(this->status);
+    this->pause = new TFT_Button(WIDGET_ID_LAYER_CTRL_PAUSE, "Pause", 176, 14);
+    this->group->add(this->pause);
+    this->resume = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESUME, "Resume", 220, 14);
+    this->group->add(this->resume);
+    this->joystick = new TFT_Joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 64, 265, 140);
+    this->group->add(this->joystick);
 }
 
 // stat layer
-TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y)
+TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Stat", 0, 0);
-    this->add(this->title);
+    this->group->add(this->title);
     this->grblStatusLabel = new TFT_Label(WIDGET_ID_DEFAULT, "status", 0, 16);
-    this->add(this->grblStatusLabel);
+    this->group->add(this->grblStatusLabel);
     this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 40, 16);
-    this->add(this->grblStatusValue);
+    this->group->add(this->grblStatusValue);
     this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, "I/O", 0, 29);
-    this->add(this->grblIoStatus);
+    this->group->add(this->grblIoStatus);
     this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 29);
-    this->add(this->grblIoStatusValues);
-    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "console", 0, 70);
-    this->add(this->console);
+    this->group->add(this->grblIoStatusValues);
+    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "console", 0, 40, 265, 100);
+    this->group->add(this->console);
+    this->printing = new TFT_Console(WIDGET_ID_DEFAULT, "printing", 0, 140, 265, 100);
+    this->group->add(this->printing);
 }
 
 // Notification
@@ -157,36 +157,49 @@ void TFT_LayerStatistic::notify(const Event *event)
     this->TFT_Widget::notify(event);
 }
 
-void TFT_LayerStatistic::write(const char *message)
+void TFT_LayerStatistic::writeToConsole(const char *message)
 {
     this->console->write(message);
 }
 
-// files layer
-TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y)
+void TFT_LayerStatistic::writeToPrint(const char *message)
 {
+    this->printing->write(message);
+}
+
+// files layer
+TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
+{
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Files", 0, 0);
-    this->add(title);
+    this->group->add(title);
     this->dir = new TFT_Label(WIDGET_ID_DEFAULT, "Dir", 0, 14);
-    this->add(dir);
+    this->group->add(dir);
     this->cwd = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 14);
-    this->add(cwd);
+    this->group->add(cwd);
     this->file = new TFT_Label(WIDGET_ID_DEFAULT, "File", 0, 28);
-    this->add(file);
+    this->group->add(file);
     this->cwf = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 28);
-    this->add(cwf);
+    this->group->add(cwf);
     this->misc = new TFT_Label(WIDGET_ID_DEFAULT, "Misc", 0, 42);
-    this->add(misc);
+    this->group->add(misc);
     this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 42);
-    this->add(miscValue);
-    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, "files", 0, 54);
-    this->add(files);
+    this->group->add(miscValue);
+    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, "Print", 170, 10);
+    this->group->add(print);
+    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, "files", 0, 54, 265, 160);
+    this->group->add(files);
 }
 
 // Notification
 void TFT_LayerFile::notify(const Event *event)
 {
-    if (event->type == show && event->target == WIDGET_ID_LAYER_FILE)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_BTN_PRINT)
+    {
+        GrblCtrl::instance()->print(this->cwf->getLabel());
+    }
+    if (event->type == showComponent && event->target == WIDGET_ID_LAYER_FILE)
     {
         this->refresh();
     }
@@ -196,7 +209,6 @@ void TFT_LayerFile::notify(const Event *event)
     }
     if (event->type == fileSelect)
     {
-        log_i("selct %s", event->message);
         this->cwf->setLabel(event->message);
         this->invalidated = true;
     }
@@ -259,8 +271,18 @@ void TFT_Screen::status(const char *format, ...)
     char buffer[128];
     vsprintf(buffer, format, args);
     va_end(args);
-    this->setLabelById(WIDGET_ID_LAYER_MENU_FOOTER, buffer);
-    this->statistic->write(buffer);
+    this->statistic->writeToConsole(buffer);
+}
+
+// Update screen printing
+void TFT_Screen::printing(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[128];
+    vsprintf(buffer, format, args);
+    va_end(args);
+    this->statistic->writeToPrint(buffer);
 }
 
 // Notify event
@@ -268,17 +290,4 @@ void TFT_Screen::notify(const Event *event)
 {
     // Dispatch to layers
     this->TFT_Widget::notify(event);
-}
-
-// Render
-void TFT_Screen::render()
-{
-    // clear if invalidated
-    if (this->invalidated)
-    {
-        this->tft->fillScreen(TFT_BLACK);
-        this->invalidated = false;
-    }
-    // display
-    this->TFT_Widget::render();
 }

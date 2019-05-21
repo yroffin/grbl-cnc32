@@ -57,6 +57,9 @@ public:
   void init();
   void capture();
 
+  void print(const char *filename);
+  void spool();
+
   boolean home();
   boolean unlock();
   boolean reset();
@@ -88,13 +91,17 @@ protected:
   bool tryWrite(const char *grbl, ...);
 
 private:
-  char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];       // this buffer is used to store a few char received from GRBL before decoding them
-  char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE]; // this buffer is used to store a few char received from GRBL before decoding them
+  // this buffer is used to store a few char received from GRBL before decoding them
+  char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];
+  // lower version of  strGrblBuf
+  char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
+  char printBuffer[STR_GRBL_BUF_MAX_SIZE];
   uint8_t strGrblIdx;
   uint8_t txRead = 0;
   uint8_t txWrite = 0;
   uint8_t byteRead = 0;
   boolean busy = true;
+  boolean isPrinting = false;
   // only for simulation
   char sim[512];
   char *idx;

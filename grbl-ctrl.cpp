@@ -1,4 +1,5 @@
 #include "grbl-ctrl.hpp"
+#include "storage-ctrl.hpp"
 #include "stdio.h"
 
 // GRBL controller
@@ -133,7 +134,7 @@ void GrblCtrl::capture(void)
         }
     }
     // Update statistics
-    TFT_Screen::instance()->setLabelById(WIDGET_ID_LAYER_STAT_GRBL_IO, "b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
+    TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
 bool startWithNoCase(const char *str, const char *pattern)
@@ -312,6 +313,29 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
         }
         va_end(args);
         return true;
+    }
+}
+
+void GrblCtrl::print(const char *filename)
+{
+    StorageCtrl::instance()->open(filename);
+    this->isPrinting = true;
+}
+
+void GrblCtrl::spool()
+{
+    if (this->isPrinting)
+    {
+        boolean avail = StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE);
+        if (avail)
+        {
+            TFT_Screen::instance()->printing("> %s", this->printBuffer);
+        }
+        else
+        {
+            this->isPrinting = false;
+            StorageCtrl::instance()->close();
+        }
     }
 }
 

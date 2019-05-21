@@ -8,8 +8,8 @@ enum EventType
   buttonDown,
   grblStatus,
   grblProperty,
-  hide,
-  show,
+  hideComponent,
+  showComponent,
   fileGrid,
   fileSelect
 };
@@ -57,8 +57,7 @@ public:
 
 #define WIDGET_ID_LAYER_FILE 0x04001
 #define WIDGET_ID_LAYER_FILE_LIST 0x04011
-#define WIDGET_ID_LAYER_BTN_UP 0x04032
-#define WIDGET_ID_LAYER_BTN_DOWN 0x04033
+#define WIDGET_ID_LAYER_BTN_PRINT 0x04032
 #define WIDGET_ID_LAYER_CWF 0x04034
 
 #endif

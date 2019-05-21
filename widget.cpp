@@ -39,16 +39,6 @@ TFT_Widget *TFT_Widget::findById(int16_t _id)
     }
 }
 
-void TFT_Widget::setLabelById(int16_t _id, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char buffer[128];
-    vsprintf(buffer, format, args);
-    va_end(args);
-    findById(_id)->setLabel(buffer);
-}
-
 void TFT_Widget::setLabel(const char *format, ...)
 {
     va_list args;
@@ -59,34 +49,31 @@ void TFT_Widget::setLabel(const char *format, ...)
     this->invalidated = true;
 }
 
-void TFT_Widget::setVisibleById(int16_t _id, bool _active)
+void TFT_Widget::show()
 {
-    findById(_id)->setVisible(_active);
-}
-
-void TFT_Widget::setVisible(bool _active)
-{
-    boolean change = this->visible != _active;
-    if (!change)
-        return;
-    this->visible = _active;
+    this->visible = true;
 
     // update all children
     for (int index = 0; index < child; index++)
     {
-        children[index]->setVisible(this->visible);
+        children[index]->show();
     }
 
-    if (this->visible)
+    // invalidate all children to force draw
+    this->invalidated = true;
+    EvtCtrl::instance()->showEvent(this->id, this->id);
+}
+
+void TFT_Widget::hide()
+{
+    this->visible = false;
+
+    // update all children
+    for (int index = 0; index < child; index++)
     {
-        // invalidate all children too
-        this->setInvalidated(true);
-        EvtCtrl::instance()->showEvent(this->id, this->id);
+        children[index]->hide();
     }
-    else
-    {
-        EvtCtrl::instance()->hideEvent(this->id, this->id);
-    }
+    EvtCtrl::instance()->hideEvent(this->id, this->id);
 }
 
 void TFT_Widget::setInvalidated(bool invalidate)
@@ -129,24 +116,36 @@ void TFT_Widget::notify(const Event *event)
 // Render this widget
 void TFT_Widget::render()
 {
-    if (visible)
+    if (this->visible)
     {
-        for (int index = 0; index < child; index++)
+        if (this->invalidated)
         {
-            children[index]->render();
+            this->draw();
         }
+    }
+    for (int index = 0; index < child; index++)
+    {
+        children[index]->render();
     }
 }
 
+// Render this widget
+void TFT_Widget::draw()
+{
+    this->tft->fillRect(x, y, w, h, this->background);
+    //this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
+}
+
+// Constructor
 TFT_Layer::TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
 }
 
 // Constructor
-TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 {
-    init(_id, _x, _y, _w, _h);
+    init(_id, _x, _y, 40, 40);
     strcpy(label, _label);
 }
 
@@ -157,11 +156,11 @@ void TFT_Button::notify(const Event *event)
     {
     // Touch on screen
     case touch:
-        if (this->isVisible() && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
+        if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
         {
-            state = on;
             EvtCtrl::instance()->buttonDownEvent(this->id);
-            // draw neede
+            state = on;
+            // draw needed
             this->invalidated = true;
         }
         break;
@@ -176,50 +175,36 @@ void TFT_Button::notify(const Event *event)
     }
 }
 
-void TFT_Button::render()
+void TFT_Button::draw()
 {
-    // on draw if needed
-    if (this->invalidated)
-    {
-        this->tft->setTextFont(1);
-        this->tft->setTextColor(BUTTON_TEXT);
-        this->tft->setTextSize(1);
-        uint8_t r = min(w, h) / 3;
-        this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
-        this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
-        uint8_t tempdatum = this->tft->getTextDatum();
-        this->tft->setTextDatum(MC_DATUM);
-        this->tft->drawString(label, x + (w / 2), y + (h / 2));
-        this->invalidated = false;
-    }
-    // render children
-    this->TFT_Widget::render();
+    this->tft->setTextFont(1);
+    this->tft->setTextColor(BUTTON_TEXT);
+    this->tft->setTextSize(1);
+    uint8_t r = min(w, h) / 3;
+    this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
+    this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
+    uint8_t tempdatum = this->tft->getTextDatum();
+    this->tft->setTextDatum(MC_DATUM);
+    this->tft->drawString(label, x + (w / 2), y + (h / 2));
 }
 
 // Constructor
-TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
-    : TFT_Button(_id, _label, _x, _y, _w, _h)
+TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y)
+    : TFT_Button(_id, _label, _x, _y)
 {
 }
 
-void TFT_File::render()
+void TFT_File::draw()
 {
-    // on draw if needed
-    if (this->invalidated)
-    {
-        this->tft->setTextFont(1);
-        this->tft->setTextColor(TFT_DARKGREY);
-        this->tft->setTextSize(1);
-        uint8_t r = min(w, h) / 3;
-        this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
-        this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
-        this->tft->setTextDatum(TL_DATUM);
-        this->tft->drawString("x", x + (w / 2), y + (h / 2));
-        this->tft->drawString(label, x + (w / 2) + 24, y + (h / 2));
-        this->invalidated = false;
-    }
-    // render children
-    this->TFT_Widget::render();
+    this->tft->setTextFont(1);
+    this->tft->setTextColor(TFT_DARKGREY);
+    this->tft->setTextSize(1);
+    uint8_t r = min(w, h) / 3;
+    this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
+    this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
+    this->tft->setTextDatum(TL_DATUM);
+    this->tft->drawString("x", x + (w / 2), y + (h / 2));
+    this->tft->drawString(label, x + (w / 2) + 24, y + (h / 2));
 }
 
 // Constructor
@@ -337,21 +322,6 @@ void TFT_FileGrid::notify(const Event *event)
     this->TFT_Widget::notify(event);
 }
 
-void TFT_FileGrid::render()
-{
-    // on draw if needed
-    if (this->invalidated)
-    {
-        log_i("r %d,%d %d,%d", x, y, w, h);
-        this->tft->fillRect(x, y, w, h, TFT_BLACK);
-        // render children
-        this->TFT_Widget::render();
-        this->invalidated = false;
-    }
-    // render children
-    this->TFT_Widget::render();
-}
-
 // Constructor
 TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 {
@@ -359,18 +329,18 @@ TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
     strcpy(label, _label);
 }
 
-void TFT_Label::render()
+void TFT_Label::draw()
 {
-    // on draw if needed
-    if (this->invalidated)
-    {
-        this->tft->setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
-        this->tft->setTextSize(1);                              // char is 2 X magnified =>
-        this->tft->setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
-        this->tft->setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
-        this->tft->drawString(label, x, y);
-        this->invalidated = false;
-    }
-    // draw children
-    this->TFT_Widget::render();
+    this->tft->setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
+    this->tft->setTextSize(1);                              // char is 2 X magnified =>
+    this->tft->setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
+    this->tft->setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
+    this->tft->drawString(label, x, y);
+}
+
+// Constructor
+TFT_Group::TFT_Group(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+{
+    init(_id, _x, _y, _w, _h);
+    strcpy(label, _label);
 }

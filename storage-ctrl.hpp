@@ -40,12 +40,18 @@ public:
   int16_t getCount();
   StorageEntry *getEntries(int16_t index);
 
+  void open(const char *filename);
+  boolean readline(char *buffer, int16_t maxLength);
+  void close();
+
   static StorageCtrl *instance();
 
 protected:
   char cwd[128];
   int16_t storageEntryCount = 0;
   StorageEntry *storageEntry[128];
+  boolean isOpen = false;
+  File file;
 };
 
 #endif

@@ -13,22 +13,22 @@ public:
   TFT_Widget();
   virtual void notify(const Event *event);
   virtual void render();
+  virtual void draw();
+  virtual void show();
+  virtual void hide();
   virtual void setPosition(int16_t _x, int16_t _y);
-  virtual void setVisible(bool _active);
   virtual void setInvalidated(bool _active);
+  virtual void setBackground(int16_t back)
+  {
+    this->background = back;
+  }
   virtual void setLabel(const char *_label, ...);
   virtual const char *getLabel()
   {
     return this->label;
   }
-  virtual bool isVisible()
-  {
-    return this->visible;
-  }
   // Registry manipulation
   virtual TFT_Widget *findById(int16_t _id);
-  virtual void setVisibleById(int16_t _id, bool _active);
-  virtual void setLabelById(int16_t _id, const char *label, ...);
   TFT_Widget *add(TFT_Widget *widget);
 
 protected:
@@ -38,9 +38,10 @@ protected:
   int16_t w;
   int16_t h;
   int16_t id;
+  int16_t background = TFT_BLACK;
   char name[32];
   char label[128];
-  bool visible = true;
+  bool visible = false;
   bool invalidated = true;
   // child
   TFT_Widget *children[32];
@@ -51,7 +52,7 @@ protected:
 class TFT_Layer : public TFT_Widget
 {
 public:
-  TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
+  TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
 
 private:
 };
@@ -65,9 +66,9 @@ enum ButtonState
 class TFT_Button : public TFT_Widget
 {
 public:
-  TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y);
   virtual void notify(const Event *event);
-  virtual void render();
+  virtual void draw();
 
 protected:
   ButtonState state = off;
@@ -76,8 +77,8 @@ protected:
 class TFT_File : public TFT_Button
 {
 public:
-  TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
-  virtual void render();
+  TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y);
+  virtual void draw();
 
 private:
 };
@@ -85,7 +86,7 @@ private:
 class TFT_Joystick : public TFT_Widget
 {
 public:
-  TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
 
 private:
   TFT_Button *xleft;
@@ -97,11 +98,19 @@ private:
   TFT_Button *pas;
 };
 
+class TFT_Group : public TFT_Widget
+{
+public:
+  TFT_Group(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+
+private:
+};
+
 class TFT_Label : public TFT_Widget
 {
 public:
   TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y);
-  virtual void render();
+  virtual void draw();
 
 private:
 };
@@ -109,7 +118,7 @@ private:
 class TFT_Console : public TFT_Widget
 {
 public:
-  TFT_Console(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 40, int16_t _h = 40);
+  TFT_Console(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   void write(const char *message);
 
 private:
@@ -119,9 +128,8 @@ private:
 class TFT_FileGrid : public TFT_Widget
 {
 public:
-  TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w = 320, int16_t _h = 200);
+  TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   virtual void notify(const Event *event);
-  virtual void render();
 
   virtual void onRight()
   {

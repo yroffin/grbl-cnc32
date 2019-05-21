@@ -39,12 +39,25 @@ void StorageCtrl::init()
     log_i("File system ok.");
 }
 
+int basename(const char *filename)
+{
+    int l = strlen(filename) - 1;
+    for (; l >= 0 && filename[l] != '/'; l--)
+        ;
+    return l + 1;
+}
+
 void StorageCtrl::scan(const char *base)
 {
     File root = SD.open(base);
     File entry = root.openNextFile();
     for (; entry; entry = root.openNextFile())
     {
+        // ignore hidden files
+        if (entry.name()[basename(entry.name())] == '.')
+        {
+            continue;
+        }
         if (this->storageEntry[this->storageEntryCount] == 0)
         {
             this->storageEntry[this->storageEntryCount] = new StorageEntry();
@@ -74,4 +87,32 @@ int16_t StorageCtrl::getCount()
 StorageEntry *StorageCtrl::getEntries(int16_t index)
 {
     return this->storageEntry[index];
+}
+
+void StorageCtrl::open(const char *filename)
+{
+    if (this->isOpen)
+    {
+        this->file.close();
+    }
+    this->file = SD.open(filename);
+}
+
+boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
+{
+    if (file.available())
+    {
+        const char *value = this->file.readStringUntil(10).c_str();
+        size_t m = min(strlen(value), (size_t)maxLength - 1);
+        strncpy(buffer, value, m);
+        buffer[m] = 0;
+        return true;
+    }
+    return false;
+}
+
+void StorageCtrl::close()
+{
+    this->file.close();
+    this->isOpen = false;
 }
