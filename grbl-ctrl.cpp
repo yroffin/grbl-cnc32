@@ -1,3 +1,4 @@
+#include "ui.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
 #include "stdio.h"
@@ -292,9 +293,23 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
     va_start(args, grbl);
     char buffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
     vsprintf(buffer, grbl, args);
+
+    // ignore comment ( / ;
+    switch (*buffer)
+    {
+    case '(':
+    case '/':
+    case ';':
+        return true;
+    }
+
     if (this->busy)
     {
-        TFT_Screen::instance()->status("[BUSY] %s", buffer);
+        if (millis() - this->lastBusyWrite > 200)
+        {
+            this->lastBusyWrite = millis();
+            TFT_Screen::instance()->status("[BUSY] %s", buffer);
+        }
         return false;
     }
     else
@@ -318,23 +333,38 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
 
 void GrblCtrl::print(const char *filename)
 {
+    TFT_Screen::instance()->admin->writeToConsole("> printing: %s", filename);
     StorageCtrl::instance()->open(filename);
     this->isPrinting = true;
+    this->grblPrintStatus = empty;
 }
 
 void GrblCtrl::spool()
 {
-    if (this->isPrinting)
+    if (this->isPrinting && !this->isPaused)
     {
-        boolean avail = StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE);
-        if (avail)
+        switch (this->grblPrintStatus)
         {
-            TFT_Screen::instance()->printing("> %s", this->printBuffer);
-        }
-        else
-        {
-            this->isPrinting = false;
-            StorageCtrl::instance()->close();
+        case empty:
+            if (StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE))
+            {
+                this->grblPrintStatus = full;
+            }
+            else
+            {
+                TFT_Screen::instance()->admin->writeToConsole("> stop printing");
+                this->isPrinting = false;
+                this->grblPrintStatus = empty;
+                StorageCtrl::instance()->close();
+            }
+            break;
+        case full:
+            if (this->tryWrite(this->printBuffer))
+            {
+                TFT_Screen::instance()->printing("> %s", this->printBuffer);
+                this->grblPrintStatus = empty;
+            }
+            break;
         }
     }
 }
@@ -358,12 +388,22 @@ boolean GrblCtrl::reset()
 
 boolean GrblCtrl::pause()
 {
-    return this->tryWrite("!\n");
+    if (this->tryWrite("!\n"))
+    {
+        this->isPaused = true;
+        return true;
+    }
+    return false;
 }
 
 boolean GrblCtrl::resume()
 {
-    return this->tryWrite("~\n");
+    if (this->tryWrite("~\n"))
+    {
+        this->isPaused = false;
+        return true;
+    }
+    return false;
 }
 
 boolean GrblCtrl::status()
@@ -443,28 +483,44 @@ void GrblCtrl::notify(const Event *event)
     {
         this->move(ZP, 1.0);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_HOME)
     {
         this->home();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_UNLOCK)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_UNLOCK)
     {
         this->unlock();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_RESET)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_RESET)
     {
         this->reset();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_RESUME)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_RESUME)
     {
         this->resume();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_PAUSE)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_PAUSE)
     {
         this->pause();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_STATUS)
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_STATUS)
     {
         this->status();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETX)
+    {
+        this->setXYZ(SETX);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETY)
+    {
+        this->setXYZ(SETY);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETZ)
+    {
+        this->setXYZ(SETZ);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETALL)
+    {
+        this->setXYZ(SETXYZ);
     }
 }

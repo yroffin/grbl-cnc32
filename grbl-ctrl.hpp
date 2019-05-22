@@ -49,6 +49,12 @@ enum GrblWay
   SETXYZ
 };
 
+enum GrblPrintStatus
+{
+  empty,
+  full
+};
+
 class GrblCtrl
 {
 public:
@@ -102,10 +108,13 @@ private:
   uint8_t byteRead = 0;
   boolean busy = true;
   boolean isPrinting = false;
+  boolean isPaused = false;
+  GrblPrintStatus grblPrintStatus = empty;
   // only for simulation
   char sim[512];
   char *idx;
   boolean simulation = true;
+  long lastBusyWrite = 0;
 };
 
 #endif

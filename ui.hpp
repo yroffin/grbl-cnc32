@@ -3,10 +3,12 @@
 
 #include "widget.hpp"
 
-class TFT_LayerControl : public TFT_Layer
+class TFT_LayerAdmin : public TFT_Layer
 {
 public:
-  TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
+  TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
+  void writeToPrint(const char *format);
+  void writeToConsole(const char *format, ...);
 
 protected:
   TFT_Group *group;
@@ -18,6 +20,23 @@ protected:
   TFT_Button *status;
   TFT_Button *pause;
   TFT_Button *resume;
+  TFT_Console *console;
+  TFT_Console *printing;
+};
+
+class TFT_LayerControl : public TFT_Layer
+{
+public:
+  TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
+
+protected:
+  TFT_Group *group;
+  TFT_Layer *layer;
+  TFT_Label *title;
+  TFT_Button *setx;
+  TFT_Button *sety;
+  TFT_Button *setz;
+  TFT_Button *setall;
   TFT_Joystick *joystick;
 };
 
@@ -36,9 +55,6 @@ public:
     this->grblIoStatusValues->setLabel(msg);
   }
 
-  void writeToConsole(const char *message);
-  void writeToPrint(const char *message);
-
 protected:
   TFT_Group *group;
   TFT_Label *title;
@@ -46,8 +62,6 @@ protected:
   TFT_Label *grblStatusValue;
   TFT_Label *grblIoStatus;
   TFT_Label *grblIoStatusValues;
-  TFT_Console *console;
-  TFT_Console *printing;
 };
 
 class TFT_LayerFile : public TFT_Layer
@@ -82,6 +96,7 @@ protected:
   TFT_Button *a;
   TFT_Button *b;
   TFT_Button *c;
+  TFT_Button *d;
 };
 
 class TFT_Screen : public TFT_Widget
@@ -99,6 +114,7 @@ public:
 
 public:
   TFT_LayerMenu *menu;
+  TFT_LayerAdmin *admin;
   TFT_LayerControl *control;
   TFT_LayerStatistic *statistic;
   TFT_LayerFile *file;

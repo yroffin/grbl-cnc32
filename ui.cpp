@@ -46,6 +46,8 @@ void TFT_Screen::init()
     this->menu = new TFT_LayerMenu(WIDGET_ID_LAYER_MENU, 0, 0, 50, 50);
     this->add(this->menu)->show();
     // Layer
+    this->admin = new TFT_LayerAdmin(WIDGET_ID_LAYER_ADM, 55, 0, 50, 100);
+    this->add(this->admin)->hide();
     this->control = new TFT_LayerControl(WIDGET_ID_LAYER_CTRL, 55, 0, 50, 100);
     this->add(this->control)->hide();
     this->statistic = new TFT_LayerStatistic(WIDGET_ID_LAYER_STAT, 55, 0, 50, 100);
@@ -74,6 +76,8 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->add(this->b);
     this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, "files", 8, 106);
     this->add(this->c);
+    this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, "admin", 8, 154);
+    this->add(this->d);
 }
 
 // Notification
@@ -84,42 +88,88 @@ void TFT_LayerMenu::notify(const Event *event)
         TFT_Screen::instance()->control->show();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->hide();
+        TFT_Screen::instance()->admin->hide();
     }
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNB)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->show();
         TFT_Screen::instance()->file->hide();
+        TFT_Screen::instance()->admin->hide();
     }
     if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNC)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->show();
+        TFT_Screen::instance()->admin->hide();
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTND)
+    {
+        TFT_Screen::instance()->control->hide();
+        TFT_Screen::instance()->statistic->hide();
+        TFT_Screen::instance()->file->hide();
+        TFT_Screen::instance()->admin->show();
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
 }
 
 // control layer
-TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
+TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Admin", 0, 0, 265, 240);
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
     this->group->add(this->title);
-    this->home = new TFT_Button(WIDGET_ID_LAYER_CTRL_HOME, "Home", 0, 14);
+    this->home = new TFT_Button(WIDGET_ID_LAYER_ADM_HOME, "Home", 0, 14);
     this->group->add(this->home);
-    this->unlock = new TFT_Button(WIDGET_ID_LAYER_CTRL_UNLOCK, "Unlock", 44, 14);
+    this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, "Unlock", 44, 14);
     this->group->add(this->unlock);
-    this->reset = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESET, "Reset", 88, 14);
+    this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, "Reset", 88, 14);
     this->group->add(this->reset);
-    this->status = new TFT_Button(WIDGET_ID_LAYER_CTRL_STATUS, "Status", 132, 14);
+    this->status = new TFT_Button(WIDGET_ID_LAYER_ADM_STATUS, "Status", 132, 14);
     this->group->add(this->status);
-    this->pause = new TFT_Button(WIDGET_ID_LAYER_CTRL_PAUSE, "Pause", 176, 14);
+    this->pause = new TFT_Button(WIDGET_ID_LAYER_ADM_PAUSE, "Pause", 176, 14);
     this->group->add(this->pause);
-    this->resume = new TFT_Button(WIDGET_ID_LAYER_CTRL_RESUME, "Resume", 220, 14);
+    this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, "Resume", 220, 14);
     this->group->add(this->resume);
+    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "console", 0, 60, 265, 90);
+    this->group->add(this->console);
+    this->printing = new TFT_Console(WIDGET_ID_DEFAULT, "printing", 0, 150, 265, 90);
+    this->group->add(this->printing);
+}
+
+void TFT_LayerAdmin::writeToPrint(const char *message)
+{
+    this->printing->write(message);
+}
+
+void TFT_LayerAdmin::writeToConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char message[128];
+    vsprintf(message, format, args);
+    va_end(args);
+    this->console->write(message);
+}
+
+// control layer
+TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
+{
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Control", 0, 0, 265, 240);
+    this->add(this->group);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
+    this->group->add(this->title);
+    this->setx = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETX, "SetX", 0, 14);
+    this->group->add(this->setx);
+    this->sety = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETY, "SetY", 44, 14);
+    this->group->add(this->sety);
+    this->setz = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETZ, "SetZ", 88, 14);
+    this->group->add(this->setz);
+    this->setall = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETALL, "SetAll", 132, 14);
+    this->group->add(this->setall);
     this->joystick = new TFT_Joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 64, 265, 140);
     this->group->add(this->joystick);
 }
@@ -139,10 +189,6 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->group->add(this->grblIoStatus);
     this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 29);
     this->group->add(this->grblIoStatusValues);
-    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "console", 0, 40, 265, 100);
-    this->group->add(this->console);
-    this->printing = new TFT_Console(WIDGET_ID_DEFAULT, "printing", 0, 140, 265, 100);
-    this->group->add(this->printing);
 }
 
 // Notification
@@ -155,16 +201,6 @@ void TFT_LayerStatistic::notify(const Event *event)
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
-}
-
-void TFT_LayerStatistic::writeToConsole(const char *message)
-{
-    this->console->write(message);
-}
-
-void TFT_LayerStatistic::writeToPrint(const char *message)
-{
-    this->printing->write(message);
 }
 
 // files layer
@@ -271,7 +307,7 @@ void TFT_Screen::status(const char *format, ...)
     char buffer[128];
     vsprintf(buffer, format, args);
     va_end(args);
-    this->statistic->writeToConsole(buffer);
+    this->admin->writeToConsole("> %s", buffer);
 }
 
 // Update screen printing
@@ -282,7 +318,7 @@ void TFT_Screen::printing(const char *format, ...)
     char buffer[128];
     vsprintf(buffer, format, args);
     va_end(args);
-    this->statistic->writeToPrint(buffer);
+    this->admin->writeToPrint(buffer);
 }
 
 // Notify event

@@ -53,13 +53,13 @@ void EvtCtrl::dispatchPrimaryEvents()
 {
     if (count == 0)
         return;
-    log_i("Dispatch phase 1 %d/%d", 0, this->primaryEvents);
+    // log_i("Dispatch phase 1 %d/%d", 0, this->primaryEvents);
     this->primaryEvents = count;
     for (int e = 0; e < this->primaryEvents; e++)
     {
         Event *event = &eventStore[e];
         // Display it
-        log_i("A[%03d] event: %d sender: %08x", e, event->type, event->sender);
+        // log_i("A[%03d] event: %d sender: %08x", e, event->type, event->sender);
         TFT_Screen::instance()->notify(event);
         GrblCtrl::instance()->notify(event);
     }
@@ -70,12 +70,12 @@ boolean EvtCtrl::dispatchSecondaryEvents()
 {
     if (this->primaryEvents >= count)
         return false;
-    log_i("Dispatch phase 2 %d/%d", this->primaryEvents, count);
+    // log_i("Dispatch phase 2 %d/%d", this->primaryEvents, count);
     for (int e = this->primaryEvents; e < count; e++)
     {
         Event *event = &eventStore[e];
         // Display it
-        log_i("B[%03d] phase2 event: %d sender: %08x", e, event->type, event->sender);
+        // log_i("B[%03d] phase2 event: %d sender: %08x", e, event->type, event->sender);
         TFT_Screen::instance()->notify(event);
         GrblCtrl::instance()->notify(event);
     }
