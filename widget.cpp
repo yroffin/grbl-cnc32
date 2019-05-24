@@ -214,22 +214,64 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     strcpy(label, _label);
 
     // Init all button
-    this->xleft = new TFT_Button(_id + 1, "Left", 0, 50);
+    this->xleft = new TFT_Button(_id + 1, "Left", 0, 44);
     this->add(this->xleft);
-    this->xright = new TFT_Button(_id + 2, "Right", 100, 50);
+    this->xright = new TFT_Button(_id + 2, "Right", 44 * 2, 44);
     this->add(this->xright);
-    this->yup = new TFT_Button(_id + 4, "Up", 50, 0);
+    this->yup = new TFT_Button(_id + 4, "Up", 44, 0);
     this->add(this->yup);
-    this->ydown = new TFT_Button(_id + 3, "Down", 50, 100);
+    this->ydown = new TFT_Button(_id + 3, "Down", 44, 44 * 2);
     this->add(this->ydown);
-    this->zup = new TFT_Button(_id + 6, "Up", 135, 0);
+    this->zup = new TFT_Button(_id + 6, "Up", 44 * 4, 0);
     this->add(this->zup);
-    this->zdown = new TFT_Button(_id + 5, "Down", 135, 100);
+    this->zdown = new TFT_Button(_id + 5, "Down", 44 * 4, 44 * 2);
     this->add(this->zdown);
 
     // Pas 0.1, 1, 10 and 100
-    this->pas = new TFT_Button(_id + 6, "Pas", 50, 50);
+    this->pas = new TFT_Button(_id + 7, "Pas", 44, 44);
     this->add(this->pas);
+}
+
+// Notify
+void TFT_Joystick::notify(const Event *event)
+{
+    if (event->type == EVENT_NEW_STEP)
+    {
+        this->pas->setLabel("%03.0f", event->fvalue);
+    }
+    if (event->type == buttonDown)
+    {
+        if (event->sender == this->id + 1)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_XM);
+        }
+        if (event->sender == this->id + 2)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_XP);
+        }
+        if (event->sender == this->id + 4)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_YP);
+        }
+        if (event->sender == this->id + 3)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_YM);
+        }
+        if (event->sender == this->id + 6)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_ZP);
+        }
+        if (event->sender == this->id + 5)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_ZM);
+        }
+        if (event->sender == this->id + 7)
+        {
+            EvtCtrl::instance()->send(this->id, EVENT_NEXT_STEP);
+        }
+    }
+    // Dispatch to layers
+    this->TFT_Widget::notify(event);
 }
 
 // Constructor
@@ -312,7 +354,7 @@ void TFT_FileGrid::notify(const Event *event)
             EvtCtrl::instance()->fileGridSelect(this->id + 2 + l, this->lines[l]->getLabel());
         }
     }
-    // Dispatch to layers
+    // Dispatch to others
     this->TFT_Widget::notify(event);
 }
 

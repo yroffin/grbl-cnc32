@@ -6,12 +6,38 @@ enum EventType
   touch,
   release,
   buttonDown,
-  grblStatus,
   grblProperty,
   hideComponent,
   showComponent,
   fileGrid,
-  fileSelect
+  fileSelect,
+  EVENT_GRBL_STATUS,
+  EVENT_XP,
+  EVENT_XM,
+  EVENT_YP,
+  EVENT_YM,
+  EVENT_ZP,
+  EVENT_ZM,
+  EVENT_SETX,
+  EVENT_SETY,
+  EVENT_SETZ,
+  EVENT_SETXYZ,
+  EVENT_NEXT_STEP,
+  EVENT_NEW_STEP
+};
+
+enum EventGrbl
+{
+  XP,
+  XM,
+  YP,
+  YM,
+  ZP,
+  ZM,
+  SETX,
+  SETY,
+  SETZ,
+  SETXYZ
 };
 
 class Event
@@ -26,6 +52,7 @@ public:
     {
       int16_t x, y;
     } touch;
+    float fvalue;
     char message[32];
   };
 };
@@ -49,9 +76,10 @@ public:
 #define WIDGET_ID_LAYER_CTRL_SETY 0x02021
 #define WIDGET_ID_LAYER_CTRL_SETZ 0x02022
 #define WIDGET_ID_LAYER_CTRL_SETALL 0x02023
+#define WIDGET_ID_LAYER_CTRL_HOME 0x02024
 
 #define WIDGET_ID_LAYER_ADM 0x03001
-#define WIDGET_ID_LAYER_ADM_HOME 0x03020
+#define WIDGET_ID_LAYER_BTN_PRINT 0x03020
 #define WIDGET_ID_LAYER_ADM_UNLOCK 0x03021
 #define WIDGET_ID_LAYER_ADM_RESET 0x03022
 #define WIDGET_ID_LAYER_ADM_RESUME 0x03023
@@ -64,7 +92,6 @@ public:
 
 #define WIDGET_ID_LAYER_FILE 0x05001
 #define WIDGET_ID_LAYER_FILE_LIST 0x05011
-#define WIDGET_ID_LAYER_BTN_PRINT 0x05032
 #define WIDGET_ID_LAYER_CWF 0x05034
 
 #endif

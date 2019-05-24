@@ -103,13 +103,32 @@ void EvtCtrl::releaseEvent(int16_t sender)
     count++;
 }
 
-// Register a release GRBL status event
-void EvtCtrl::grblStatusEvent(int16_t sender, const char *status)
+// Register a simple event
+void EvtCtrl::send(int16_t sender, EventType event)
 {
-    eventStore[count].type = grblStatus;
+    eventStore[count].type = event;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
-    strcpy(eventStore[count].message, status);
+    count++;
+}
+
+// Register a char* event
+void EvtCtrl::sendWithString(int16_t sender, EventType event, const char *value)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    strcpy(eventStore[count].message, value);
+    count++;
+}
+
+// Register a float event
+void EvtCtrl::sendWithFloat(int16_t sender, EventType event, float value)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].fvalue = value;
     count++;
 }
 

@@ -35,24 +35,17 @@
 #define STR_GRBL_BUF_MAX_SIZE 256      // size has been increased from 10 to 50 to support grbl [Msg:]
 #define STR_GRBL_BUF_MAX_WRITE_SIZE 64 // size has been increased from 10 to 50 to support grbl [Msg:]
 
-enum GrblWay
-{
-  XP,
-  XM,
-  YP,
-  YM,
-  ZP,
-  ZM,
-  SETX,
-  SETY,
-  SETZ,
-  SETXYZ
-};
-
 enum GrblPrintStatus
 {
   empty,
   full
+};
+
+enum GrblStep
+{
+  M1,
+  M10,
+  M100
 };
 
 class GrblCtrl
@@ -72,8 +65,8 @@ public:
   boolean pause();
   boolean resume();
   boolean status();
-  boolean move(GrblWay sens, float distance);
-  boolean setXYZ(GrblWay param);
+  boolean move(EventGrbl sens, float distance);
+  boolean setXYZ(EventGrbl param);
 
   // Event handler
   void notify(const Event *event);
@@ -110,6 +103,8 @@ private:
   boolean isPrinting = false;
   boolean isPaused = false;
   GrblPrintStatus grblPrintStatus = empty;
+  GrblStep step = M1;
+  float pas = 1.0;
   // only for simulation
   char sim[512];
   char *idx;

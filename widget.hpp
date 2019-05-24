@@ -87,6 +87,7 @@ class TFT_Joystick : public TFT_Widget
 {
 public:
   TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+  virtual void notify(const Event *event);
 
 private:
   TFT_Button *xleft;

@@ -244,7 +244,7 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     for (; isLetter(msgTolower[index]); index++)
         ;
     log_i("STATUS/ext: '%s'", extract(&(msgTolower[1]), index - indexStatus));
-    EvtCtrl::instance()->grblStatusEvent(WIDGET_ID_GRBL, extract(&(msgTolower[1]), index - indexStatus));
+    EvtCtrl::instance()->sendWithString(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, extract(&(msgTolower[1]), index - indexStatus));
     sep = msgTolower[index];
 }
 
@@ -409,7 +409,7 @@ boolean GrblCtrl::status()
     return true;
 }
 
-boolean GrblCtrl::move(GrblWay sens, float distance)
+boolean GrblCtrl::move(EventGrbl sens, float distance)
 {
     switch (sens)
     { // we convert the position of the button into the type of button
@@ -434,7 +434,7 @@ boolean GrblCtrl::move(GrblWay sens, float distance)
     }
 }
 
-boolean GrblCtrl::setXYZ(GrblWay param)
+boolean GrblCtrl::setXYZ(EventGrbl param)
 { // param contient le n° de la commande
     switch (param)
     {
@@ -453,34 +453,67 @@ boolean GrblCtrl::setXYZ(GrblWay param)
     }
 }
 
+GrblStep nextStep(GrblStep current)
+{
+    switch (current)
+    {
+    case M1:
+        return M10;
+        break;
+    case M10:
+        return M100;
+        break;
+    case M100:
+        return M1;
+        break;
+    }
+}
+
 // Notify
 void GrblCtrl::notify(const Event *event)
 {
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 1)
+    if (event->type == EVENT_NEXT_STEP)
     {
-        this->move(XM, 1.0);
+        this->step = nextStep(this->step);
+        switch (this->step)
+        {
+        case M1:
+            this->pas = 1.0;
+            break;
+        case M10:
+            this->pas = 10.0;
+            break;
+        case M100:
+            this->pas = 100.0;
+            break;
+        }
+        EvtCtrl::instance()->sendWithFloat(0, EVENT_NEW_STEP, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 2)
+    if (event->type == EVENT_XM)
     {
-        this->move(XP, 1.0);
+        this->move(XM, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 3)
+    if (event->type == EVENT_XP)
     {
-        this->move(YM, 1.0);
+        this->move(XP, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 4)
+    if (event->type == EVENT_YM)
     {
-        this->move(YP, 1.0);
+        this->move(YM, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 5)
+    if (event->type == EVENT_YP)
     {
-        this->move(ZM, 1.0);
+        this->move(YP, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_JOYSTICK + 6)
+    if (event->type == EVENT_ZM)
     {
-        this->move(ZP, 1.0);
+        this->move(ZM, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_HOME)
+    if (event->type == EVENT_ZP)
+    {
+        this->move(ZP, this->pas);
+    }
+    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
     {
         this->home();
     }
@@ -504,19 +537,19 @@ void GrblCtrl::notify(const Event *event)
     {
         this->status();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETX)
+    if (event->type == EVENT_SETX)
     {
         this->setXYZ(SETX);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETY)
+    if (event->type == EVENT_SETY)
     {
         this->setXYZ(SETY);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETZ)
+    if (event->type == EVENT_SETZ)
     {
         this->setXYZ(SETZ);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_SETALL)
+    if (event->type == EVENT_SETXYZ)
     {
         this->setXYZ(SETXYZ);
     }

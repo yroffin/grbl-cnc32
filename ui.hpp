@@ -14,7 +14,7 @@ protected:
   TFT_Group *group;
   TFT_Layer *layer;
   TFT_Label *title;
-  TFT_Button *home;
+  TFT_Button *print;
   TFT_Button *unlock;
   TFT_Button *reset;
   TFT_Button *status;
@@ -36,6 +36,7 @@ protected:
   TFT_Button *sety;
   TFT_Button *setz;
   TFT_Button *setall;
+  TFT_Button *home;
   TFT_Joystick *joystick;
 };
 
@@ -74,7 +75,6 @@ public:
 
 protected:
   TFT_Group *group;
-  TFT_Button *print;
   TFT_Label *title;
   TFT_Label *dir;
   TFT_Label *cwd;

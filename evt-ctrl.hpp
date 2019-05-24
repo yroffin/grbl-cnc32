@@ -16,12 +16,16 @@ public:
   // Events
   void touchEvent(int16_t sender, int16_t _x, int16_t _y);
   void releaseEvent(int16_t sender);
-  void grblStatusEvent(int16_t sender, const char *status);
+
   void showEvent(int16_t sender, int16_t target);
   void hideEvent(int16_t sender, int16_t target);
   void buttonDownEvent(int16_t sender);
   void fileGridEvent(int16_t sender);
   void fileGridSelect(int16_t sender, const char *file);
+
+  void send(int16_t sender, EventType action);
+  void sendWithString(int16_t sender, EventType action, const char *value);
+  void sendWithFloat(int16_t sender, EventType action, float value);
 
   static EvtCtrl *instance();
 
