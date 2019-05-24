@@ -128,7 +128,19 @@ void EvtCtrl::sendWithFloat(int16_t sender, EventType event, float value)
     eventStore[count].type = event;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
-    eventStore[count].fvalue = value;
+    eventStore[count].fvalue.f1 = value;
+    count++;
+}
+
+// Register a float event
+void EvtCtrl::sendWithVector(int16_t sender, EventType event, float f1, float f2, float f3)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].fvalue.f1 = f1;
+    eventStore[count].fvalue.f2 = f2;
+    eventStore[count].fvalue.f3 = f3;
     count++;
 }
 

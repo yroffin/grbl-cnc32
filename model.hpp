@@ -23,7 +23,9 @@ enum EventType
   EVENT_SETZ,
   EVENT_SETXYZ,
   EVENT_NEXT_STEP,
-  EVENT_NEW_STEP
+  EVENT_NEW_STEP,
+  EVENT_WPOS,
+  EVENT_MPOS,
 };
 
 enum EventGrbl
@@ -52,7 +54,10 @@ public:
     {
       int16_t x, y;
     } touch;
-    float fvalue;
+    struct
+    {
+      float f1, f2, f3;
+    } fvalue;
     char message[32];
   };
 };

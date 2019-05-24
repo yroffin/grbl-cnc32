@@ -186,14 +186,26 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Stat", 0, 0);
     this->group->add(this->title);
-    this->grblStatusLabel = new TFT_Label(WIDGET_ID_DEFAULT, "status", 0, 16);
+    this->grblStatusLabel = new TFT_Label(WIDGET_ID_DEFAULT, "status", 0, 14);
     this->group->add(this->grblStatusLabel);
-    this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 40, 16);
+    this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 40, 14);
     this->group->add(this->grblStatusValue);
-    this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, "I/O", 0, 29);
+
+    this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, "I/O", 0, 14 * 2);
     this->group->add(this->grblIoStatus);
-    this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 29);
+    this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 14 * 2);
     this->group->add(this->grblIoStatusValues);
+
+    this->grblMpos = new TFT_Label(WIDGET_ID_DEFAULT, "MPos", 0, 14 * 3);
+    this->group->add(this->grblMpos);
+    this->grblMposValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 14 * 3);
+    this->group->add(this->grblMposValue);
+
+    this->grblWpos = new TFT_Label(WIDGET_ID_DEFAULT, "WPos", 0, 14 * 4);
+    this->group->add(this->grblWpos);
+    this->grblWposValue = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14 * 4);
+    this->group->add(this->grblWposValue);
+
     this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 150, 265, 90);
     this->group->add(this->console);
 }
@@ -215,7 +227,15 @@ void TFT_LayerStatistic::notify(const Event *event)
     // Handle event on screen level
     if (event->type == EVENT_GRBL_STATUS)
     {
-        this->grblStatusValue->setLabel(event->message);
+        this->grblStatusValue->setLabel("[%s]", event->message);
+    }
+    if (event->type == EVENT_MPOS)
+    {
+        this->grblMposValue->setLabel("x:%f y:%f z:%f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+    }
+    if (event->type == EVENT_WPOS)
+    {
+        this->grblWposValue->setLabel("x:%f y:%f z:%f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);

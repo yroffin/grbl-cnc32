@@ -237,7 +237,7 @@ void TFT_Joystick::notify(const Event *event)
 {
     if (event->type == EVENT_NEW_STEP)
     {
-        this->pas->setLabel("%03.0f", event->fvalue);
+        this->pas->setLabel("%03.0f", event->fvalue.f1);
     }
     if (event->type == buttonDown)
     {

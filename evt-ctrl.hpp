@@ -26,6 +26,7 @@ public:
   void send(int16_t sender, EventType action);
   void sendWithString(int16_t sender, EventType action, const char *value);
   void sendWithFloat(int16_t sender, EventType action, float value);
+  void sendWithVector(int16_t sender, EventType action, float f1, float f2, float f3);
 
   static EvtCtrl *instance();
 

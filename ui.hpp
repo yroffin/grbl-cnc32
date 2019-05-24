@@ -63,6 +63,10 @@ protected:
   TFT_Label *grblStatusValue;
   TFT_Label *grblIoStatus;
   TFT_Label *grblIoStatusValues;
+  TFT_Label *grblMpos;
+  TFT_Label *grblMposValue;
+  TFT_Label *grblWpos;
+  TFT_Label *grblWposValue;
   TFT_Console *console;
 };
 

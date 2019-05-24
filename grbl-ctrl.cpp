@@ -24,7 +24,7 @@ void GrblCtrl::init()
 {
     strcpy(sim, "");
     idx = sim;
-    this->simulation = false;
+    this->simulation = true;
 
     strGrblIdx = 0;
 
@@ -61,11 +61,11 @@ int GrblCtrl::available()
             switch (r)
             {
             case 0:
-                strcpy(sim, "<Idle|MPos:0.000,0.000,0.000|FS:0.0,0|WCO:0.000,0.000,0.000>\n");
+                strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n");
                 idx = sim;
                 break;
             case 1:
-                strcpy(sim, "<Jog|WPos:1329.142,0.000,0.000|Bf:32,254|FS:2000,0|Ov:100,100,100|A:FM>\n");
+                strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n");
                 idx = sim;
                 break;
             case 2:
@@ -216,10 +216,21 @@ void GrblCtrl::flush(void)
 
 bool isLetter(char c)
 {
-    static char *letters = "abcdefghijklmnopqrstuvwxyz";
+    static char *matcher = "abcdefghijklmnopqrstuvwxyz";
     for (int l = 0; l < 26; l++)
     {
-        if (c == letters[l])
+        if (c == matcher[l])
+            return true;
+    }
+    return false;
+}
+
+bool isNumber(char c)
+{
+    static char *matcher = "0123456789.";
+    for (int l = 0; l < 11; l++)
+    {
+        if (c == matcher[l])
             return true;
     }
     return false;
@@ -233,18 +244,42 @@ const char *extract(const char *str, int sz)
     return buffer;
 }
 
+boolean match(const char *pattern, const char *value)
+{
+    return strncmp(pattern, value, strlen(pattern)) == 0;
+}
+
+boolean scanPos(const char *pattern, EventType e, const char *value)
+{
+    if (match(pattern, value))
+    {
+        float fvalue1, fvalue2, fvalue3;
+        sscanf(&(value[strlen(pattern)]), "%f,%f,%f", &fvalue1, &fvalue2, &fvalue3);
+        EvtCtrl::instance()->sendWithVector(0, e, fvalue1, fvalue2, fvalue3);
+    }
+}
+
 void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 {
-    log_i("STATUS: '%s'", msg);
     char sep = ',';
     char subsep = ':';
     // begin at 1 ... ignore '<'
     int index = 1;
     int indexStatus = 1;
+    // find separator and status
     for (; isLetter(msgTolower[index]); index++)
         ;
-    log_i("STATUS/ext: '%s'", extract(&(msgTolower[1]), index - indexStatus));
-    EvtCtrl::instance()->sendWithString(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, extract(&(msgTolower[1]), index - indexStatus));
+    const char *status = extract(&(msgTolower[1]), index - indexStatus);
+    EvtCtrl::instance()->sendWithString(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, status);
+    char separator = msgTolower[index];
+    // now find block
+    const char *block = &(msgTolower[index + 1]);
+    int blkl = strlen(block);
+    for (int b = 0; b < blkl; b++)
+    {
+        scanPos("mpos:", EVENT_MPOS, &(block[b]));
+        scanPos("wpos:", EVENT_WPOS, &(block[b]));
+    }
     sep = msgTolower[index];
 }
 
