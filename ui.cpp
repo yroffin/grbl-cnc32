@@ -134,25 +134,28 @@ TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, 
     this->group->add(this->pause);
     this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, "Resume", 220, 14);
     this->group->add(this->resume);
-    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "console", 0, 60, 265, 90);
-    this->group->add(this->console);
-    this->printing = new TFT_Console(WIDGET_ID_DEFAULT, "printing", 0, 150, 265, 90);
-    this->group->add(this->printing);
+    this->grblCommand = new TFT_Console(WIDGET_ID_DEFAULT, "grbl", 12, 0, 60, 265, 180);
+    this->group->add(this->grblCommand);
 }
 
-void TFT_LayerAdmin::writeToPrint(const char *message)
-{
-    this->printing->write(message);
-}
-
-void TFT_LayerAdmin::writeToConsole(const char *format, ...)
+void TFT_LayerAdmin::grblInputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     char message[128];
     vsprintf(message, format, args);
     va_end(args);
-    this->console->write(message);
+    this->grblCommand->write(message);
+}
+
+void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char message[128];
+    vsprintf(message, format, args);
+    va_end(args);
+    this->grblCommand->write(message);
 }
 
 // control layer
@@ -189,6 +192,19 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->group->add(this->grblIoStatus);
     this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 29);
     this->group->add(this->grblIoStatusValues);
+    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 150, 265, 90);
+    this->group->add(this->console);
+}
+
+// Update screen status
+void TFT_LayerStatistic::outputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[128];
+    vsprintf(buffer, format, args);
+    va_end(args);
+    this->console->write(buffer);
 }
 
 // Notification
@@ -300,25 +316,36 @@ void TFT_Screen::calibrate()
 }
 
 // Update screen status
-void TFT_Screen::status(const char *format, ...)
+void TFT_Screen::outputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     char buffer[128];
     vsprintf(buffer, format, args);
     va_end(args);
-    this->admin->writeToConsole("> %s", buffer);
+    this->statistic->outputConsole("> %s", buffer);
 }
 
 // Update screen printing
-void TFT_Screen::printing(const char *format, ...)
+void TFT_Screen::grblInputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     char buffer[128];
     vsprintf(buffer, format, args);
     va_end(args);
-    this->admin->writeToPrint(buffer);
+    this->admin->grblInputConsole(buffer);
+}
+
+// Update screen printing
+void TFT_Screen::grblOutputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[128];
+    vsprintf(buffer, format, args);
+    va_end(args);
+    this->admin->grblOutputConsole(buffer);
 }
 
 // Notify event

@@ -187,6 +187,7 @@ void GrblCtrl::flush(void)
                 }
             }
         }
+        TFT_Screen::instance()->grblOutputConsole(strGrblBuf);
         switch (type)
         {
         case 1:
@@ -206,7 +207,7 @@ void GrblCtrl::flush(void)
             break;
         default:
             // Display data on TFT
-            TFT_Screen::instance()->status("[GRBL] %04x %s", this->txRead & 0xFFFF, strGrblBuf);
+            TFT_Screen::instance()->outputConsole("[GRBL] %04x %s", this->txRead & 0xFFFF, strGrblBuf);
         }
     }
     // Reset index
@@ -249,23 +250,23 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->status("[ERROR] %s", msg);
+    TFT_Screen::instance()->outputConsole("[ERROR] %s", msg);
 }
 
 void GrblCtrl::decodeAlarm(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->status("[ALARM] %s", msg);
+    TFT_Screen::instance()->outputConsole("[ALARM] %s", msg);
 }
 
 void GrblCtrl::decodeOk(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->status("[OK] %s", msg);
+    TFT_Screen::instance()->outputConsole("[OK] %s", msg);
     this->busy = false;
 }
 
 void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->status("[FEEDBACK] %s", msg);
+    TFT_Screen::instance()->outputConsole("[FEEDBACK] %s", msg);
 }
 
 void GrblCtrl::write(const char *grbl, ...)
@@ -277,11 +278,12 @@ void GrblCtrl::write(const char *grbl, ...)
     vsprintf(buffer, grbl, args);
     if (this->simulation)
     {
-        TFT_Screen::instance()->status("[SIMUL]  %06d %s (force)", this->txWrite, buffer);
+        TFT_Screen::instance()->outputConsole("[SIMUL]  %06d %s (force)", this->txWrite, buffer);
     }
     else
     {
-        TFT_Screen::instance()->status("[WRITE] %06d %s (force)", this->txWrite, buffer);
+        TFT_Screen::instance()->outputConsole("[WRITE] %06d %s (force)", this->txWrite, buffer);
+        TFT_Screen::instance()->grblInputConsole(buffer);
         Serial2.print(buffer);
     }
     va_end(args);
@@ -308,7 +310,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
         if (millis() - this->lastBusyWrite > 200)
         {
             this->lastBusyWrite = millis();
-            TFT_Screen::instance()->status("[BUSY] %s", buffer);
+            TFT_Screen::instance()->outputConsole("[BUSY] %s", buffer);
         }
         return false;
     }
@@ -317,12 +319,13 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
         this->txWrite++;
         if (this->simulation)
         {
-            TFT_Screen::instance()->status("[SIMUL] %06d %s", this->txWrite, buffer);
+            TFT_Screen::instance()->outputConsole("[SIMUL] %06d %s", this->txWrite, buffer);
             this->busy = true;
         }
         else
         {
-            TFT_Screen::instance()->status("[WRITE] %06d %s", this->txWrite, buffer);
+            TFT_Screen::instance()->outputConsole("[WRITE] %06d %s", this->txWrite, buffer);
+            TFT_Screen::instance()->grblInputConsole(buffer);
             Serial2.print(buffer);
             this->busy = true;
         }
@@ -333,7 +336,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
 
 void GrblCtrl::print(const char *filename)
 {
-    TFT_Screen::instance()->admin->writeToConsole("> printing: %s", filename);
+    TFT_Screen::instance()->outputConsole("> printing: %s", filename);
     StorageCtrl::instance()->open(filename);
     this->isPrinting = true;
     this->grblPrintStatus = empty;
@@ -352,7 +355,7 @@ void GrblCtrl::spool()
             }
             else
             {
-                TFT_Screen::instance()->admin->writeToConsole("> stop printing");
+                TFT_Screen::instance()->outputConsole("> stop printing");
                 this->isPrinting = false;
                 this->grblPrintStatus = empty;
                 StorageCtrl::instance()->close();
@@ -361,7 +364,7 @@ void GrblCtrl::spool()
         case full:
             if (this->tryWrite(this->printBuffer))
             {
-                TFT_Screen::instance()->printing("> %s", this->printBuffer);
+                TFT_Screen::instance()->outputConsole("> %s", this->printBuffer);
                 this->grblPrintStatus = empty;
             }
             break;
@@ -388,22 +391,16 @@ boolean GrblCtrl::reset()
 
 boolean GrblCtrl::pause()
 {
-    if (this->tryWrite("!\n"))
-    {
-        this->isPaused = true;
-        return true;
-    }
-    return false;
+    this->write("!\n");
+    this->isPaused = true;
+    return true;
 }
 
 boolean GrblCtrl::resume()
 {
-    if (this->tryWrite("~\n"))
-    {
-        this->isPaused = false;
-        return true;
-    }
-    return false;
+    this->write("~\n");
+    this->isPaused = false;
+    return true;
 }
 
 boolean GrblCtrl::status()

@@ -118,11 +118,12 @@ private:
 class TFT_Console : public TFT_Widget
 {
 public:
-  TFT_Console(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+  TFT_Console(int16_t _id, const char *_label, int16_t _sz, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   void write(const char *message);
 
 private:
-  TFT_Label *lines[6];
+  TFT_Label *lines[16];
+  int16_t sz;
 };
 
 class TFT_FileGrid : public TFT_Widget

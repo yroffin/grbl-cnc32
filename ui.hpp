@@ -7,8 +7,8 @@ class TFT_LayerAdmin : public TFT_Layer
 {
 public:
   TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
-  void writeToPrint(const char *format);
-  void writeToConsole(const char *format, ...);
+  void grblInputConsole(const char *format, ...);
+  void grblOutputConsole(const char *format, ...);
 
 protected:
   TFT_Group *group;
@@ -20,8 +20,7 @@ protected:
   TFT_Button *status;
   TFT_Button *pause;
   TFT_Button *resume;
-  TFT_Console *console;
-  TFT_Console *printing;
+  TFT_Console *grblCommand;
 };
 
 class TFT_LayerControl : public TFT_Layer
@@ -54,6 +53,7 @@ public:
     va_end(args);
     this->grblIoStatusValues->setLabel(msg);
   }
+  void outputConsole(const char *format, ...);
 
 protected:
   TFT_Group *group;
@@ -62,6 +62,7 @@ protected:
   TFT_Label *grblStatusValue;
   TFT_Label *grblIoStatus;
   TFT_Label *grblIoStatusValues;
+  TFT_Console *console;
 };
 
 class TFT_LayerFile : public TFT_Layer
@@ -106,9 +107,11 @@ public:
   void init();
   void calibrate();
   virtual void notify(const Event *event);
-  void status(const char *message, ...);
-  void printing(const char *message, ...);
   boolean getTouch(int16_t *x, int16_t *y);
+
+  void outputConsole(const char *format, ...);
+  void grblInputConsole(const char *format, ...);
+  void grblOutputConsole(const char *format, ...);
 
   static TFT_Screen *instance();
 

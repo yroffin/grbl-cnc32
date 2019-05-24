@@ -61,7 +61,7 @@ void WifiCtrl::init()
                     initWifiCnt--;
                     if (initWifiCnt == 0)
                     {
-                        TFT_Screen::instance()->status("Access to %s KO !!!", ssid);
+                        TFT_Screen::instance()->outputConsole("Access to %s KO !!!", ssid);
                         delay(2000);
                         break;
                     }
@@ -81,12 +81,12 @@ void WifiCtrl::init()
             }
             else
             {
-                TFT_Screen::instance()->status("Unable to read wifi password");
+                TFT_Screen::instance()->outputConsole("Unable to read wifi password");
             }
         }
         else
         {
-            TFT_Screen::instance()->status("Unable to read wifi ssid");
+            TFT_Screen::instance()->outputConsole("Unable to read wifi ssid");
         }
     }
 }

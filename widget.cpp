@@ -233,33 +233,27 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
 }
 
 // Constructor
-TFT_Console::TFT_Console(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+TFT_Console::TFT_Console(int16_t _id, const char *_label, int16_t _sz, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
 
-    this->lines[0] = new TFT_Label(_id, "", 0, 0);
-    this->add(this->lines[0]);
-    this->lines[1] = new TFT_Label(_id, "", 0, 13 * 1);
-    this->add(this->lines[1]);
-    this->lines[2] = new TFT_Label(_id, "", 0, 13 * 2);
-    this->add(this->lines[2]);
-    this->lines[3] = new TFT_Label(_id, "", 0, 13 * 3);
-    this->add(this->lines[3]);
-    this->lines[4] = new TFT_Label(_id, "", 0, 13 * 4);
-    this->add(this->lines[4]);
-    this->lines[5] = new TFT_Label(_id, "", 0, 13 * 5);
-    this->add(this->lines[5]);
+    this->sz = _sz;
+    for (int i = 0; i < this->sz; i++)
+    {
+        this->lines[i] = new TFT_Label(_id, "", 0, 13 * i);
+        this->add(this->lines[i]);
+    }
 }
 
 void TFT_Console::write(const char *message)
 {
-    this->lines[0]->setLabel(this->lines[1]->getLabel());
-    this->lines[1]->setLabel(this->lines[2]->getLabel());
-    this->lines[2]->setLabel(this->lines[3]->getLabel());
-    this->lines[3]->setLabel(this->lines[4]->getLabel());
-    this->lines[4]->setLabel(this->lines[5]->getLabel());
-    this->lines[5]->setLabel(message);
+    int i = 0;
+    for (; i < this->sz - 1; i++)
+    {
+        this->lines[i]->setLabel(this->lines[i + 1]->getLabel());
+    }
+    this->lines[i]->setLabel(message);
     this->invalidated = true;
 }
 
