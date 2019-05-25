@@ -164,25 +164,6 @@ void EvtCtrl::hideEvent(int16_t sender, int16_t target)
     count++;
 }
 
-// fileGrid event
-void EvtCtrl::fileGridEvent(int16_t sender)
-{
-    eventStore[count].type = fileGrid;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    count++;
-}
-
-// fileGrid event
-void EvtCtrl::fileGridSelect(int16_t sender, const char *file)
-{
-    eventStore[count].type = fileSelect;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    strcpy(eventStore[count].message, file);
-    count++;
-}
-
 void EvtCtrl::flush()
 {
     count = 0;

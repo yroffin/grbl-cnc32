@@ -19,8 +19,6 @@ public:
 
   void showEvent(int16_t sender, int16_t target);
   void hideEvent(int16_t sender, int16_t target);
-  void fileGridEvent(int16_t sender);
-  void fileGridSelect(int16_t sender, const char *file);
 
   void send(int16_t sender, EventType action);
   void sendWithString(int16_t sender, EventType action, const char *value);

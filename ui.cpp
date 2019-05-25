@@ -279,11 +279,11 @@ void TFT_LayerFile::notify(const Event *event)
     {
         this->refresh();
     }
-    if (event->type == fileGrid)
+    if (event->type == GRID_CHANGE)
     {
         this->refresh();
     }
-    if (event->type == fileSelect)
+    if (event->type == FILE_SELECTED)
     {
         this->cwf->setLabel(event->message);
         this->invalidated = true;

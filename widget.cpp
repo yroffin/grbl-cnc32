@@ -311,15 +311,18 @@ TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t 
     init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
 
-    this->left = new TFT_Button(_id, "<<", 0, 0);
+    this->left = new TFT_Button(_id, "^", 0, 0);
+    this->left->setEvent(PREV_FILE);
     this->add(this->left);
-    this->right = new TFT_Button(_id + 1, ">>", 200, 0);
+    this->right = new TFT_Button(_id + 1, "v", 0, 40 * 3);
+    this->right->setEvent(NEXT_FILE);
     this->add(this->right);
 
     // add lines
     for (int l = 0; l < 4; l++)
     {
         this->lines[l] = new TFT_File(_id + 2 + l, ".", 40, 40 * l);
+        this->lines[l]->setEvent(SELECT_FILE);
         this->add(this->lines[l]);
     }
 }
@@ -340,24 +343,25 @@ void TFT_FileGrid::set(int16_t index, const char *label)
 
 void TFT_FileGrid::notify(const Event *event)
 {
-    if (event->type == BUTTON_DOWN && event->sender == this->id)
+    log_i("event %d", event->type);
+    if (event->type == PREV_FILE)
     {
         this->onLeft();
-        EvtCtrl::instance()->fileGridEvent(this->id);
+        EvtCtrl::instance()->send(this->id, GRID_CHANGE);
         this->invalidated = true;
     }
-    if (event->type == BUTTON_DOWN && event->sender == this->id + 1)
+    if (event->type == NEXT_FILE)
     {
         this->onRight();
-        EvtCtrl::instance()->fileGridEvent(this->id);
+        EvtCtrl::instance()->send(this->id, GRID_CHANGE);
         this->invalidated = true;
     }
     // select line
     for (int l = 1; l < 4; l++)
     {
-        if (event->type == BUTTON_DOWN && event->sender == this->id + 2 + l)
+        if (event->type == SELECT_FILE && event->sender == this->id + 2 + l)
         {
-            EvtCtrl::instance()->fileGridSelect(this->id + 2 + l, this->lines[l]->getLabel());
+            EvtCtrl::instance()->sendWithString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
         }
     }
     // Dispatch to others
