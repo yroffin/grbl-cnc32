@@ -15,19 +15,19 @@ void setup()
     TFT_Screen::instance()->init();
 
     // event controller
-    TFT_Screen::instance()->outputConsole("EvtCtrl init ...");
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "EvtCtrl"));
     EvtCtrl::instance()->init();
 
     // storage controller
-    TFT_Screen::instance()->outputConsole("StorageCtrl init ...");
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "StorageCtrl"));
     StorageCtrl::instance()->init();
 
     // wifi controller
-    TFT_Screen::instance()->outputConsole("WifiCtrl init ...");
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "WifiCtrl"));
     WifiCtrl::instance()->init();
 
     // grbl controller
-    TFT_Screen::instance()->outputConsole("GrblCtrl init ...");
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "GrblCtrl"));
     GrblCtrl::instance()->init();
 }
 
