@@ -343,7 +343,6 @@ void TFT_FileGrid::set(int16_t index, const char *label)
 
 void TFT_FileGrid::notify(const Event *event)
 {
-    log_i("event %d", event->type);
     if (event->type == PREV_FILE)
     {
         this->onLeft();
