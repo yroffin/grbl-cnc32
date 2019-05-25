@@ -149,6 +149,12 @@ TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y)
     strcpy(label, _label);
 }
 
+// Change emitted event
+void TFT_Button::setEvent(EventType event)
+{
+    this->eventType = event;
+}
+
 // Button event handler
 void TFT_Button::notify(const Event *event)
 {
@@ -158,7 +164,7 @@ void TFT_Button::notify(const Event *event)
     case touch:
         if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
         {
-            EvtCtrl::instance()->buttonDownEvent(this->id);
+            EvtCtrl::instance()->send(this->id, this->eventType);
             state = on;
             // draw needed
             this->invalidated = true;
@@ -239,7 +245,7 @@ void TFT_Joystick::notify(const Event *event)
     {
         this->pas->setLabel("%03.0f", event->fvalue.f1);
     }
-    if (event->type == buttonDown)
+    if (event->type == BUTTON_DOWN)
     {
         if (event->sender == this->id + 1)
         {
@@ -334,13 +340,13 @@ void TFT_FileGrid::set(int16_t index, const char *label)
 
 void TFT_FileGrid::notify(const Event *event)
 {
-    if (event->type == buttonDown && event->sender == this->id)
+    if (event->type == BUTTON_DOWN && event->sender == this->id)
     {
         this->onLeft();
         EvtCtrl::instance()->fileGridEvent(this->id);
         this->invalidated = true;
     }
-    if (event->type == buttonDown && event->sender == this->id + 1)
+    if (event->type == BUTTON_DOWN && event->sender == this->id + 1)
     {
         this->onRight();
         EvtCtrl::instance()->fileGridEvent(this->id);
@@ -349,7 +355,7 @@ void TFT_FileGrid::notify(const Event *event)
     // select line
     for (int l = 1; l < 4; l++)
     {
-        if (event->type == buttonDown && event->sender == this->id + 2 + l)
+        if (event->type == BUTTON_DOWN && event->sender == this->id + 2 + l)
         {
             EvtCtrl::instance()->fileGridSelect(this->id + 2 + l, this->lines[l]->getLabel());
         }

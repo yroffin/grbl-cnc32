@@ -5,7 +5,7 @@ enum EventType
 {
   touch,
   release,
-  buttonDown,
+  BUTTON_DOWN,
   grblProperty,
   hideComponent,
   showComponent,
@@ -26,6 +26,7 @@ enum EventType
   EVENT_NEW_STEP,
   EVENT_WPOS,
   EVENT_MPOS,
+  EVENT_ERROR
 };
 
 enum EventGrbl

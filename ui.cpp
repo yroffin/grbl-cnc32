@@ -83,28 +83,28 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
 // Notification
 void TFT_LayerMenu::notify(const Event *event)
 {
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNA)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNA)
     {
         TFT_Screen::instance()->control->show();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNB)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNB)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->show();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTNC)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNC)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->show();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_MENU_BTND)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTND)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->hide();
@@ -166,12 +166,16 @@ TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t 
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
     this->group->add(this->title);
     this->setx = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETX, "SetX", 0, 14);
+    this->setx->setEvent(EVENT_SETX);
     this->group->add(this->setx);
     this->sety = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETY, "SetY", 44, 14);
+    this->sety->setEvent(EVENT_SETY);
     this->group->add(this->sety);
     this->setz = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETZ, "SetZ", 44 * 2, 14);
+    this->setz->setEvent(EVENT_SETZ);
     this->group->add(this->setz);
     this->setall = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETALL, "SetAll", 44 * 3, 14);
+    this->setall->setEvent(EVENT_SETXYZ);
     this->group->add(this->setall);
     this->home = new TFT_Button(WIDGET_ID_LAYER_CTRL_HOME, "Home", 44 * 4, 14);
     this->group->add(this->home);
@@ -267,7 +271,7 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
 // Notification
 void TFT_LayerFile::notify(const Event *event)
 {
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_BTN_PRINT)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_BTN_PRINT)
     {
         GrblCtrl::instance()->print(this->cwf->getLabel());
     }

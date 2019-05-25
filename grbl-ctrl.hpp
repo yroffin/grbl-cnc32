@@ -38,7 +38,8 @@
 enum GrblPrintStatus
 {
   empty,
-  full
+  full,
+  waitForStatus
 };
 
 enum GrblStep
@@ -105,6 +106,7 @@ private:
   GrblPrintStatus grblPrintStatus = empty;
   GrblStep step = M1;
   float pas = 1.0;
+  long lastStatus = 0;
   // only for simulation
   char sim[512];
   char *idx;

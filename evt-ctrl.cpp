@@ -164,15 +164,6 @@ void EvtCtrl::hideEvent(int16_t sender, int16_t target)
     count++;
 }
 
-// button down
-void EvtCtrl::buttonDownEvent(int16_t sender)
-{
-    eventStore[count].type = buttonDown;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    count++;
-}
-
 // fileGrid event
 void EvtCtrl::fileGridEvent(int16_t sender)
 {

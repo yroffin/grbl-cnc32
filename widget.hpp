@@ -69,9 +69,11 @@ public:
   TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y);
   virtual void notify(const Event *event);
   virtual void draw();
+  void setEvent(EventType event);
 
 protected:
   ButtonState state = off;
+  EventType eventType = BUTTON_DOWN;
 };
 
 class TFT_File : public TFT_Button

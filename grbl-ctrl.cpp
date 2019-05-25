@@ -1,7 +1,7 @@
 #include "ui.hpp"
+#include "i18n-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
-#include "stdio.h"
 
 // GRBL controller
 GrblCtrl *__instance_grbl = 0;
@@ -24,7 +24,7 @@ void GrblCtrl::init()
 {
     strcpy(sim, "");
     idx = sim;
-    this->simulation = true;
+    this->simulation = false;
 
     strGrblIdx = 0;
 
@@ -36,7 +36,7 @@ void GrblCtrl::init()
     Serial2.println(" "); // $10=3 is used in order to get available space in GRBL buffer in GRBL status messages; il also means we are asking GRBL to sent always MPos.
     Serial2.flush();      // this is used to avoid sending to many jogging movements when using the nunchuk
 
-    log_i("Grbl system ok.");
+    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_OK, "GRBL"));
 }
 
 void GrblCtrl::error(const char *message)
@@ -78,6 +78,10 @@ int GrblCtrl::available()
                 break;
             case 4:
                 strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
+                idx = sim;
+                break;
+            case 5:
+                strcpy(sim, "error:20\n\r");
                 idx = sim;
                 break;
             default:
@@ -161,7 +165,7 @@ void GrblCtrl::flush(void)
         }
         else
         {
-            if (strncmp(strGrblBufNoCase, "error", 6) == 0)
+            if (strncmp(strGrblBufNoCase, "error", 5) == 0)
             {
                 type = 2;
             }
@@ -259,6 +263,25 @@ boolean scanPos(const char *pattern, EventType e, const char *value)
     }
 }
 
+boolean scanError(const char *pattern, EventType e, const char *value)
+{
+    if (match(pattern, value))
+    {
+        int code;
+        if (isNumber(value[strlen(pattern)]))
+        {
+            sscanf(&(value[strlen(pattern)]), "%d", &code);
+            const char *msg = I18nCtrl::instance()->translate(I18N_GRBL, code);
+            EvtCtrl::instance()
+                ->sendWithString(0, e, msg);
+        }
+        else
+        {
+            EvtCtrl::instance()->sendWithString(0, e, &(value[strlen(pattern)]));
+        }
+    }
+}
+
 void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 {
     char sep = ',';
@@ -285,7 +308,7 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->outputConsole("[ERROR] %s", msg);
+    scanError("error:", EVENT_ERROR, msgTolower);
 }
 
 void GrblCtrl::decodeAlarm(const char *msg, const char *msgTolower)
@@ -304,6 +327,7 @@ void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
     TFT_Screen::instance()->outputConsole("[FEEDBACK] %s", msg);
 }
 
+// force write
 void GrblCtrl::write(const char *grbl, ...)
 {
     this->txWrite++;
@@ -324,6 +348,7 @@ void GrblCtrl::write(const char *grbl, ...)
     va_end(args);
 }
 
+// try to write (only when not busy)
 bool GrblCtrl::tryWrite(const char *grbl, ...)
 {
     va_list args;
@@ -342,7 +367,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
 
     if (this->busy)
     {
-        if (millis() - this->lastBusyWrite > 200)
+        if (millis() - this->lastBusyWrite > 10000)
         {
             this->lastBusyWrite = millis();
             TFT_Screen::instance()->outputConsole("[BUSY] %s", buffer);
@@ -352,6 +377,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
     else
     {
         this->txWrite++;
+        this->lastBusyWrite = millis();
         if (this->simulation)
         {
             TFT_Screen::instance()->outputConsole("[SIMUL] %06d %s", this->txWrite, buffer);
@@ -359,7 +385,6 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
         }
         else
         {
-            TFT_Screen::instance()->outputConsole("[WRITE] %06d %s", this->txWrite, buffer);
             TFT_Screen::instance()->grblInputConsole(buffer);
             Serial2.print(buffer);
             this->busy = true;
@@ -369,6 +394,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
     }
 }
 
+// start printing
 void GrblCtrl::print(const char *filename)
 {
     TFT_Screen::instance()->outputConsole("> printing: %s", filename);
@@ -377,6 +403,7 @@ void GrblCtrl::print(const char *filename)
     this->grblPrintStatus = empty;
 }
 
+// printer spooler
 void GrblCtrl::spool()
 {
     if (this->isPrinting && !this->isPaused)
@@ -384,22 +411,41 @@ void GrblCtrl::spool()
         switch (this->grblPrintStatus)
         {
         case empty:
-            if (StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE))
+            // send status only when ready, in order to not flood grbl controller
+            if (millis() - this->lastStatus > 1000 && !this->busy)
             {
-                this->grblPrintStatus = full;
+                this->lastStatus = millis();
+                this->status();
+                this->grblPrintStatus = waitForStatus;
             }
             else
             {
-                TFT_Screen::instance()->outputConsole("> stop printing");
-                this->isPrinting = false;
-                this->grblPrintStatus = empty;
-                StorageCtrl::instance()->close();
+                // send a new command to grbl
+                if (StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE))
+                {
+                    this->grblPrintStatus = full;
+                }
+                else
+                {
+                    // no more data so stop printing
+                    TFT_Screen::instance()->outputConsole("> stop printing");
+                    this->isPrinting = false;
+                    this->grblPrintStatus = empty;
+                    StorageCtrl::instance()->close();
+                }
+                break;
             }
-            break;
         case full:
+            // command is waiting for sending
             if (this->tryWrite(this->printBuffer))
             {
-                TFT_Screen::instance()->outputConsole("> %s", this->printBuffer);
+                this->grblPrintStatus = empty;
+            }
+            break;
+        case waitForStatus:
+            // status needed to know what we are doing
+            if (!this->busy)
+            {
                 this->grblPrintStatus = empty;
             }
             break;
@@ -407,23 +453,27 @@ void GrblCtrl::spool()
     }
 }
 
+// home command
 boolean GrblCtrl::home()
 {
     return this->tryWrite("$H\n");
 }
 
+// unlock command
 boolean GrblCtrl::unlock()
 {
     this->write("$X\n");
     return true;
 }
 
+// reset command
 boolean GrblCtrl::reset()
 {
     this->write("%c\n", 0x18);
     return true;
 }
 
+// pause command
 boolean GrblCtrl::pause()
 {
     this->write("!\n");
@@ -431,6 +481,7 @@ boolean GrblCtrl::pause()
     return true;
 }
 
+// resume command
 boolean GrblCtrl::resume()
 {
     this->write("~\n");
@@ -438,12 +489,14 @@ boolean GrblCtrl::resume()
     return true;
 }
 
+// status
 boolean GrblCtrl::status()
 {
     this->write("?\n");
     return true;
 }
 
+// move command
 boolean GrblCtrl::move(EventGrbl sens, float distance)
 {
     switch (sens)
@@ -469,8 +522,9 @@ boolean GrblCtrl::move(EventGrbl sens, float distance)
     }
 }
 
+// set command
 boolean GrblCtrl::setXYZ(EventGrbl param)
-{ // param contient le n° de la commande
+{
     switch (param)
     {
     case SETX:
@@ -488,6 +542,7 @@ boolean GrblCtrl::setXYZ(EventGrbl param)
     }
 }
 
+// compute next step
 GrblStep nextStep(GrblStep current)
 {
     switch (current)
@@ -504,9 +559,13 @@ GrblStep nextStep(GrblStep current)
     }
 }
 
-// Notify
+// notify handler
 void GrblCtrl::notify(const Event *event)
 {
+    if (event->type == EVENT_ERROR)
+    {
+        TFT_Screen::instance()->outputConsole("[ERROR] %s", event->message);
+    }
     if (event->type == EVENT_NEXT_STEP)
     {
         this->step = nextStep(this->step);
@@ -548,27 +607,27 @@ void GrblCtrl::notify(const Event *event)
     {
         this->move(ZP, this->pas);
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
     {
         this->home();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_UNLOCK)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_ADM_UNLOCK)
     {
         this->unlock();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_RESET)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_ADM_RESET)
     {
         this->reset();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_RESUME)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_ADM_RESUME)
     {
         this->resume();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_PAUSE)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_ADM_PAUSE)
     {
         this->pause();
     }
-    if (event->type == buttonDown && event->sender == WIDGET_ID_LAYER_ADM_STATUS)
+    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_ADM_STATUS)
     {
         this->status();
     }

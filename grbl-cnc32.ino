@@ -6,11 +6,12 @@
 #include "wifi-ctrl.hpp"
 #include "storage-ctrl.hpp"
 #include "grbl-ctrl.hpp"
+#include "i18n-ctrl.hpp"
 
 void setup()
 {
     // screen controller
-    log_i("TFT_Screen init ...");
+    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "TFT_Screen"));
     TFT_Screen::instance()->init();
 
     // event controller

@@ -19,7 +19,6 @@ public:
 
   void showEvent(int16_t sender, int16_t target);
   void hideEvent(int16_t sender, int16_t target);
-  void buttonDownEvent(int16_t sender);
   void fileGridEvent(int16_t sender);
   void fileGridSelect(int16_t sender, const char *file);
 
