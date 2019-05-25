@@ -412,7 +412,7 @@ void GrblCtrl::spool()
         {
         case empty:
             // send status only when ready, in order to not flood grbl controller
-            if (millis() - this->lastStatus > 1000 && !this->busy)
+            if (millis() - this->lastStatus > 2000)
             {
                 this->lastStatus = millis();
                 this->status();
@@ -433,13 +433,16 @@ void GrblCtrl::spool()
                     this->grblPrintStatus = empty;
                     StorageCtrl::instance()->close();
                 }
-                break;
             }
+            break;
         case full:
-            // command is waiting for sending
-            if (this->tryWrite(this->printBuffer))
+            if (!this->busy)
             {
-                this->grblPrintStatus = empty;
+                // command is waiting for sending
+                if (this->tryWrite(this->printBuffer))
+                {
+                    this->grblPrintStatus = empty;
+                }
             }
             break;
         case waitForStatus:
