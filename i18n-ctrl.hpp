@@ -5,11 +5,24 @@
 #include "stdarg.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 
-#define I18N_STD 1
-#define I18N_GRBL 2
+enum STD_CAT
+{
+  I18N_STD,
+  I18N_GRBL
+};
 
-#define I18N_INIT 1
-#define I18N_OK 2
+enum STD_MSG
+{
+  I18N_ZERO,
+  I18N_INIT,
+  I18N_OK,
+  I18N_WIFI_TRYING,
+  I18N_WIFI_IP,
+  I18N_WIFI_KO,
+  I18N_WIFI_SERVE,
+  I18N_WIFI_VALID_SSID,
+  I18N_WIFI_VALID_PASS
+};
 
 class I18nCtrl
 {
@@ -28,7 +41,7 @@ public:
 
   virtual const char *std(int code)
   {
-    if (code < 0 || code > 2)
+    if (code < 0 || code > 99)
     {
       code = 0;
     }
@@ -57,10 +70,16 @@ public:
   }
 
 private:
-  char *en_default[3] = {
+  char *en_default[9] = {
       "Unknown ...",
       "%s init ...",
-      "%s ok"};
+      "%s ok",
+      "trying to connect to %s",
+      "wifi ip is %s",
+      "fail to connect to %s",
+      "serving data on port %d",
+      "unable to validate ssid",
+      "unable to validate password"};
 
   char *
       en_grbl_error[39] = {

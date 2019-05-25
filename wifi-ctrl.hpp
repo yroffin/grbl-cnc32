@@ -7,6 +7,14 @@
 #include "WebServer.h"
 #include "WiFi.h"
 
+enum WifiPhase
+{
+  wifiNil,
+  wifiInit,
+  wifiConnected,
+  serveData
+};
+
 class WifiCtrl
 {
 public:
@@ -15,6 +23,11 @@ public:
   void serve();
 
   static WifiCtrl *instance();
+
+private:
+  char ssid[32];
+  WifiPhase phase = wifiNil;
+  long lastConnect = 0;
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "wifi-ctrl.hpp"
+#include "i18n-ctrl.hpp"
 #include "iniFile.h"
 
 // Storage controller
@@ -36,62 +37,66 @@ IniFile ini("/config.ini");
 
 void WifiCtrl::init()
 {
-    char ssid[32];
-    *ssid = 0;
-    char pass[32];
-    *pass = 0;
-
     if (!ini.validate())
     {
         log_e("Unable to validate /config.ini");
     }
     else
     {
+        *this->ssid = 0;
+        char pass[32];
+        *pass = 0;
+
         if (ini.getValue((const char *)"wifi", (const char *)"ssid", (char *)ssid, 32))
         {
             if (ini.getValue((const char *)"wifi", (const char *)"pass", (char *)pass, 32))
             {
-                log_i("Wifi controller begin with '%s'", ssid);
+                this->phase = wifiInit;
+                log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, this->ssid));
                 WiFi.begin(ssid, pass);
-                uint8_t initWifiCnt = 40;
-                log_i("Wifi controller status ...");
-                while (WiFi.status() != WL_CONNECTED)
-                { // Wait for the Wi-Fi to connect; max 40 retries
-                    delay(250);
-                    initWifiCnt--;
-                    if (initWifiCnt == 0)
-                    {
-                        TFT_Screen::instance()->outputConsole("Access to %s KO !!!", ssid);
-                        delay(2000);
-                        break;
-                    }
-                }
-                if (WiFi.status() == WL_CONNECTED)
-                {
-                    char ip[32];
-                    strcpy(ip, WiFi.localIP().toString().c_str());
-                    log_i("Wifi IP is %s", ip);
-                }
-                log_i("Wifi controller status ok");
-                WiFi.setSleep(false);
-                server.on("/", HomePage);
-                log_i("Serving data ...");
-                server.begin();
-                log_i("Serving data on %d port ...", 80);
             }
             else
             {
-                TFT_Screen::instance()->outputConsole("Unable to read wifi password");
+                TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_PASS));
             }
         }
         else
         {
-            TFT_Screen::instance()->outputConsole("Unable to read wifi ssid");
+            TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_SSID));
         }
     }
 }
 
 void WifiCtrl::serve()
 {
-    server.handleClient(); // Listen for client connections
+    switch (this->phase)
+    {
+    case wifiInit:
+        if (millis() - this->lastConnect < 1000)
+        {
+            return;
+        }
+        log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, this->ssid));
+        this->lastConnect = millis();
+        if (WiFi.status() == WL_CONNECTED)
+        {
+            char ip[32];
+            strcpy(ip, WiFi.localIP().toString().c_str());
+            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_IP, ip));
+            this->phase = wifiConnected;
+            return;
+        }
+        log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, this->ssid));
+        break;
+    case wifiConnected:
+        WiFi.setSleep(false);
+        server.on("/", HomePage);
+        server.begin();
+        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));
+        this->phase = serveData;
+        break;
+    case serveData:
+        server.handleClient(); // Listen for client connections
+        break;
+    }
 }
