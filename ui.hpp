@@ -58,6 +58,7 @@ public:
 
 protected:
   TFT_Group *group;
+  TFT_Group *groupNunchuk;
   TFT_Label *title;
   TFT_Label *grblStatusLabel;
   TFT_Label *grblStatusValue;
@@ -67,6 +68,12 @@ protected:
   TFT_Label *grblMposValue;
   TFT_Label *grblWpos;
   TFT_Label *grblWposValue;
+  TFT_Label *nunchuk;
+  TFT_Label *nunchukZ;
+  TFT_Label *nunchukC;
+  TFT_Label *nunchukMove;
+  TFT_Label *nunchukPlane;
+  TFT_Label *nunchukLader;
   TFT_Console *console;
 };
 

@@ -7,6 +7,7 @@
 #include "storage-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "i18n-ctrl.hpp"
+#include "nunchuk-ctrl.hpp"
 
 void setup()
 {
@@ -29,12 +30,18 @@ void setup()
     // grbl controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "GrblCtrl"));
     GrblCtrl::instance()->init();
+
+    // NunchukCtrl controller
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "NunchukCtrl"));
+    NunchukCtrl::instance()->init();
 }
 
 void loop()
 {
     // capture events
     EvtCtrl::instance()->capture();
+    // capture events
+    NunchukCtrl::instance()->capture();
     // capture http request
     WifiCtrl::instance()->serve();
     // flush grbl events

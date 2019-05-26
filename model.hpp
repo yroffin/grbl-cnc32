@@ -6,12 +6,11 @@ enum EventType
   touch,
   release,
   BUTTON_DOWN,
+  EVENT_START_PRINT,
   NEXT_FILE,
   PREV_FILE,
   SELECT_FILE,
   grblProperty,
-  hideComponent,
-  showComponent,
   GRID_CHANGE,
   FILE_SELECTED,
   EVENT_GRBL_STATUS,
@@ -29,7 +28,19 @@ enum EventType
   EVENT_NEW_STEP,
   EVENT_WPOS,
   EVENT_MPOS,
-  EVENT_ERROR
+  EVENT_ERROR,
+  EVENT_BTN_MOVE,
+  EVENT_BTN_STAT,
+  EVENT_BTN_FILES,
+  EVENT_BTN_ADM,
+  NUNCHUK_Z,
+  NUNCHUK_C,
+  NUNCHUK_DATA,
+  NUNCHUK_CALIBRATE,
+  NUNCHUK_LADER_MOVEXY,
+  NUNCHUK_LADER_MOVEZ,
+  NUNCHUK_CAN_MOVEXY,
+  NUNCHUK_CAN_MOVEZ
 };
 
 enum EventGrbl
@@ -62,6 +73,7 @@ public:
     {
       float f1, f2, f3;
     } fvalue;
+    int ivalue;
     char message[32];
   };
 };

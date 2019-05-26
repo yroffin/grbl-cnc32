@@ -122,6 +122,27 @@ void EvtCtrl::sendWithString(int16_t sender, EventType event, const char *value)
     count++;
 }
 
+// Register a int event
+void EvtCtrl::sendInt(int16_t sender, EventType event, int value)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].ivalue = value;
+    count++;
+}
+
+// Register a int event
+void EvtCtrl::sendTouch(int16_t sender, EventType event, int16_t a, int16_t b)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].touch.x = a;
+    eventStore[count].touch.y = b;
+    count++;
+}
+
 // Register a float event
 void EvtCtrl::sendWithFloat(int16_t sender, EventType event, float value)
 {
@@ -141,26 +162,6 @@ void EvtCtrl::sendWithVector(int16_t sender, EventType event, float f1, float f2
     eventStore[count].fvalue.f1 = f1;
     eventStore[count].fvalue.f2 = f2;
     eventStore[count].fvalue.f3 = f3;
-    count++;
-}
-
-// show layer
-void EvtCtrl::showEvent(int16_t sender, int16_t target)
-{
-    eventStore[count].type = showComponent;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    eventStore[count].target = target;
-    count++;
-}
-
-// hide layer
-void EvtCtrl::hideEvent(int16_t sender, int16_t target)
-{
-    eventStore[count].type = hideComponent;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    eventStore[count].target = target;
     count++;
 }
 

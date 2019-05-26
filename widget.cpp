@@ -3,13 +3,17 @@
 #include "storage-ctrl.hpp"
 
 // Global for internal use
-TFT_Widget *__registry[128];
+TFT_Widget *__registry[256];
 int8_t __registryCount = 0;
 TFT_eSPI _tft = TFT_eSPI();
 
 // constructor
 TFT_Widget::TFT_Widget()
 {
+    if (__registryCount > 256)
+    {
+        log_e("internal error, registry buffer overflow ...");
+    }
     // Global registry for all widget
     __registry[__registryCount++] = this;
 }
@@ -22,6 +26,10 @@ void TFT_Widget::init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _
     this->w = _w;
     this->h = _h;
     sprintf(this->name, "widget-%08x", _id);
+    if (strlen(this->name) > 32)
+    {
+        log_e("internal error, name buffer overflow ...");
+    }
     this->id = _id;
     this->visible = true;
     this->tft = &_tft;
@@ -51,21 +59,22 @@ void TFT_Widget::setLabel(const char *format, ...)
 
 void TFT_Widget::show()
 {
+    // set visible
     this->visible = true;
+
+    // invalidate all children to force draw
+    this->setInvalidated(true);
 
     // update all children
     for (int index = 0; index < child; index++)
     {
         children[index]->show();
     }
-
-    // invalidate all children to force draw
-    this->invalidated = true;
-    EvtCtrl::instance()->showEvent(this->id, this->id);
 }
 
 void TFT_Widget::hide()
 {
+    // hide
     this->visible = false;
 
     // update all children
@@ -73,7 +82,6 @@ void TFT_Widget::hide()
     {
         children[index]->hide();
     }
-    EvtCtrl::instance()->hideEvent(this->id, this->id);
 }
 
 void TFT_Widget::setInvalidated(bool invalidate)

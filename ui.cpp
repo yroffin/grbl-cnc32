@@ -71,40 +71,44 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Menu", 0, 0);
     this->add(this->title);
     this->a = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, "move", 8, 14);
+    this->a->setEvent(EVENT_BTN_MOVE);
     this->add(this->a);
     this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, "stat", 8, 14 + 44);
+    this->b->setEvent(EVENT_BTN_STAT);
     this->add(this->b);
     this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, "files", 8, 14 + 44 * 2);
+    this->c->setEvent(EVENT_BTN_FILES);
     this->add(this->c);
     this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, "admin", 8, 14 + 44 * 3);
+    this->d->setEvent(EVENT_BTN_ADM);
     this->add(this->d);
 }
 
 // Notification
 void TFT_LayerMenu::notify(const Event *event)
 {
-    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNA)
+    if (event->type == EVENT_BTN_MOVE)
     {
         TFT_Screen::instance()->control->show();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNB)
+    if (event->type == EVENT_BTN_STAT)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->show();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTNC)
+    if (event->type == EVENT_BTN_FILES)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->show();
         TFT_Screen::instance()->admin->hide();
     }
-    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_MENU_BTND)
+    if (event->type == EVENT_BTN_ADM)
     {
         TFT_Screen::instance()->control->hide();
         TFT_Screen::instance()->statistic->hide();
@@ -123,6 +127,7 @@ TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, 
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
     this->group->add(this->title);
     this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, "Print", 0, 14);
+    this->print->setEvent(EVENT_START_PRINT);
     this->group->add(print);
     this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, "Unlock", 44, 14);
     this->group->add(this->unlock);
@@ -186,7 +191,7 @@ TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t 
 // stat layer
 TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 14 * 5);
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Stat", 0, 0);
     this->group->add(this->title);
@@ -210,6 +215,22 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->grblWposValue = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14 * 4);
     this->group->add(this->grblWposValue);
 
+    this->groupNunchuk = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 14 * 5, 265, 14 * 6);
+    this->add(this->groupNunchuk);
+
+    this->nunchuk = new TFT_Label(WIDGET_ID_DEFAULT, "Chuk", 0, 0);
+    this->groupNunchuk->add(this->nunchuk);
+    this->nunchukZ = new TFT_Label(WIDGET_ID_DEFAULT, "0", 40, 0);
+    this->groupNunchuk->add(this->nunchukZ);
+    this->nunchukC = new TFT_Label(WIDGET_ID_DEFAULT, "0", 70, 0);
+    this->groupNunchuk->add(this->nunchukC);
+    this->nunchukPlane = new TFT_Label(WIDGET_ID_DEFAULT, "0", 100, 0);
+    this->groupNunchuk->add(this->nunchukPlane);
+    this->nunchukMove = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14);
+    this->groupNunchuk->add(this->nunchukMove);
+    this->nunchukLader = new TFT_Label(WIDGET_ID_DEFAULT, "0", 100, 14);
+    this->groupNunchuk->add(this->nunchukLader);
+
     this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 150, 265, 90);
     this->group->add(this->console);
 }
@@ -231,15 +252,62 @@ void TFT_LayerStatistic::notify(const Event *event)
     // Handle event on screen level
     if (event->type == EVENT_GRBL_STATUS)
     {
-        this->grblStatusValue->setLabel("[%s]", event->message);
+        switch (event->ivalue)
+        {
+        case GRBL_IDLE:
+            this->grblStatusValue->setLabel("IDLE");
+            break;
+        default:
+            this->grblStatusValue->setLabel("UNKNOWN");
+        }
     }
     if (event->type == EVENT_MPOS)
     {
-        this->grblMposValue->setLabel("x:%f y:%f z:%f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+        this->grblMposValue->setLabel("x: %7.2f y: %7.2f z: %7.2f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
     }
     if (event->type == EVENT_WPOS)
     {
-        this->grblWposValue->setLabel("x:%f y:%f z:%f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+        this->grblWposValue->setLabel("x: %7.2f y: %7.2f z: %7.2f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+    }
+    if (event->type == NUNCHUK_Z)
+    {
+        this->nunchukZ->setLabel("z: %01d", event->ivalue);
+        this->nunchukLader->setLabel("");
+        this->nunchukMove->setLabel("");
+        this->groupNunchuk->setInvalidated(true);
+    }
+    if (event->type == NUNCHUK_C)
+    {
+        this->nunchukC->setLabel("c: %01d", event->ivalue);
+        this->nunchukLader->setLabel("");
+        this->nunchukMove->setLabel("");
+        this->groupNunchuk->setInvalidated(true);
+    }
+    if (event->type == NUNCHUK_DATA)
+    {
+        this->nunchukPlane->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
+        this->nunchukLader->setLabel("");
+        this->nunchukMove->setLabel("");
+        this->groupNunchuk->setInvalidated(true);
+    }
+    if (event->type == NUNCHUK_CALIBRATE || event->type == NUNCHUK_LADER_MOVEXY || event->type == NUNCHUK_LADER_MOVEZ)
+    {
+        switch (event->type)
+        {
+        case NUNCHUK_LADER_MOVEXY:
+            this->nunchukLader->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
+            this->nunchukMove->setLabel("Move XY");
+            break;
+        case NUNCHUK_LADER_MOVEZ:
+            this->nunchukLader->setLabel("z: %+03.03d", event->touch.y);
+            this->nunchukMove->setLabel("Move Z");
+            break;
+        case NUNCHUK_CALIBRATE:
+            this->nunchukLader->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
+            this->nunchukMove->setLabel("Calibrate");
+            break;
+        }
+        this->groupNunchuk->setInvalidated(true);
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
@@ -271,11 +339,11 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
 // Notification
 void TFT_LayerFile::notify(const Event *event)
 {
-    if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_BTN_PRINT)
+    if (event->type == EVENT_START_PRINT)
     {
         GrblCtrl::instance()->print(this->cwf->getLabel());
     }
-    if (event->type == showComponent && event->target == WIDGET_ID_LAYER_FILE)
+    if (event->type == EVENT_BTN_FILES)
     {
         this->refresh();
     }

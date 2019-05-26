@@ -21,19 +21,18 @@
 // outside <...>, we can get "Ok" and "error:12" followed by an CR and/or LF
 // we can also get messages: They are enclosed between [....] ; they are currently discarded.
 // used to decode the status and position sent by GRBL
-#define GET_GRBL_STATUS_CLOSED 0
-#define GET_GRBL_STATUS_START 1
-#define GET_GRBL_STATUS_WPOS_HEADER 2
-#define GET_GRBL_STATUS_WPOS_DATA 3
-#define GET_GRBL_STATUS_HEADER 4
-#define GET_GRBL_STATUS_F_DATA 5
-#define GET_GRBL_STATUS_WCO_DATA 6
-#define GET_GRBL_STATUS_ALARM 7
-#define GET_GRBL_STATUS_BF_DATA 8
-#define GET_GRBL_STATUS_MESSAGE 9
 
-#define STR_GRBL_BUF_MAX_SIZE 256      // size has been increased from 10 to 50 to support grbl [Msg:]
-#define STR_GRBL_BUF_MAX_WRITE_SIZE 64 // size has been increased from 10 to 50 to support grbl [Msg:]
+enum GrblStatus
+{
+  GRBL_UNKNOWN,
+  GRBL_IDLE
+};
+
+#define GRBL_STATUS_IDLE "idle"
+
+#define STR_GRBL_BUF_MAX_SIZE 256 // size has been increased from 10 to 50 to support grbl [Msg:]
+#define STR_GRBL_BUF_MAX_WRITE_SIZE 64
+#define STR_GRBL_MAX_STATE_SIZE 8
 
 enum GrblPrintStatus
 {
@@ -67,6 +66,7 @@ public:
   boolean resume();
   boolean status();
   boolean move(EventGrbl sens, float distance);
+  boolean move(float x, float y, float z);
   boolean setXYZ(EventGrbl param);
 
   // Event handler
@@ -87,8 +87,8 @@ protected:
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
 
-  void write(const char *grbl, ...);
-  bool tryWrite(const char *grbl, ...);
+  void write(boolean flush, const char *grbl, ...);
+  bool tryWrite(boolean flush, const char *grbl, ...);
 
 private:
   // this buffer is used to store a few char received from GRBL before decoding them
@@ -96,6 +96,10 @@ private:
   // lower version of  strGrblBuf
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
   char printBuffer[STR_GRBL_BUF_MAX_SIZE];
+  // state
+  char state[STR_GRBL_MAX_STATE_SIZE];
+  GrblStatus grblState = GRBL_UNKNOWN;
+
   uint8_t strGrblIdx;
   uint8_t txRead = 0;
   uint8_t txWrite = 0;

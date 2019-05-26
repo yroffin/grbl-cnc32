@@ -292,8 +292,12 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     // find separator and status
     for (; isLetter(msgTolower[index]); index++)
         ;
-    const char *status = extract(&(msgTolower[1]), index - indexStatus);
-    EvtCtrl::instance()->sendWithString(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, status);
+    this->grblState = GRBL_UNKNOWN;
+    if (strcmp(this->state, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_IDLE;
+    }
+    EvtCtrl::instance()->sendInt(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, this->grblState);
     char separator = msgTolower[index];
     // now find block
     const char *block = &(msgTolower[index + 1]);
@@ -328,7 +332,7 @@ void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
 }
 
 // force write
-void GrblCtrl::write(const char *grbl, ...)
+void GrblCtrl::write(boolean flush, const char *grbl, ...)
 {
     this->txWrite++;
     va_list args;
@@ -344,12 +348,15 @@ void GrblCtrl::write(const char *grbl, ...)
         TFT_Screen::instance()->outputConsole("[WRITE] %06d %s (force)", this->txWrite, buffer);
         TFT_Screen::instance()->grblInputConsole(buffer);
         Serial2.print(buffer);
+        // wait for send all data
+        if (flush)
+            Serial2.flush();
     }
     va_end(args);
 }
 
 // try to write (only when not busy)
-bool GrblCtrl::tryWrite(const char *grbl, ...)
+bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
 {
     va_list args;
     va_start(args, grbl);
@@ -387,6 +394,9 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
         {
             TFT_Screen::instance()->grblInputConsole(buffer);
             Serial2.print(buffer);
+            // wait for send all data
+            if (flush)
+                Serial2.flush();
             this->busy = true;
         }
         va_end(args);
@@ -397,7 +407,7 @@ bool GrblCtrl::tryWrite(const char *grbl, ...)
 // start printing
 void GrblCtrl::print(const char *filename)
 {
-    TFT_Screen::instance()->outputConsole("> printing: %s", filename);
+    TFT_Screen::instance()->outputConsole("printing: %s", filename);
     StorageCtrl::instance()->open(filename);
     this->isPrinting = true;
     this->grblPrintStatus = empty;
@@ -428,7 +438,7 @@ void GrblCtrl::spool()
                 else
                 {
                     // no more data so stop printing
-                    TFT_Screen::instance()->outputConsole("> stop printing");
+                    TFT_Screen::instance()->outputConsole("stop printing");
                     this->isPrinting = false;
                     this->grblPrintStatus = empty;
                     StorageCtrl::instance()->close();
@@ -439,7 +449,7 @@ void GrblCtrl::spool()
             if (!this->busy)
             {
                 // command is waiting for sending
-                if (this->tryWrite(this->printBuffer))
+                if (this->tryWrite(true, this->printBuffer))
                 {
                     this->grblPrintStatus = empty;
                 }
@@ -454,32 +464,45 @@ void GrblCtrl::spool()
             break;
         }
     }
+    // while non printing compute status
+    if (!this->isPrinting)
+    {
+        // send status only when ready, in order to not flood grbl controller
+        if (millis() - this->lastStatus > 1000)
+        {
+            this->lastStatus = millis();
+            this->status();
+        }
+    }
 }
 
 // home command
 boolean GrblCtrl::home()
 {
-    return this->tryWrite("$H\n");
+    return this->tryWrite(true, "$H\n");
 }
 
 // unlock command
 boolean GrblCtrl::unlock()
 {
-    this->write("$X\n");
+    this->write(true, "$X\n");
     return true;
 }
 
 // reset command
 boolean GrblCtrl::reset()
 {
-    this->write("%c\n", 0x18);
+    // stop printing
+    this->isPrinting = false;
+    // and reset
+    this->write(true, "%c\n", 0x18);
     return true;
 }
 
 // pause command
 boolean GrblCtrl::pause()
 {
-    this->write("!\n");
+    this->write(true, "!\n");
     this->isPaused = true;
     return true;
 }
@@ -487,7 +510,7 @@ boolean GrblCtrl::pause()
 // resume command
 boolean GrblCtrl::resume()
 {
-    this->write("~\n");
+    this->write(true, "~\n");
     this->isPaused = false;
     return true;
 }
@@ -495,7 +518,7 @@ boolean GrblCtrl::resume()
 // status
 boolean GrblCtrl::status()
 {
-    this->write("?\n");
+    this->write(true, "?\n");
     return true;
 }
 
@@ -505,24 +528,30 @@ boolean GrblCtrl::move(EventGrbl sens, float distance)
     switch (sens)
     { // we convert the position of the button into the type of button
     case XP:
-        return this->tryWrite("$J=G91 G21 X%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 X%.2f F100\n", distance);
         break;
     case XM:
-        return this->tryWrite("$J=G91 G21 X-%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 X-%.2f F100\n", distance);
         break;
     case YP:
-        return this->tryWrite("$J=G91 G21 Y%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 Y%.2f F100\n", distance);
         break;
     case YM:
-        return this->tryWrite("$J=G91 G21 Y-%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 Y-%.2f F100\n", distance);
         break;
     case ZP:
-        return this->tryWrite("$J=G91 G21 Z%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 Z%.2f F100\n", distance);
         break;
     case ZM:
-        return this->tryWrite("$J=G91 G21 Z-%f F100\n", distance);
+        return this->tryWrite(true, "$J=G91 G21 Z-%.2f F100\n", distance);
         break;
     }
+}
+
+// move command
+boolean GrblCtrl::move(float x, float y, float z)
+{
+    return this->tryWrite(true, "$J=G91 G21 X%.2f Y%.2f Z%.2f F100\n", x, y, z);
 }
 
 // set command
@@ -531,16 +560,16 @@ boolean GrblCtrl::setXYZ(EventGrbl param)
     switch (param)
     {
     case SETX:
-        return this->tryWrite("G10 L20 P1 X0\n");
+        return this->tryWrite(true, "G10 L20 P1 X0\n");
         break;
     case SETY:
-        return this->tryWrite("G10 L20 P1 Y0\n");
+        return this->tryWrite(true, "G10 L20 P1 Y0\n");
         break;
     case SETZ:
-        return this->tryWrite("G10 L20 P1 Z0\n");
+        return this->tryWrite(true, "G10 L20 P1 Z0\n");
         break;
     case SETXYZ:
-        return this->tryWrite("G10 L20 P1 X0 Y0 Z0\n");
+        return this->tryWrite(true, "G10 L20 P1 X0 Y0 Z0\n");
         break;
     }
 }
@@ -568,6 +597,28 @@ void GrblCtrl::notify(const Event *event)
     if (event->type == EVENT_ERROR)
     {
         TFT_Screen::instance()->outputConsole("[ERROR] %s", event->message);
+    }
+    if (event->type == NUNCHUK_LADER_MOVEXY)
+    {
+        if (this->grblState == GRBL_IDLE)
+        {
+            EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_CAN_MOVEXY, event->touch.x, event->touch.y);
+        }
+    }
+    if (event->type == NUNCHUK_LADER_MOVEZ)
+    {
+        if (this->grblState == GRBL_IDLE)
+        {
+            EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_CAN_MOVEZ, event->touch.x, event->touch.y);
+        }
+    }
+    if (event->type == NUNCHUK_CAN_MOVEXY)
+    {
+        this->move((float)event->touch.x, (float)event->touch.y, 0.);
+    }
+    if (event->type == NUNCHUK_CAN_MOVEZ)
+    {
+        this->move(0., 0., (float)event->touch.y);
     }
     if (event->type == EVENT_NEXT_STEP)
     {

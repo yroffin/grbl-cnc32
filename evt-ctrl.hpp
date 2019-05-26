@@ -17,10 +17,9 @@ public:
   void touchEvent(int16_t sender, int16_t _x, int16_t _y);
   void releaseEvent(int16_t sender);
 
-  void showEvent(int16_t sender, int16_t target);
-  void hideEvent(int16_t sender, int16_t target);
-
   void send(int16_t sender, EventType action);
+  void sendInt(int16_t sender, EventType action, int value);
+  void sendTouch(int16_t sender, EventType action, int16_t _x, int16_t _y);
   void sendWithString(int16_t sender, EventType action, const char *value);
   void sendWithFloat(int16_t sender, EventType action, float value);
   void sendWithVector(int16_t sender, EventType action, float f1, float f2, float f3);
@@ -28,7 +27,7 @@ public:
   static EvtCtrl *instance();
 
 protected:
-  struct Event eventStore[128];
+  struct Event eventStore[256];
   int16_t count = 0;
   int16_t primaryEvents = 0;
   bool touched = false;
