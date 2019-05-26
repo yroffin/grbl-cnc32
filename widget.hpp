@@ -4,7 +4,6 @@
 #include "stdio.h"
 #include "config.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
-#include "language.h"
 #include "evt-ctrl.hpp"
 
 class TFT_Widget

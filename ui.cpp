@@ -393,14 +393,11 @@ void TFT_Screen::calibrate()
         this->tft->setTextSize(1);
         this->tft->setTextColor(SCREEN_HEADER_TEXT, SCREEN_BACKGROUND);
 
-        this->tft->println(__TOUCH_CORNER);
-
         this->tft->setTextFont(1);
         this->tft->println();
 
         this->tft->calibrateTouch(calData, SCREEN_ALERT_TEXT, SCREEN_BACKGROUND, 15);
         this->tft->setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
-        this->tft->println(__CAL_COMPLETED);
         //this->tft->printf("Cal data %d %d %d %d %d\n", calData[0], calData[1], calData[2], calData[3], calData[4]);
 
         TFT_Widget::init(WIDGET_ID_LAYER_MENU, 0, 0, calData[0], calData[1]);
