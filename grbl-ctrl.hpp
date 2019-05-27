@@ -32,7 +32,6 @@ enum GrblStatus
 
 #define STR_GRBL_BUF_MAX_SIZE 256 // size has been increased from 10 to 50 to support grbl [Msg:]
 #define STR_GRBL_BUF_MAX_WRITE_SIZE 64
-#define STR_GRBL_MAX_STATE_SIZE 8
 
 enum GrblPrintStatus
 {
@@ -66,7 +65,7 @@ public:
   boolean resume();
   boolean status();
   boolean move(EventGrbl sens, float distance);
-  boolean move(float x, float y, float z);
+  boolean move(float x, float y, float z, int speed);
   boolean setXYZ(EventGrbl param);
 
   // Event handler
@@ -97,7 +96,6 @@ private:
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
   char printBuffer[STR_GRBL_BUF_MAX_SIZE];
   // state
-  char state[STR_GRBL_MAX_STATE_SIZE];
   GrblStatus grblState = GRBL_UNKNOWN;
 
   uint8_t strGrblIdx;

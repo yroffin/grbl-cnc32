@@ -293,7 +293,7 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     for (; isLetter(msgTolower[index]); index++)
         ;
     this->grblState = GRBL_UNKNOWN;
-    if (strcmp(this->state, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    if (strcmp(GRBL_STATUS_IDLE, extract(&(msgTolower[1]), index - indexStatus)) == 0)
     {
         this->grblState = GRBL_IDLE;
     }
@@ -549,9 +549,10 @@ boolean GrblCtrl::move(EventGrbl sens, float distance)
 }
 
 // move command
-boolean GrblCtrl::move(float x, float y, float z)
+// speed in pourcent of max speed
+boolean GrblCtrl::move(float x, float y, float z, int speed)
 {
-    return this->tryWrite(true, "$J=G91 G21 X%.2f Y%.2f Z%.2f F100\n", x, y, z);
+    return this->tryWrite(true, "$J=G91 G21 X%.2f Y%.2f Z%.2f F%d\n", x, y, z, speed);
 }
 
 // set command
@@ -598,27 +599,25 @@ void GrblCtrl::notify(const Event *event)
     {
         TFT_Screen::instance()->outputConsole("[ERROR] %s", event->message);
     }
+    if (event->type == NUNCHUK_JOG_STOP)
+    {
+        this->tryWrite(true, "%c\n", 0x85);
+    }
     if (event->type == NUNCHUK_LADER_MOVEXY)
     {
-        if (this->grblState == GRBL_IDLE)
-        {
-            EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_CAN_MOVEXY, event->touch.x, event->touch.y);
-        }
+        this->move(
+            event->touch.x / 10.,
+            (float)event->touch.y / 10.,
+            0.,
+            1500);
     }
     if (event->type == NUNCHUK_LADER_MOVEZ)
     {
-        if (this->grblState == GRBL_IDLE)
-        {
-            EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_CAN_MOVEZ, event->touch.x, event->touch.y);
-        }
-    }
-    if (event->type == NUNCHUK_CAN_MOVEXY)
-    {
-        this->move((float)event->touch.x, (float)event->touch.y, 0.);
-    }
-    if (event->type == NUNCHUK_CAN_MOVEZ)
-    {
-        this->move(0., 0., (float)event->touch.y);
+        this->move(
+            0.,
+            0.,
+            event->touch.y / 10.,
+            1500);
     }
     if (event->type == EVENT_NEXT_STEP)
     {
@@ -626,13 +625,13 @@ void GrblCtrl::notify(const Event *event)
         switch (this->step)
         {
         case M1:
-            this->pas = 1.0;
+            this->pas = 0.1;
             break;
         case M10:
-            this->pas = 10.0;
+            this->pas = 1.0;
             break;
         case M100:
-            this->pas = 100.0;
+            this->pas = 10.0;
             break;
         }
         EvtCtrl::instance()->sendWithFloat(0, EVENT_NEW_STEP, this->pas);

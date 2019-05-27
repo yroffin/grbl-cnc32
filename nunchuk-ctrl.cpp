@@ -20,51 +20,8 @@ NunchukCtrl::NunchukCtrl()
 
 void NunchukCtrl::init()
 {
-}
-
-int16_t NunchukCtrl::lader(int16_t value, int16_t l0, int16_t l1, int16_t l10, int16_t l100)
-{
-    if (value > 0)
-    {
-        if (value < l0)
-        {
-            return 0;
-        }
-        if (value < l1)
-        {
-            return 1;
-        }
-        if (value < l10)
-        {
-            return 10;
-        }
-        if (value < l100)
-        {
-            return 100;
-        }
-        return 100;
-    }
-    else
-    {
-        if (value < -l100)
-        {
-            return -100;
-        }
-        if (value < -l10)
-        {
-            return -10;
-        }
-        if (value < -l1)
-        {
-            return -1;
-        }
-        if (value < -l0)
-        {
-            return 0;
-        }
-        return 0;
-    }
-    return 0;
+    this->xcenter = 134;
+    this->ycenter = 134;
 }
 
 void NunchukCtrl::capture()
@@ -116,21 +73,10 @@ void NunchukCtrl::capture()
             boolean current_c = this->c;
             int16_t current_xplane = this->xplane;
             int16_t current_yplane = this->yplane;
-            int16_t current_xlader = this->xlader;
-            int16_t current_ylader = this->ylader;
-            int16_t current_xcenter = this->xcenter;
-            int16_t current_ycenter = this->ycenter;
 
             // new state
             this->z = Z();
             this->c = C();
-
-            // Calibrate
-            if (this->c && this->z)
-            {
-                this->xcenter = this->nunchuk_data[0];
-                this->ycenter = this->nunchuk_data[1];
-            }
 
             // raw value
             if (this->xplane != (nunchuk_data[0] - this->xcenter) || this->yplane != (nunchuk_data[1] - this->ycenter))
@@ -138,10 +84,6 @@ void NunchukCtrl::capture()
                 this->xplane = nunchuk_data[0] - this->xcenter;
                 this->yplane = nunchuk_data[1] - this->ycenter;
             }
-
-            // lader value
-            this->xlader = this->lader(xplane, 5, 25, 70, 90);
-            this->ylader = this->lader(yplane, 5, 25, 70, 90);
 
             // check change on Z and C
             if (current_z != z)
@@ -161,20 +103,33 @@ void NunchukCtrl::capture()
             }
 
             // lader value
-            boolean click = (current_z != z || current_c != c);
-            if (c && z && click)
-            {
-                EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_CALIBRATE, xlader, ylader);
-            }
-
             if (c && !z)
             {
-                EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_LADER_MOVEXY, xlader, ylader);
+                if (abs(xplane) >= 10 || abs(yplane) >= 10)
+                {
+                    int16_t xlader = abs(xplane) < 10 ? 0 : abs(xplane) < 60 ? 1 : 100;
+                    int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 100;
+                    EvtCtrl::instance()->sendTouch(
+                        WIDGET_ID_DEFAULT,
+                        NUNCHUK_LADER_MOVEXY,
+                        xplane < 0 ? -xlader : xlader,
+                        yplane < 0 ? -ylader : ylader);
+                    this->lastJog = millis();
+                }
             }
 
             if (!c && z)
             {
-                EvtCtrl::instance()->sendTouch(WIDGET_ID_DEFAULT, NUNCHUK_LADER_MOVEZ, xlader, ylader);
+                if (abs(yplane) >= 10)
+                {
+                    int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 50;
+                    EvtCtrl::instance()->sendTouch(
+                        WIDGET_ID_DEFAULT,
+                        NUNCHUK_LADER_MOVEZ,
+                        0,
+                        yplane < 0 ? -ylader : ylader);
+                    this->lastJog = millis();
+                }
             }
         }
         break;
@@ -185,10 +140,16 @@ void NunchukCtrl::capture()
             this->wait = millis();
             this->state = NUNCHUK_STATE_START_READ;
         }
+        if (this->lastJog != 0 && millis() - this->lastJog > 1000)
+        {
+            this->lastJog = 0;
+            EvtCtrl::instance()->send(
+                WIDGET_ID_DEFAULT,
+                NUNCHUK_JOG_STOP);
+        }
         break;
 
     case NUNCHUK_KO:
-        log_e("nunchuk %d", this->state);
         break;
     }
 }

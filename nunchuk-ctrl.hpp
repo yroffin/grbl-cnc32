@@ -43,7 +43,6 @@ public:
   void capture();
   void disableEncription();
   boolean read();
-  int16_t lader(int16_t value, int16_t l0, int16_t l1, int16_t l10, int16_t l100);
 
   boolean Z();
   boolean C();
@@ -51,13 +50,12 @@ public:
 private:
   NUNCHUK_STATE state = NUNCHUK_STATE_ZERO;
   long wait = 0;
+  long lastJog = 0;
   int16_t nunchuk_data[6];
   boolean z = false;
   boolean c = false;
   int16_t xplane = 0;
   int16_t yplane = 0;
-  int16_t xlader = 0;
-  int16_t ylader = 0;
   int16_t xcenter = 0;
   int16_t ycenter = 0;
 };

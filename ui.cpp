@@ -290,7 +290,7 @@ void TFT_LayerStatistic::notify(const Event *event)
         this->nunchukMove->setLabel("");
         this->groupNunchuk->setInvalidated(true);
     }
-    if (event->type == NUNCHUK_CALIBRATE || event->type == NUNCHUK_LADER_MOVEXY || event->type == NUNCHUK_LADER_MOVEZ)
+    if (event->type == NUNCHUK_LADER_MOVEXY || event->type == NUNCHUK_LADER_MOVEZ)
     {
         switch (event->type)
         {
@@ -301,10 +301,6 @@ void TFT_LayerStatistic::notify(const Event *event)
         case NUNCHUK_LADER_MOVEZ:
             this->nunchukLader->setLabel("z: %+03.03d", event->touch.y);
             this->nunchukMove->setLabel("Move Z");
-            break;
-        case NUNCHUK_CALIBRATE:
-            this->nunchukLader->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
-            this->nunchukMove->setLabel("Calibrate");
             break;
         }
         this->groupNunchuk->setInvalidated(true);
