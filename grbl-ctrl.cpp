@@ -609,7 +609,7 @@ void GrblCtrl::notify(const Event *event)
             event->touch.x / 10.,
             (float)event->touch.y / 10.,
             0.,
-            1500);
+            2000);
     }
     if (event->type == NUNCHUK_LADER_MOVEZ)
     {
@@ -617,7 +617,7 @@ void GrblCtrl::notify(const Event *event)
             0.,
             0.,
             event->touch.y / 10.,
-            1500);
+            400);
     }
     if (event->type == EVENT_NEXT_STEP)
     {
