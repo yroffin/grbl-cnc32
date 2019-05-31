@@ -141,7 +141,10 @@ void TFT_Widget::render()
 void TFT_Widget::draw()
 {
     this->tft->fillRect(x, y, w, h, this->background);
-    //this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
+    if (this->drawContour)
+    {
+        this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
+    }
 }
 
 // Constructor
@@ -151,9 +154,9 @@ TFT_Layer::TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h
 }
 
 // Constructor
-TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y)
+TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, 40, 40);
+    init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
 }
 
@@ -203,22 +206,22 @@ void TFT_Button::draw()
 }
 
 // Constructor
-TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y)
-    : TFT_Button(_id, _label, _x, _y)
+TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h, boolean _align)
+    : TFT_Button(_id, _label, _x, _y, _w, _h)
 {
+    this->align = _align;
 }
 
 void TFT_File::draw()
 {
+    // clear
+    this->tft->fillRect(x, y, w, h, state == on ? TFT_GREEN : this->background);
     this->tft->setTextFont(1);
-    this->tft->setTextColor(TFT_DARKGREY);
+    this->tft->setTextColor(state == on ? TFT_DARKGREY : TFT_GREEN);
     this->tft->setTextSize(1);
-    uint8_t r = min(w, h) / 3;
-    this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
-    this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
     this->tft->setTextDatum(TL_DATUM);
-    this->tft->drawString("x", x + (w / 2), y + (h / 2));
-    this->tft->drawString(label, x + (w / 2) + 24, y + (h / 2));
+    this->tft->drawString(label, x + 5, y + (h / 2));
+    this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
 }
 
 // Constructor
@@ -228,21 +231,21 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     strcpy(label, _label);
 
     // Init all button
-    this->xleft = new TFT_Button(_id + 1, "Left", 0, 44);
+    this->xleft = new TFT_Button(_id + 1, "Left", 0, 44, 40, 40);
     this->add(this->xleft);
-    this->xright = new TFT_Button(_id + 2, "Right", 44 * 2, 44);
+    this->xright = new TFT_Button(_id + 2, "Right", 44 * 2, 44, 40, 40);
     this->add(this->xright);
-    this->yup = new TFT_Button(_id + 4, "Up", 44, 0);
+    this->yup = new TFT_Button(_id + 4, "Up", 44, 0, 40, 40);
     this->add(this->yup);
-    this->ydown = new TFT_Button(_id + 3, "Down", 44, 44 * 2);
+    this->ydown = new TFT_Button(_id + 3, "Down", 44, 44 * 2, 40, 40);
     this->add(this->ydown);
-    this->zup = new TFT_Button(_id + 6, "Up", 44 * 4, 0);
+    this->zup = new TFT_Button(_id + 6, "Up", 44 * 4, 0, 40, 40);
     this->add(this->zup);
-    this->zdown = new TFT_Button(_id + 5, "Down", 44 * 4, 44 * 2);
+    this->zdown = new TFT_Button(_id + 5, "Down", 44 * 4, 44 * 2, 40, 40);
     this->add(this->zdown);
 
     // Pas 0.1, 1, 10 and 100
-    this->pas = new TFT_Button(_id + 7, "Pas", 44, 44);
+    this->pas = new TFT_Button(_id + 7, "Pas", 44, 44, 40, 40);
     this->add(this->pas);
 }
 
@@ -319,17 +322,24 @@ TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t 
     init(_id, _x, _y, _w, _h);
     strcpy(label, _label);
 
-    this->left = new TFT_Button(_id, "^", 0, 0);
+    this->left = new TFT_Button(_id, "^", 205, 0, 30, 30);
     this->left->setEvent(PREV_FILE);
     this->add(this->left);
-    this->right = new TFT_Button(_id + 1, "v", 0, 40 * 3);
+    this->right = new TFT_Button(_id + 1, "v", 205, 30 * 4, 30, 30);
     this->right->setEvent(NEXT_FILE);
     this->add(this->right);
 
     // add lines
-    for (int l = 0; l < 4; l++)
+    for (int l = 0; l < this->maxLines; l++)
     {
-        this->lines[l] = new TFT_File(_id + 2 + l, ".", 40, 40 * l);
+        if (l % 2 == 0)
+        {
+            this->lines[l] = new TFT_File(_id + 2 + l, ".", 0, 30 * l, 200, 30, true);
+        }
+        else
+        {
+            this->lines[l] = new TFT_File(_id + 2 + l, ".", 0, 30 * l, 200, 30, false);
+        }
         this->lines[l]->setEvent(SELECT_FILE);
         this->add(this->lines[l]);
     }
@@ -337,10 +347,10 @@ TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t 
 
 void TFT_FileGrid::clear()
 {
-    this->lines[0]->setLabel(".");
-    this->lines[1]->setLabel(".");
-    this->lines[2]->setLabel(".");
-    this->lines[3]->setLabel(".");
+    for (int l = 0; l < this->maxLines; l++)
+    {
+        this->lines[l]->setLabel("");
+    }
 }
 
 void TFT_FileGrid::set(int16_t index, const char *label)
@@ -364,7 +374,7 @@ void TFT_FileGrid::notify(const Event *event)
         this->invalidated = true;
     }
     // select line
-    for (int l = 1; l < 4; l++)
+    for (int l = 1; l < this->maxLines; l++)
     {
         if (event->type == SELECT_FILE && event->sender == this->id + 2 + l)
         {

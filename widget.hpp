@@ -31,6 +31,9 @@ public:
   TFT_Widget *add(TFT_Widget *widget);
 
 protected:
+  boolean drawContour = false;
+
+protected:
   void init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   int16_t x;
   int16_t y;
@@ -43,7 +46,7 @@ protected:
   bool visible = false;
   bool invalidated = true;
   // child
-  TFT_Widget *children[32];
+  TFT_Widget *children[64];
   int8_t child = 0;
   TFT_eSPI *tft;
 };
@@ -65,7 +68,7 @@ enum ButtonState
 class TFT_Button : public TFT_Widget
 {
 public:
-  TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y);
+  TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   virtual void notify(const Event *event);
   virtual void draw();
   void setEvent(EventType event);
@@ -78,10 +81,11 @@ protected:
 class TFT_File : public TFT_Button
 {
 public:
-  TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y);
+  TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h, boolean _align);
   virtual void draw();
 
 private:
+  boolean align;
 };
 
 class TFT_Joystick : public TFT_Widget
@@ -160,10 +164,11 @@ public:
 public:
   int16_t offset = 0;
   int16_t count = 0;
+  int16_t maxLines = 5;
 
-private:
+protected:
   TFT_Button *left;
-  TFT_File *lines[4];
+  TFT_File *lines[5];
   TFT_Button *right;
 };
 
