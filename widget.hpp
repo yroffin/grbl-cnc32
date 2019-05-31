@@ -27,7 +27,6 @@ public:
     return this->label;
   }
   // Registry manipulation
-  virtual TFT_Widget *findById(int16_t _id);
   TFT_Widget *add(TFT_Widget *widget);
 
 protected:

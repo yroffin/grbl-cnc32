@@ -3,19 +3,11 @@
 #include "storage-ctrl.hpp"
 
 // Global for internal use
-TFT_Widget *__registry[256];
-int8_t __registryCount = 0;
 TFT_eSPI _tft = TFT_eSPI();
 
 // constructor
 TFT_Widget::TFT_Widget()
 {
-    if (__registryCount > 256)
-    {
-        log_e("internal error, registry buffer overflow ...");
-    }
-    // Global registry for all widget
-    __registry[__registryCount++] = this;
 }
 
 // Init this widget
@@ -33,18 +25,6 @@ void TFT_Widget::init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _
     this->id = _id;
     this->visible = true;
     this->tft = &_tft;
-}
-
-// Find widget by its id
-TFT_Widget *TFT_Widget::findById(int16_t _id)
-{
-    for (int8_t i = 0; i < __registryCount; i++)
-    {
-        if (__registry[i]->id == _id)
-        {
-            return __registry[i];
-        }
-    }
 }
 
 void TFT_Widget::setLabel(const char *format, ...)
