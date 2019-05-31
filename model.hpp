@@ -3,8 +3,8 @@
 
 enum EventType
 {
-  touch,
-  release,
+  TOUCH_SCREEN,
+  RELEASE_SCREEN,
   BUTTON_DOWN,
   EVENT_START_PRINT,
   NEXT_FILE,

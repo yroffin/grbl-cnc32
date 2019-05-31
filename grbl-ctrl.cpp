@@ -39,18 +39,7 @@ void GrblCtrl::init()
     log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_OK, "GRBL"));
 }
 
-void GrblCtrl::error(const char *message)
-{
-}
-
-void GrblCtrl::alarm(const char *message)
-{
-}
-
-void GrblCtrl::status(const char *message)
-{
-}
-
+// Scan new available bytes
 int GrblCtrl::available()
 {
     if (this->simulation)
@@ -96,6 +85,7 @@ int GrblCtrl::available()
     }
 }
 
+// Read one byte
 int GrblCtrl::read()
 {
     if (simulation)
@@ -142,12 +132,14 @@ void GrblCtrl::capture(void)
     TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
+// string function
 bool startWithNoCase(const char *str, const char *pattern)
 {
     bool status = false;
     return status;
 }
 
+// Flush
 void GrblCtrl::flush(void)
 {
     if (strlen(strGrblBuf) > 0)
@@ -253,6 +245,7 @@ boolean match(const char *pattern, const char *value)
     return strncmp(pattern, value, strlen(pattern)) == 0;
 }
 
+// Scan position
 boolean scanPos(const char *pattern, EventType e, const char *value)
 {
     if (match(pattern, value))
@@ -263,6 +256,7 @@ boolean scanPos(const char *pattern, EventType e, const char *value)
     }
 }
 
+// Scan error
 boolean scanError(const char *pattern, EventType e, const char *value)
 {
     if (match(pattern, value))
@@ -282,6 +276,7 @@ boolean scanError(const char *pattern, EventType e, const char *value)
     }
 }
 
+// Decode status
 void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
 {
     char sep = ',';

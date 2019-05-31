@@ -143,7 +143,7 @@ void TFT_Widget::draw()
     this->tft->fillRect(x, y, w, h, this->background);
     if (this->drawContour)
     {
-        this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
+        this->tft->drawRect(x, y, w, h, TFT_DARKGREY);
     }
 }
 
@@ -172,7 +172,7 @@ void TFT_Button::notify(const Event *event)
     switch (event->type)
     {
     // Touch on screen
-    case touch:
+    case TOUCH_SCREEN:
         if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
         {
             EvtCtrl::instance()->send(this->id, this->eventType);
@@ -182,7 +182,7 @@ void TFT_Button::notify(const Event *event)
         }
         break;
     // Touch is released
-    case release:
+    case RELEASE_SCREEN:
         state = off;
         // draw needed
         this->invalidated = true;
@@ -195,12 +195,11 @@ void TFT_Button::notify(const Event *event)
 void TFT_Button::draw()
 {
     this->tft->setTextFont(1);
-    this->tft->setTextColor(BUTTON_TEXT);
+    this->tft->setTextColor(state == on ? this->fontSelected : this->fontNormal);
     this->tft->setTextSize(1);
     uint8_t r = min(w, h) / 3;
-    this->tft->fillRoundRect(x, y, w, h, r, state == on ? TFT_RED : TFT_GREEN);
-    this->tft->drawRoundRect(x, y, w, h, r, TFT_RED);
-    uint8_t tempdatum = this->tft->getTextDatum();
+    this->tft->fillRoundRect(x, y, w, h, r, state == on ? this->selectedBackground : this->background);
+    this->tft->drawRoundRect(x, y, w, h, r, this->border);
     this->tft->setTextDatum(MC_DATUM);
     this->tft->drawString(label, x + (w / 2), y + (h / 2));
 }
@@ -215,13 +214,13 @@ TFT_File::TFT_File(int16_t _id, const char *_label, int16_t _x, int16_t _y, int1
 void TFT_File::draw()
 {
     // clear
-    this->tft->fillRect(x, y, w, h, state == on ? TFT_GREEN : this->background);
+    this->tft->fillRect(x, y, w, h, state == on ? this->selectedBackground : this->background);
     this->tft->setTextFont(1);
-    this->tft->setTextColor(state == on ? TFT_DARKGREY : TFT_GREEN);
+    this->tft->setTextColor(state == on ? this->fontSelected : this->fontNormal);
     this->tft->setTextSize(1);
     this->tft->setTextDatum(TL_DATUM);
     this->tft->drawString(label, x + 5, y + (h / 2));
-    this->tft->drawRect(x, y, w, h, TFT_DARKGREEN);
+    this->tft->drawRect(x, y, w, h, this->border);
 }
 
 // Constructor
@@ -394,10 +393,10 @@ TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 
 void TFT_Label::draw()
 {
-    this->tft->setTextFont(1);                              // use Font2 = 16 pixel X 7 probably
-    this->tft->setTextSize(1);                              // char is 2 X magnified =>
-    this->tft->setTextColor(SCREEN_NORMAL_TEXT, TFT_BLACK); // when only 1 parameter, background = fond);
-    this->tft->setTextDatum(TL_DATUM);                      // align rigth ( option la plus pratique pour les float ou le statut GRBL)
+    this->tft->setTextFont(1);                                   // use Font2 = 16 pixel X 7 probably
+    this->tft->setTextSize(1);                                   // char is 2 X magnified =>
+    this->tft->setTextColor(this->fontNormal, this->background); // when only 1 parameter, background = fond);
+    this->tft->setTextDatum(TL_DATUM);                           // align rigth ( option la plus pratique pour les float ou le statut GRBL)
     this->tft->drawString(label, x, y);
 }
 

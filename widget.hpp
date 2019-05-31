@@ -40,7 +40,12 @@ protected:
   int16_t w;
   int16_t h;
   int16_t id;
+  // Colors
   int16_t background = TFT_BLACK;
+  int16_t selectedBackground = TFT_WHITE;
+  int16_t fontNormal = TFT_WHITE;
+  int16_t fontSelected = TFT_BLACK;
+  int16_t border = TFT_DARKGREY;
   char name[32];
   char label[128];
   bool visible = false;

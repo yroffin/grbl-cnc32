@@ -23,6 +23,7 @@ void EvtCtrl::init()
 {
 }
 
+// Capture screen event
 void EvtCtrl::capture()
 {
     int16_t x, y;
@@ -31,7 +32,7 @@ void EvtCtrl::capture()
         // screen is pressed
         if (!touched)
         {
-            touchEvent(WIDGET_ID_SCREEN, x, y);
+            this->sendTouch(WIDGET_ID_SCREEN, TOUCH_SCREEN, x, y);
             touched = true;
             touchedTimestamp = millis();
         }
@@ -42,7 +43,7 @@ void EvtCtrl::capture()
         if (touched && (millis() - touchedTimestamp) > 100)
         {
             // screen is unpressed after 100 ms
-            releaseEvent(WIDGET_ID_SCREEN);
+            this->send(WIDGET_ID_SCREEN, RELEASE_SCREEN);
             touched = false;
         }
     }
@@ -65,7 +66,7 @@ void EvtCtrl::dispatchPrimaryEvents()
     }
 }
 
-// Phase2
+// Phase2 (handle new event)
 boolean EvtCtrl::dispatchSecondaryEvents()
 {
     if (this->primaryEvents >= count)
@@ -81,26 +82,6 @@ boolean EvtCtrl::dispatchSecondaryEvents()
     }
     this->primaryEvents = count;
     return (this->primaryEvents >= count);
-}
-
-// Register a touch event
-void EvtCtrl::touchEvent(int16_t sender, int16_t _x, int16_t _y)
-{
-    eventStore[count].type = touch;
-    eventStore[count].timestamp = millis();
-    eventStore[count].touch.x = _x;
-    eventStore[count].touch.y = _y;
-    eventStore[count].sender = sender;
-    count++;
-}
-
-// Register a release touch event
-void EvtCtrl::releaseEvent(int16_t sender)
-{
-    eventStore[count].type = release;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    count++;
 }
 
 // Register a simple event
@@ -165,6 +146,7 @@ void EvtCtrl::sendWithVector(int16_t sender, EventType event, float f1, float f2
     count++;
 }
 
+// Flush all event
 void EvtCtrl::flush()
 {
     count = 0;

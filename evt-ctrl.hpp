@@ -14,9 +14,6 @@ public:
   void flush();
 
   // Events
-  void touchEvent(int16_t sender, int16_t _x, int16_t _y);
-  void releaseEvent(int16_t sender);
-
   void send(int16_t sender, EventType action);
   void sendInt(int16_t sender, EventType action, int value);
   void sendTouch(int16_t sender, EventType action, int16_t _x, int16_t _y);
