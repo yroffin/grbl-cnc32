@@ -1,6 +1,8 @@
 #ifndef _MODEL_
 #define _MODEL_
 
+#define MAXSIZE_OF_MESSAGE 32
+
 enum EventType
 {
   TOUCH_SCREEN,

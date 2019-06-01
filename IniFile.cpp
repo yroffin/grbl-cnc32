@@ -1,11 +1,12 @@
 #include "IniFile.h"
+#include "utils.hpp"
 
 #include <string.h>
 
 IniFile::IniFile(const char *filename)
 {
     if (strlen(filename) <= INI_FILE_MAX_FILENAME_LEN)
-        strcpy(_filename, filename);
+        Utils::strcpy(_filename, filename, INI_FILE_MAX_FILENAME_LEN);
     else
         _filename[0] = '\0';
 }

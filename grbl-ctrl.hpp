@@ -28,10 +28,12 @@ enum GrblStatus
   GRBL_IDLE
 };
 
+#define MAXSIZE_OF_SIM 512
 #define GRBL_STATUS_IDLE "idle"
+#define GRBL_STATUS_RUN "run"
 
-#define STR_GRBL_BUF_MAX_SIZE 256 // size has been increased from 10 to 50 to support grbl [Msg:]
-#define STR_GRBL_BUF_MAX_WRITE_SIZE 64
+#define STR_GRBL_BUF_MAX_SIZE 256
+#define STR_GRBL_BUF_MAX_WRITE_SIZE 256
 
 enum GrblPrintStatus
 {
@@ -95,6 +97,8 @@ private:
   // lower version of  strGrblBuf
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
   char printBuffer[STR_GRBL_BUF_MAX_SIZE];
+  // write buffer
+  char writeBuffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
   // state
   GrblStatus grblState = GRBL_UNKNOWN;
 
@@ -110,7 +114,7 @@ private:
   float pas = 1.0;
   long lastStatus = 0;
   // only for simulation
-  char sim[512];
+  char sim[MAXSIZE_OF_SIM];
   char *idx;
   boolean simulation = true;
   long lastBusyWrite = 0;

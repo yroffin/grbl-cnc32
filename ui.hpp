@@ -2,6 +2,10 @@
 #define _UI_TFT_
 
 #include "widget.hpp"
+#include "utils.hpp"
+
+#define MAXSIZE_OF_LOG_MESSAGE 1024
+#define MAXSIZE_OF_VSPRINTF_MESSAGE 256
 
 class TFT_LayerAdmin : public TFT_Layer
 {
@@ -21,6 +25,7 @@ protected:
   TFT_Button *pause;
   TFT_Button *resume;
   TFT_Console *grblCommand;
+  char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 
 class TFT_LayerControl : public TFT_Layer
@@ -49,10 +54,10 @@ public:
   {
     va_list args;
     va_start(args, format);
-    static char msg[64];
-    vsprintf(msg, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
     va_end(args);
-    this->grblIoStatusValues->setLabel(msg);
+    this->grblIoStatusValues->setLabel(Utils::vsprintfBuffer());
   }
   void outputConsole(const char *format, ...);
 
@@ -75,6 +80,7 @@ protected:
   TFT_Label *nunchukPlane;
   TFT_Label *nunchukLader;
   TFT_Console *console;
+  char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 
 class TFT_LayerFile : public TFT_Layer
@@ -109,6 +115,7 @@ protected:
   TFT_Button *b;
   TFT_Button *c;
   TFT_Button *d;
+  char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 
 class TFT_Screen : public TFT_Widget
@@ -132,6 +139,7 @@ public:
   TFT_LayerControl *control;
   TFT_LayerStatistic *statistic;
   TFT_LayerFile *file;
+  char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 
 #endif

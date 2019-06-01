@@ -1,6 +1,7 @@
 #include "widget.hpp"
 #include "evt-ctrl.hpp"
 #include "storage-ctrl.hpp"
+#include "utils.hpp"
 
 // Global for internal use
 TFT_eSPI _tft = TFT_eSPI();
@@ -11,7 +12,7 @@ TFT_Widget::TFT_Widget()
 }
 
 // Init this widget
-void TFT_Widget::init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
     this->x = _x;
     this->y = _y;
@@ -23,6 +24,7 @@ void TFT_Widget::init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _
         log_e("internal error, name buffer overflow ...");
     }
     this->id = _id;
+    Utils::strcpy(label, _label, MAXSIZE_OF_LABEL);
     this->visible = true;
     this->tft = &_tft;
 }
@@ -31,7 +33,9 @@ void TFT_Widget::setLabel(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    vsprintf(this->label, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->label, Utils::vsprintfBuffer(), MAXSIZE_OF_LABEL);
     va_end(args);
     // draw needed
     this->invalidated = true;
@@ -130,14 +134,13 @@ void TFT_Widget::draw()
 // Constructor
 TFT_Layer::TFT_Layer(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
+    init(_id, "", _x, _y, _w, _h);
 }
 
 // Constructor
 TFT_Button::TFT_Button(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, _w, _h);
 }
 
 // Change emitted event
@@ -206,8 +209,7 @@ void TFT_File::draw()
 // Constructor
 TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, _w, _h);
 
     // Init all button
     this->xleft = new TFT_Button(_id + 1, "Left", 0, 44, 40, 40);
@@ -273,8 +275,7 @@ void TFT_Joystick::notify(const Event *event)
 // Constructor
 TFT_Console::TFT_Console(int16_t _id, const char *_label, int16_t _sz, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, _w, _h);
 
     this->sz = _sz;
     for (int i = 0; i < this->sz; i++)
@@ -298,8 +299,7 @@ void TFT_Console::write(const char *message)
 // Constructor
 TFT_FileGrid::TFT_FileGrid(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, _w, _h);
 
     this->left = new TFT_Button(_id, "^", 205, 0, 30, 30);
     this->left->setEvent(PREV_FILE);
@@ -367,8 +367,7 @@ void TFT_FileGrid::notify(const Event *event)
 // Constructor
 TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 {
-    init(_id, _x, _y, 0, 0);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, 0, 0);
 }
 
 void TFT_Label::draw()
@@ -383,6 +382,5 @@ void TFT_Label::draw()
 // Constructor
 TFT_Group::TFT_Group(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    init(_id, _x, _y, _w, _h);
-    strcpy(label, _label);
+    init(_id, _label, _x, _y, _w, _h);
 }

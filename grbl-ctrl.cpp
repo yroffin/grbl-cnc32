@@ -2,6 +2,7 @@
 #include "i18n-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
+#include "utils.hpp"
 
 // GRBL controller
 GrblCtrl *__instance_grbl = 0;
@@ -22,7 +23,7 @@ GrblCtrl::GrblCtrl()
 
 void GrblCtrl::init()
 {
-    strcpy(sim, "");
+    Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
     idx = sim;
     this->simulation = false;
 
@@ -50,27 +51,27 @@ int GrblCtrl::available()
             switch (r)
             {
             case 0:
-                strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n");
+                Utils::strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             case 1:
-                strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n");
+                Utils::strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             case 2:
-                strcpy(sim, "[Caution: Unlocked]\r\n");
+                Utils::strcpy(sim, "[Caution: Unlocked]\r\n", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             case 3:
-                strcpy(sim, "error:Modal group violation\n\r");
+                Utils::strcpy(sim, "error:Modal group violation\n\r", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             case 4:
-                strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n");
+                Utils::strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             case 5:
-                strcpy(sim, "error:20\n\r");
+                Utils::strcpy(sim, "error:20\n\r", MAXSIZE_OF_SIM);
                 idx = sim;
                 break;
             default:
@@ -332,17 +333,18 @@ void GrblCtrl::write(boolean flush, const char *grbl, ...)
     this->txWrite++;
     va_list args;
     va_start(args, grbl);
-    char buffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
-    vsprintf(buffer, grbl, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), grbl, args);
+    Utils::strcpy(this->writeBuffer, Utils::vsprintfBuffer(), STR_GRBL_BUF_MAX_WRITE_SIZE);
     if (this->simulation)
     {
-        TFT_Screen::instance()->outputConsole("[SIMUL]  %06d %s (force)", this->txWrite, buffer);
+        TFT_Screen::instance()->outputConsole("[SIMUL]  %06d %s (force)", this->txWrite, this->writeBuffer);
     }
     else
     {
-        TFT_Screen::instance()->outputConsole("[WRITE] %06d %s (force)", this->txWrite, buffer);
-        TFT_Screen::instance()->grblInputConsole(buffer);
-        Serial2.print(buffer);
+        TFT_Screen::instance()->outputConsole("[WRITE] %06d %s (force)", this->txWrite, this->writeBuffer);
+        TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
+        Serial2.print(this->writeBuffer);
         // wait for send all data
         if (flush)
             Serial2.flush();
@@ -355,11 +357,11 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
 {
     va_list args;
     va_start(args, grbl);
-    char buffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
-    vsprintf(buffer, grbl, args);
-
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), grbl, args);
+    Utils::strcpy(this->writeBuffer, Utils::vsprintfBuffer(), STR_GRBL_BUF_MAX_WRITE_SIZE);
     // ignore comment ( / ;
-    switch (*buffer)
+    switch (*this->writeBuffer)
     {
     case '(':
     case '/':
@@ -372,7 +374,7 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
         if (millis() - this->lastBusyWrite > 10000)
         {
             this->lastBusyWrite = millis();
-            TFT_Screen::instance()->outputConsole("[BUSY] %s", buffer);
+            TFT_Screen::instance()->outputConsole("[BUSY] %s", this->writeBuffer);
         }
         return false;
     }
@@ -382,13 +384,13 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
         this->lastBusyWrite = millis();
         if (this->simulation)
         {
-            TFT_Screen::instance()->outputConsole("[SIMUL] %06d %s", this->txWrite, buffer);
+            TFT_Screen::instance()->outputConsole("[SIMUL] %06d %s", this->txWrite, this->writeBuffer);
             this->busy = true;
         }
         else
         {
-            TFT_Screen::instance()->grblInputConsole(buffer);
-            Serial2.print(buffer);
+            TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
+            Serial2.print(this->writeBuffer);
             // wait for send all data
             if (flush)
                 Serial2.flush();

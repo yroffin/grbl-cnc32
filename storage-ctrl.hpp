@@ -2,6 +2,9 @@
 #define _STORAGE_CONTROLLER_
 
 #include "SD.h"
+#include "utils.hpp"
+#define MAXSIZE_OF_CWD 128
+#define MAXSIZE_OF_ENTRY 128
 
 class StorageEntry
 {
@@ -22,12 +25,12 @@ public:
 
   void setPath(const char *path)
   {
-    strcpy(this->path, path);
+    Utils::strcpy(this->path, path, MAXSIZE_OF_CWD);
   }
 
 private:
   boolean dir;
-  char path[128];
+  char path[MAXSIZE_OF_CWD];
 };
 
 class StorageCtrl
@@ -47,9 +50,9 @@ public:
   static StorageCtrl *instance();
 
 protected:
-  char cwd[128];
+  char cwd[MAXSIZE_OF_CWD];
   int16_t storageEntryCount = 0;
-  StorageEntry *storageEntry[128];
+  StorageEntry *storageEntry[MAXSIZE_OF_ENTRY];
   boolean isOpen = false;
   File file;
 };

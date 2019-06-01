@@ -1,6 +1,7 @@
 #include "wifi-ctrl.hpp"
 #include "i18n-ctrl.hpp"
 #include "iniFile.h"
+#include "utils.hpp"
 
 // Storage controller
 WifiCtrl *__instance_wifi = 0;
@@ -67,6 +68,7 @@ void WifiCtrl::init()
     }
 }
 
+// Init wifi and serve at the end
 void WifiCtrl::serve()
 {
     switch (this->phase)
@@ -80,8 +82,8 @@ void WifiCtrl::serve()
         this->lastConnect = millis();
         if (WiFi.status() == WL_CONNECTED)
         {
-            char ip[32];
-            strcpy(ip, WiFi.localIP().toString().c_str());
+            char ip[MAXSIZE_OF_IP];
+            Utils::strcpy(ip, WiFi.localIP().toString().c_str(), MAXSIZE_OF_IP);
             log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_IP, ip));
             this->phase = wifiConnected;
             return;

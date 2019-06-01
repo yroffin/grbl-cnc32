@@ -6,6 +6,9 @@
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "evt-ctrl.hpp"
 
+#define MAXSIZE_OF_NAME 32
+#define MAXSIZE_OF_LABEL 256
+
 class TFT_Widget
 {
 public:
@@ -33,7 +36,7 @@ protected:
   boolean drawContour = false;
 
 protected:
-  void init(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+  void init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   int16_t x;
   int16_t y;
   int16_t w;
@@ -45,8 +48,8 @@ protected:
   int16_t fontNormal = TFT_WHITE;
   int16_t fontSelected = TFT_BLACK;
   int16_t border = TFT_DARKGREY;
-  char name[32];
-  char label[128];
+  char name[MAXSIZE_OF_NAME];
+  char label[MAXSIZE_OF_LABEL];
   bool visible = false;
   bool invalidated = true;
   // child

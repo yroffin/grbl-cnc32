@@ -5,6 +5,8 @@
 #include "stdarg.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 
+#define MAXSIZE_OF_I18N_MESSAGE 256
+
 enum STD_CAT
 {
   I18N_STD,
@@ -48,28 +50,10 @@ public:
     return en_default[code];
   }
 
-  virtual const char *
-  translate(int type, int code, ...)
-  {
-    va_list args;
-    va_start(args, code);
-    const char *format;
-    switch (type)
-    {
-    case I18N_STD:
-      format = std(code);
-      break;
-    case I18N_GRBL:
-      format = grblError(code);
-      break;
-    }
-    static char msg[128];
-    vsprintf(msg, format, args);
-    va_end(args);
-    return msg;
-  }
+  virtual const char *translate(int type, int code, ...);
 
 private:
+  char i18n_message[MAXSIZE_OF_I18N_MESSAGE];
   char *en_default[9] = {
       "Unknown ...",
       "%s init ...",

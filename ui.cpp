@@ -39,7 +39,7 @@ void TFT_Screen::init()
     log_i("TFT_Screen calibration ...");
     calibrate(); // call screen calibration
 
-    this->TFT_Widget::init(0, 0, 0, 320, 240);
+    this->TFT_Widget::init(0, "", 0, 0, 320, 240);
 
     // Init all layer
     log_i("TFT_Screen widget ...");
@@ -147,20 +147,22 @@ void TFT_LayerAdmin::grblInputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char message[128];
-    vsprintf(message, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->grblCommand->write(message);
+    this->grblCommand->write(this->log_message);
 }
 
 void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char message[128];
-    vsprintf(message, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->grblCommand->write(message);
+    this->grblCommand->write(this->log_message);
 }
 
 // control layer
@@ -240,10 +242,11 @@ void TFT_LayerStatistic::outputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char buffer[128];
-    vsprintf(buffer, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->console->write(buffer);
+    this->console->write(this->log_message);
 }
 
 // Notification
@@ -399,7 +402,7 @@ void TFT_Screen::calibrate()
         this->tft->setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
         //this->tft->printf("Cal data %d %d %d %d %d\n", calData[0], calData[1], calData[2], calData[3], calData[4]);
 
-        TFT_Widget::init(WIDGET_ID_LAYER_MENU, 0, 0, calData[0], calData[1]);
+        TFT_Widget::init(WIDGET_ID_LAYER_MENU, "", 0, 0, calData[0], calData[1]);
     }
 }
 
@@ -408,10 +411,11 @@ void TFT_Screen::outputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char buffer[128];
-    vsprintf(buffer, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->statistic->outputConsole("> %s", buffer);
+    this->statistic->outputConsole("> %s", this->log_message);
 }
 
 // Update screen printing
@@ -419,10 +423,11 @@ void TFT_Screen::grblInputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char buffer[128];
-    vsprintf(buffer, format, args);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->admin->grblInputConsole(buffer);
+    this->admin->grblInputConsole(this->log_message);
 }
 
 // Update screen printing
@@ -430,10 +435,9 @@ void TFT_Screen::grblOutputConsole(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char buffer[128];
-    vsprintf(buffer, format, args);
+    vsprintf(this->log_message, format, args);
     va_end(args);
-    this->admin->grblOutputConsole(buffer);
+    this->admin->grblOutputConsole(this->log_message);
 }
 
 // Notify event

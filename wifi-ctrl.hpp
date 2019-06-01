@@ -7,6 +7,8 @@
 #include "WebServer.h"
 #include "WiFi.h"
 
+#define MAXSIZE_OF_IP 32
+
 enum WifiPhase
 {
   wifiNil,

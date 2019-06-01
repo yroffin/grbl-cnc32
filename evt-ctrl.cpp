@@ -1,6 +1,7 @@
 #include "ui.hpp"
 #include "evt-ctrl.hpp"
 #include "grbl-ctrl.hpp"
+#include "utils.hpp"
 
 // Event controller
 EvtCtrl *__instance_evt = 0;
@@ -99,7 +100,7 @@ void EvtCtrl::sendWithString(int16_t sender, EventType event, const char *value)
     eventStore[count].type = event;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
-    strcpy(eventStore[count].message, value);
+    Utils::strcpy(eventStore[count].message, value, MAXSIZE_OF_MESSAGE);
     count++;
 }
 

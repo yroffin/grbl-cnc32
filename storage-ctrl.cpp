@@ -1,5 +1,6 @@
 #include "config.h"
 #include "storage-ctrl.hpp"
+#include "utils.hpp"
 
 // Storage controller
 StorageCtrl *__instance_storage = 0;
@@ -31,8 +32,8 @@ void StorageCtrl::init()
         return;
     }
     // Set "/" as root folder
-    strcpy(cwd, "/");
-    for (int i = 0; i < 128; i++)
+    Utils::strcpy(cwd, "/", MAXSIZE_OF_CWD);
+    for (int i = 0; i < MAXSIZE_OF_ENTRY; i++)
     {
         this->storageEntry[i] = 0;
     }
