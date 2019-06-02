@@ -8,6 +8,7 @@
 #include "grbl-ctrl.hpp"
 #include "i18n-ctrl.hpp"
 #include "nunchuk-ctrl.hpp"
+#include "json-config.hpp"
 
 void setup()
 {
@@ -23,9 +24,13 @@ void setup()
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "StorageCtrl"));
     StorageCtrl::instance()->init();
 
+    // storage controller
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "JsonConfigCtrl"));
+    JsonConfigCtrl::instance()->setup();
+
     // wifi controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "WifiCtrl"));
-    WifiCtrl::instance()->init();
+    WifiCtrl::instance()->setup();
 
     // grbl controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "GrblCtrl"));
@@ -42,8 +47,8 @@ void loop()
     EvtCtrl::instance()->capture();
     // capture events
     NunchukCtrl::instance()->capture();
-    // capture http request
-    WifiCtrl::instance()->serve();
+    // init wifi, capture http request
+    WifiCtrl::instance()->loop();
     // flush grbl events
     GrblCtrl::instance()->capture();
     // dispatch event

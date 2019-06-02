@@ -1,6 +1,6 @@
 #include "wifi-ctrl.hpp"
 #include "i18n-ctrl.hpp"
-#include "iniFile.h"
+#include "json-config.hpp"
 #include "utils.hpp"
 
 // Storage controller
@@ -34,51 +34,39 @@ void HomePage()
     server.client().stop(); // Stop is needed because no content length was sent
 }
 
-IniFile ini("/config.ini");
-
-void WifiCtrl::init()
+// Init phase
+void WifiCtrl::setup()
 {
-    if (!ini.validate())
-    {
-        log_e("Unable to validate /config.ini");
-    }
-    else
-    {
-        *this->ssid = 0;
-        char pass[32];
-        *pass = 0;
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
 
-        if (ini.getValue((const char *)"wifi", (const char *)"ssid", (char *)ssid, 32))
-        {
-            if (ini.getValue((const char *)"wifi", (const char *)"pass", (char *)pass, 32))
-            {
-                this->phase = wifiInit;
-                log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, this->ssid));
-                WiFi.begin(ssid, pass);
-            }
-            else
-            {
-                log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_PASS));
-            }
-        }
-        else
-        {
-            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_SSID));
-        }
+    this->lastConnect = millis();
+    if (jsonConfig->config.wifiConfigSize > 0)
+    {
+        this->phase = wifiNext;
     }
 }
 
 // Init wifi and serve at the end
-void WifiCtrl::serve()
+void WifiCtrl::loop()
 {
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+
     switch (this->phase)
     {
+    case wifiNext:
+        if (jsonConfig->config.wifiConfigSize > 0)
+        {
+            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, jsonConfig->config.wifi[current].ssid));
+            WiFi.begin(jsonConfig->config.wifi[current].ssid, jsonConfig->config.wifi[current].pass);
+            TFT_Screen::instance()->notifyWifiStatus(jsonConfig->config.wifi[current].ssid);
+            this->phase = wifiInit;
+        }
+        break;
     case wifiInit:
         if (millis() - this->lastConnect < 1000)
         {
             return;
         }
-        TFT_Screen::instance()->notifyWifiStatus(this->ssid);
         this->lastConnect = millis();
         if (WiFi.status() == WL_CONNECTED)
         {
@@ -86,8 +74,22 @@ void WifiCtrl::serve()
             this->phase = wifiConnected;
             return;
         }
+        // stay on current with some retry
+        if (this->retry < 5)
+        {
+            TFT_Screen::instance()->notifyWifiStatus("retry");
+            this->retry++;
+            return;
+        }
+        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, jsonConfig->config.wifi[current].ssid));
+        this->retry = 0;
+        this->current++;
+        if (this->current >= jsonConfig->config.wifiConfigSize)
+        {
+            this->current = 0;
+        }
+        this->phase = wifiNext;
         TFT_Screen::instance()->notifyWifiStatus("KO");
-        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, this->ssid));
         break;
     case wifiConnected:
         WiFi.setSleep(false);

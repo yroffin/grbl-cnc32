@@ -13,6 +13,7 @@ enum WifiPhase
 {
   wifiNil,
   wifiInit,
+  wifiNext,
   wifiConnected,
   serveData
 };
@@ -21,15 +22,16 @@ class WifiCtrl
 {
 public:
   WifiCtrl();
-  void init();
-  void serve();
+  void setup();
+  void loop();
 
   static WifiCtrl *instance();
 
 private:
-  char ssid[32];
   WifiPhase phase = wifiNil;
   long lastConnect = 0;
+  int current = 0;
+  int retry = 0;
 };
 
 #endif

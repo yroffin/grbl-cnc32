@@ -10,12 +10,17 @@ Thanks to https://github.com/mstrens for his initial work.
 
 ## setup
 
-Simply add a config.ini on your SDCARD
+Simply add a config.json on your SDCARD
 
-```
-[wifi]
-ssid=<your SSID>
-pass=<your password>
+```json
+{
+    "wifi": [
+        {
+            "ssid": "<your SSID>",
+            "pass": "<your password>"
+        }
+    ]
+}
 ```
 
 ## feature

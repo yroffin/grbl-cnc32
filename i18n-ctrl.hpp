@@ -21,9 +21,7 @@ enum STD_MSG
   I18N_WIFI_TRYING,
   I18N_WIFI_IP,
   I18N_WIFI_KO,
-  I18N_WIFI_SERVE,
-  I18N_WIFI_VALID_SSID,
-  I18N_WIFI_VALID_PASS
+  I18N_WIFI_SERVE
 };
 
 class I18nCtrl
@@ -61,9 +59,7 @@ private:
       "trying to connect to %s",
       "wifi ip is %s",
       "fail to connect to %s",
-      "serving data on port %d",
-      "unable to validate ssid",
-      "unable to validate password"};
+      "serving data on port %d"};
 
   char *
       en_grbl_error[39] = {
