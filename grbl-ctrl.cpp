@@ -604,11 +604,11 @@ void GrblCtrl::notify(const Event *event)
     {
         TFT_Screen::instance()->outputConsole("[ERROR] %s", event->message);
     }
-    if (event->type == NUNCHUK_JOG_STOP)
+    if (event->type == JOG_STOP)
     {
         this->tryWrite(true, "%c\n", 0x85);
     }
-    if (event->type == NUNCHUK_LADER_MOVEXY)
+    if (event->type == JOG_MOVEXY)
     {
         this->move(
             event->touch.x / 10.,
@@ -616,7 +616,7 @@ void GrblCtrl::notify(const Event *event)
             0.,
             2000);
     }
-    if (event->type == NUNCHUK_LADER_MOVEZ)
+    if (event->type == JOG_MOVEZ)
     {
         this->move(
             0.,
@@ -630,40 +630,16 @@ void GrblCtrl::notify(const Event *event)
         switch (this->step)
         {
         case M1:
-            this->pas = 0.1;
+            this->xyzJogPas = 1;
             break;
         case M10:
-            this->pas = 1.0;
+            this->xyzJogPas = 5;
             break;
         case M100:
-            this->pas = 10.0;
+            this->xyzJogPas = 50;
             break;
         }
-        EvtCtrl::instance()->sendWithFloat(0, EVENT_NEW_STEP, this->pas);
-    }
-    if (event->type == EVENT_XM)
-    {
-        this->move(XM, this->pas);
-    }
-    if (event->type == EVENT_XP)
-    {
-        this->move(XP, this->pas);
-    }
-    if (event->type == EVENT_YM)
-    {
-        this->move(YM, this->pas);
-    }
-    if (event->type == EVENT_YP)
-    {
-        this->move(YP, this->pas);
-    }
-    if (event->type == EVENT_ZM)
-    {
-        this->move(ZM, this->pas);
-    }
-    if (event->type == EVENT_ZP)
-    {
-        this->move(ZP, this->pas);
+        EvtCtrl::instance()->sendInt(0, EVENT_NEW_STEP, this->xyzJogPas);
     }
     if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
     {
@@ -705,4 +681,34 @@ void GrblCtrl::notify(const Event *event)
     {
         this->setXYZ(SETXYZ);
     }
+    // cancel current jog
+    if (this->lastJog != 0 && millis() - this->lastJog > 1000)
+    {
+        this->lastJog = 0;
+        EvtCtrl::instance()->send(
+            WIDGET_ID_DEFAULT,
+            JOG_STOP);
+    }
+}
+
+// jog mode xy
+void GrblCtrl::jogMoveXY(int16_t x, int16_t y)
+{
+    EvtCtrl::instance()->sendTouch(
+        WIDGET_ID_DEFAULT,
+        JOG_MOVEXY,
+        x,
+        y);
+    this->lastJog = millis();
+}
+
+// jog mode z
+void GrblCtrl::jogMoveZ(int16_t z)
+{
+    EvtCtrl::instance()->sendTouch(
+        WIDGET_ID_DEFAULT,
+        JOG_MOVEZ,
+        0,
+        z);
+    this->lastJog = millis();
 }

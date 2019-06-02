@@ -85,6 +85,27 @@ protected:
   EventType eventType = BUTTON_DOWN;
 };
 
+enum JOG_WAY
+{
+  JOG_XP,
+  JOG_XM,
+  JOG_YP,
+  JOG_YM,
+  JOG_ZP,
+  JOG_ZM
+};
+
+class TFT_ButtonJog : public TFT_Button
+{
+public:
+  TFT_ButtonJog(int16_t _id, const char *_label, JOG_WAY _jw, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+  virtual void notify(const Event *event);
+
+private:
+  JOG_WAY jw;
+  int xyzJogPas = 1;
+};
+
 class TFT_File : public TFT_Button
 {
 public:

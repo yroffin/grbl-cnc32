@@ -37,6 +37,11 @@ void EvtCtrl::capture()
             touched = true;
             touchedTimestamp = millis();
         }
+        // screen is pressed (long)
+        if (touched && (millis() - touchedTimestamp) > 2000)
+        {
+            this->sendTouch(WIDGET_ID_SCREEN, LONG_TOUCH_SCREEN, x, y);
+        }
     }
     else
     {

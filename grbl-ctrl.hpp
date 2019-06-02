@@ -74,6 +74,9 @@ public:
   boolean move(float x, float y, float z, int speed);
   boolean setXYZ(EventGrbl param);
 
+  void jogMoveXY(int16_t x, int16_t y);
+  void jogMoveZ(int16_t z);
+
   // Event handler
   void notify(const Event *event);
 
@@ -98,6 +101,10 @@ protected:
   bool tryWrite(boolean flush, const char *grbl, ...);
 
 private:
+  // jog
+  long lastJog = 0;
+  int xyzJogPas = 0;
+
   // this buffer is used to store a few char received from GRBL before decoding them
   char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];
   // lower version of  strGrblBuf
@@ -119,7 +126,6 @@ private:
   boolean isPaused = false;
   GrblPrintStatus grblPrintStatus = empty;
   GrblStep step = M1;
-  float pas = 1.0;
   long lastStatus = 0;
   // only for simulation
   char sim[MAXSIZE_OF_SIM];

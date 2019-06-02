@@ -253,15 +253,16 @@ void TFT_LayerStatistic::notify(const Event *event)
         this->nunchukMove->setLabel("");
         this->groupNunchuk->setInvalidated(true);
     }
-    if (event->type == NUNCHUK_LADER_MOVEXY || event->type == NUNCHUK_LADER_MOVEZ)
+    // move button panel can also jog
+    if (event->type == JOG_MOVEXY || event->type == JOG_MOVEZ)
     {
         switch (event->type)
         {
-        case NUNCHUK_LADER_MOVEXY:
+        case JOG_MOVEXY:
             this->nunchukLader->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
             this->nunchukMove->setLabel("Move XY");
             break;
-        case NUNCHUK_LADER_MOVEZ:
+        case JOG_MOVEZ:
             this->nunchukLader->setLabel("z: %+03.03d", event->touch.y);
             this->nunchukMove->setLabel("Move Z");
             break;

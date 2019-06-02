@@ -1,5 +1,6 @@
 #include "widget.hpp"
 #include "evt-ctrl.hpp"
+#include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
 #include "utils.hpp"
 
@@ -164,6 +165,16 @@ void TFT_Button::notify(const Event *event)
             this->invalidated = true;
         }
         break;
+    // Touch on screen (long)
+    case LONG_TOUCH_SCREEN:
+        if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
+        {
+            EvtCtrl::instance()->send(this->id, this->eventType);
+            state = on;
+            // draw needed
+            this->invalidated = true;
+        }
+        break;
     // Touch is released
     case RELEASE_SCREEN:
         state = off;
@@ -185,6 +196,56 @@ void TFT_Button::draw()
     this->tft->drawRoundRect(x, y, w, h, r, this->border);
     this->tft->setTextDatum(MC_DATUM);
     this->tft->drawString(label, x + (w / 2), y + (h / 2));
+}
+
+// Constructor
+TFT_ButtonJog::TFT_ButtonJog(int16_t _id, const char *_label, JOG_WAY _jw, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+    : TFT_Button(_id, _label, _x, _y, _w, _h)
+{
+    this->jw = _jw;
+}
+
+// Button event handler
+void TFT_ButtonJog::notify(const Event *event)
+{
+    this->TFT_Button::notify(event);
+    switch (event->type)
+    {
+    // Touch on screen (long)
+    case EVENT_NEW_STEP:
+        this->xyzJogPas = event->ivalue;
+        break;
+    // Touch on screen (long)
+    case TOUCH_SCREEN:
+    case LONG_TOUCH_SCREEN:
+        if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
+        {
+            switch (this->jw)
+            {
+            case JOG_XP:
+                GrblCtrl::instance()->jogMoveXY(this->xyzJogPas, 0);
+                break;
+            case JOG_XM:
+                GrblCtrl::instance()->jogMoveXY(-this->xyzJogPas, 0);
+                break;
+            case JOG_YP:
+                GrblCtrl::instance()->jogMoveXY(0, this->xyzJogPas);
+                break;
+            case JOG_YM:
+                GrblCtrl::instance()->jogMoveXY(0, -this->xyzJogPas);
+                break;
+            case JOG_ZP:
+                GrblCtrl::instance()->jogMoveZ(this->xyzJogPas);
+                break;
+            case JOG_ZM:
+                GrblCtrl::instance()->jogMoveZ(-this->xyzJogPas);
+                break;
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 // Constructor
@@ -212,21 +273,21 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     init(_id, _label, _x, _y, _w, _h);
 
     // Init all button
-    this->xleft = new TFT_Button(_id + 1, "Left", 0, 44, 40, 40);
+    this->xleft = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Left", JOG_XM, 0, 44, 40, 40);
     this->add(this->xleft);
-    this->xright = new TFT_Button(_id + 2, "Right", 44 * 2, 44, 40, 40);
+    this->xright = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Right", JOG_XP, 44 * 2, 44, 40, 40);
     this->add(this->xright);
-    this->yup = new TFT_Button(_id + 4, "Up", 44, 0, 40, 40);
+    this->yup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Up", JOG_YP, 44, 0, 40, 40);
     this->add(this->yup);
-    this->ydown = new TFT_Button(_id + 3, "Down", 44, 44 * 2, 40, 40);
+    this->ydown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Down", JOG_YM, 44, 44 * 2, 40, 40);
     this->add(this->ydown);
-    this->zup = new TFT_Button(_id + 6, "Up", 44 * 4, 0, 40, 40);
+    this->zup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Up", JOG_ZP, 44 * 4, 0, 40, 40);
     this->add(this->zup);
-    this->zdown = new TFT_Button(_id + 5, "Down", 44 * 4, 44 * 2, 40, 40);
+    this->zdown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Down", JOG_ZM, 44 * 4, 44 * 2, 40, 40);
     this->add(this->zdown);
 
     // Pas 0.1, 1, 10 and 100
-    this->pas = new TFT_Button(_id + 7, "Pas", 44, 44, 40, 40);
+    this->pas = new TFT_Button(_id + 1, "Pas", 44, 44, 40, 40);
     this->add(this->pas);
 }
 
@@ -235,35 +296,11 @@ void TFT_Joystick::notify(const Event *event)
 {
     if (event->type == EVENT_NEW_STEP)
     {
-        this->pas->setLabel("%03.0f", event->fvalue.f1);
+        this->pas->setLabel("%02d", event->ivalue);
     }
     if (event->type == BUTTON_DOWN)
     {
         if (event->sender == this->id + 1)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_XM);
-        }
-        if (event->sender == this->id + 2)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_XP);
-        }
-        if (event->sender == this->id + 4)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_YP);
-        }
-        if (event->sender == this->id + 3)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_YM);
-        }
-        if (event->sender == this->id + 6)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_ZP);
-        }
-        if (event->sender == this->id + 5)
-        {
-            EvtCtrl::instance()->send(this->id, EVENT_ZM);
-        }
-        if (event->sender == this->id + 7)
         {
             EvtCtrl::instance()->send(this->id, EVENT_NEXT_STEP);
         }

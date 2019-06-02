@@ -1,4 +1,5 @@
 #include "nunchuk-ctrl.hpp"
+#include "grbl-ctrl.hpp"
 #include "evt-ctrl.hpp"
 
 // NunchukCtrl controller
@@ -109,12 +110,7 @@ void NunchukCtrl::capture()
                 {
                     int16_t xlader = abs(xplane) < 10 ? 0 : abs(xplane) < 60 ? 1 : 100;
                     int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 100;
-                    EvtCtrl::instance()->sendTouch(
-                        WIDGET_ID_DEFAULT,
-                        NUNCHUK_LADER_MOVEXY,
-                        xplane < 0 ? -xlader : xlader,
-                        yplane < 0 ? -ylader : ylader);
-                    this->lastJog = millis();
+                    GrblCtrl::instance()->jogMoveXY(xplane < 0 ? -xlader : xlader, yplane < 0 ? -ylader : ylader);
                 }
             }
 
@@ -123,12 +119,7 @@ void NunchukCtrl::capture()
                 if (abs(yplane) >= 10)
                 {
                     int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 50;
-                    EvtCtrl::instance()->sendTouch(
-                        WIDGET_ID_DEFAULT,
-                        NUNCHUK_LADER_MOVEZ,
-                        0,
-                        yplane < 0 ? -ylader : ylader);
-                    this->lastJog = millis();
+                    GrblCtrl::instance()->jogMoveZ(yplane < 0 ? -ylader : ylader);
                 }
             }
         }
@@ -139,13 +130,6 @@ void NunchukCtrl::capture()
         {
             this->wait = millis();
             this->state = NUNCHUK_STATE_START_READ;
-        }
-        if (this->lastJog != 0 && millis() - this->lastJog > 1000)
-        {
-            this->lastJog = 0;
-            EvtCtrl::instance()->send(
-                WIDGET_ID_DEFAULT,
-                NUNCHUK_JOG_STOP);
         }
         break;
 

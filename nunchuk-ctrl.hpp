@@ -50,7 +50,6 @@ public:
 private:
   NUNCHUK_STATE state = NUNCHUK_STATE_ZERO;
   long wait = 0;
-  long lastJog = 0;
   int16_t nunchuk_data[6];
   boolean z = false;
   boolean c = false;
