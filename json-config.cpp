@@ -1,4 +1,5 @@
 #include "json-config.hpp"
+#include "config.h"
 #include "utils.hpp"
 
 #include "ArduinoJson/ArduinoJson.h"
@@ -25,7 +26,7 @@ JsonConfigCtrl::JsonConfigCtrl()
 void JsonConfigCtrl::setup()
 {
   // Initialize SD library
-  while (!SD.begin())
+  while (!SD.begin(SD_CHIPSELECT_PIN))
   {
     log_i("Failed to initialize SD library");
     delay(1000);

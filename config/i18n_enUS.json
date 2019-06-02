@@ -1,0 +1,144 @@
+{
+    "std": [
+        {
+            "msg": "Unknown ..."
+        },
+        {
+            "msg": "%s init ..."
+        },
+        {
+            "msg": "%s ok"
+        },
+        {
+            "msg": "trying to connect to %s"
+        },
+        {
+            "msg": "wifi ip is %s"
+        },
+        {
+            "msg": "fail to connect to %s"
+        },
+        {
+            "msg": "serving data on port %d"
+        }
+    ],
+    "grbl": [
+        {
+            "msg": "0.Unknown error"
+        },
+        {
+            "msg": "1.Expected cmd letter"
+        },
+        {
+            "msg": "2.Bad number format"
+        },
+        {
+            "msg": "3.Invalid $ sytem cmd"
+        },
+        {
+            "msg": "4.Negative value"
+        },
+        {
+            "msg": "5.Homing not enabled"
+        },
+        {
+            "msg": "6.Step pulse <3 usec"
+        },
+        {
+            "msg": "7.EEPROM read fail"
+        },
+        {
+            "msg": "8. $ while not IDLE"
+        },
+        {
+            "msg": "9.Locked(alarm or jog)"
+        },
+        {
+            "msg": "10.Soft limit(no Homing)"
+        },
+        {
+            "msg": "11.Line overflow"
+        },
+        {
+            "msg": "12.Step rate to high"
+        },
+        {
+            "msg": "13.Safety door detected"
+        },
+        {
+            "msg": "14.Line length exceeded"
+        },
+        {
+            "msg": "15.Jog travel exceeded"
+        },
+        {
+            "msg": "16.Invalid jog command"
+        },
+        {
+            "msg": "17.Laser requires PWM"
+        },
+        {
+            "msg": "18.Unknown error"
+        },
+        {
+            "msg": "19.Unknown error"
+        },
+        {
+            "msg": "20.Unsupported command"
+        },
+        {
+            "msg": "21.Modal group violation"
+        },
+        {
+            "msg": "22.Undef. feed rate"
+        },
+        {
+            "msg": "23.Cmd requires integer"
+        },
+        {
+            "msg": "24.Several axis Gcode"
+        },
+        {
+            "msg": "25.Repeated Gcode"
+        },
+        {
+            "msg": "26.Axis missing in Gcode"
+        },
+        {
+            "msg": "27.Invalid line number"
+        },
+        {
+            "msg": "28.Value missing in Gcode"
+        },
+        {
+            "msg": "29.G59 WCS not supported"
+        },
+        {
+            "msg": "30.G53 without G0 and G1"
+        },
+        {
+            "msg": "31.Axis not allowed"
+        },
+        {
+            "msg": "32.G2,G3 require a plane"
+        },
+        {
+            "msg": "33.Invalid motion target"
+        },
+        {
+            "msg": "34.Invalid arc radius"
+        },
+        {
+            "msg": "35.G2,G3 require offset"
+        },
+        {
+            "msg": "36.Unused value"
+        },
+        {
+            "msg": "37.G43.1 tool length"
+        },
+        {
+            "msg": "38.Tool number > max"
+        }
+    ]
+}

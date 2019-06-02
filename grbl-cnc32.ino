@@ -12,6 +12,12 @@
 
 void setup()
 {
+    // JsonConfigCtrl controller
+    JsonConfigCtrl::instance()->setup();
+
+    // I18nCtrl controller
+    I18nCtrl::instance()->setup();
+
     // screen controller
     log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "TFT_Screen"));
     TFT_Screen::instance()->init();
@@ -23,10 +29,6 @@ void setup()
     // storage controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "StorageCtrl"));
     StorageCtrl::instance()->init();
-
-    // storage controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "JsonConfigCtrl"));
-    JsonConfigCtrl::instance()->setup();
 
     // wifi controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "WifiCtrl"));

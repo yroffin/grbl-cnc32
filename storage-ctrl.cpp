@@ -21,11 +21,6 @@ StorageCtrl::StorageCtrl()
 
 void StorageCtrl::init()
 {
-    if (!SD.begin(SD_CHIPSELECT_PIN))
-    {
-        log_e("Card mount failed");
-        return;
-    }
     if (!SD.exists("/"))
     { // check if root exist
         log_e("Root ('/') not found on SD card");
