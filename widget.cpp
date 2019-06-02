@@ -409,12 +409,10 @@ TFT_Label::TFT_Label(int16_t _id, const char *_label, int16_t _x, int16_t _y)
 
 void TFT_Label::draw()
 {
-    this->tft->setTextFont(1);                                   // use Font2 = 16 pixel X 7 probably
     this->tft->setTextSize(1);                                   // char is 2 X magnified =>
     this->tft->setTextColor(this->fontNormal, this->background); // when only 1 parameter, background = fond);
     this->tft->setTextDatum(TL_DATUM);                           // align rigth ( option la plus pratique pour les float ou le statut GRBL)
-    this->tft->drawString(label, x, y);
-    this->TFT_Widget::draw();
+    this->tft->drawString(label, x, y, 1);
 }
 
 // Constructor

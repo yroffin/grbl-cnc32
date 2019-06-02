@@ -99,9 +99,14 @@ int StorageCtrl::open(const char *filename)
     this->file = SD.open(filename);
     // computes lines
     int lines = 0;
-    for (; this->file.available(); lines++)
+    char buffer[1024];
+    for (; this->file.available();)
     {
-        const char *value = this->file.readStringUntil(10).c_str();
+        int sz = this->file.readBytes(buffer, 1024);
+        for (int i = 0; i < sz; i++)
+            if (buffer[i] == 10)
+                lines++;
+        ;
     }
     this->file.close();
     this->file = SD.open(filename);
