@@ -90,18 +90,27 @@ StorageEntry *StorageCtrl::getEntries(int16_t index)
     return this->storageEntry[index];
 }
 
-void StorageCtrl::open(const char *filename)
+int StorageCtrl::open(const char *filename)
 {
     if (this->isOpen)
     {
         this->file.close();
     }
     this->file = SD.open(filename);
+    // computes lines
+    int lines = 0;
+    for (; this->file.available(); lines++)
+    {
+        const char *value = this->file.readStringUntil(10).c_str();
+    }
+    this->file.close();
+    this->file = SD.open(filename);
+    return lines;
 }
 
 boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
 {
-    if (file.available())
+    if (this->file.available())
     {
         const char *value = this->file.readStringUntil(10).c_str();
         size_t m = min(strlen(value), (size_t)maxLength - 1);

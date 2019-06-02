@@ -114,6 +114,8 @@ private:
   uint8_t byteRead = 0;
   boolean busy = true;
   boolean isPrinting = false;
+  int toPrintLines = 0;
+  int printedLines = 0;
   boolean isPaused = false;
   GrblPrintStatus grblPrintStatus = empty;
   GrblStep step = M1;

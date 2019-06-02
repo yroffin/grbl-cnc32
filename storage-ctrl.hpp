@@ -43,7 +43,7 @@ public:
   int16_t getCount();
   StorageEntry *getEntries(int16_t index);
 
-  void open(const char *filename);
+  int open(const char *filename);
   boolean readline(char *buffer, int16_t maxLength);
   void close();
 

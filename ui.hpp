@@ -139,6 +139,7 @@ public:
   void notifyWrite(uint16_t sz);
   void notifyBusy(boolean _busyState);
   void notifyWifiStatus(const char *status);
+  void notifyPrintStatus(boolean isPrinting, int printed, int toPrint);
 
 public:
   TFT_LayerMenu *menu;

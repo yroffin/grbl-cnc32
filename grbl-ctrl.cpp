@@ -25,7 +25,7 @@ void GrblCtrl::init()
 {
     Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
     idx = sim;
-    this->simulation = true;
+    this->simulation = false;
 
     strGrblIdx = 0;
 
@@ -407,7 +407,8 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
 void GrblCtrl::print(const char *filename)
 {
     TFT_Screen::instance()->outputConsole("printing: %s", filename);
-    StorageCtrl::instance()->open(filename);
+    this->toPrintLines = StorageCtrl::instance()->open(filename);
+    this->printedLines = 0;
     this->isPrinting = true;
     this->grblPrintStatus = empty;
 }
@@ -433,6 +434,11 @@ void GrblCtrl::spool()
                 if (StorageCtrl::instance()->readline(this->printBuffer, STR_GRBL_BUF_MAX_SIZE))
                 {
                     this->grblPrintStatus = full;
+                    this->printedLines++;
+                    if (this->printedLines % 4)
+                    {
+                        TFT_Screen::instance()->notifyPrintStatus(true, this->printedLines, this->toPrintLines);
+                    }
                 }
                 else
                 {

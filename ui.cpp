@@ -476,3 +476,11 @@ void TFT_Screen::notifyWifiStatus(const char *status)
         this->menu->status->notifyWifiStatus(status);
     }
 }
+
+void TFT_Screen::notifyPrintStatus(boolean isPrinting, int printed, int toPrint)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyPrintStatus(isPrinting, printed, toPrint);
+    }
+}

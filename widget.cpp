@@ -406,9 +406,12 @@ void TFT_StatusBar::draw()
     char work[32];
     sprintf(work, "%-05.05d B/S", this->writeSpeed);
     this->tft->drawString(work, x + 1 + (8 * 2), y + 1, 1);
-    // speed write
+    // wifi status
     sprintf(work, "%-20.20s", this->wifiStatus);
     this->tft->drawString(work, x + 1 + (8 * 9), y + 1, 1);
+    // wifi status
+    sprintf(work, "%-05.05d/%-05.05d", this->printed, this->toPrint);
+    this->tft->drawString(work, x + 1 + (8 * 29), y + 1, 1);
 }
 
 void TFT_StatusBar::notifyWrite(uint16_t sz)
@@ -434,6 +437,14 @@ void TFT_StatusBar::notifyBusy(boolean _busyState)
 void TFT_StatusBar::notifyWifiStatus(const char *status)
 {
     Utils::strcpy(this->wifiStatus, status, 20);
+    this->invalidated = true;
+}
+
+void TFT_StatusBar::notifyPrintStatus(boolean _isPrinting, int _printed, int _toPrint)
+{
+    this->isPrinting = _isPrinting;
+    this->printed = _printed;
+    this->toPrint = _toPrint;
     this->invalidated = true;
 }
 

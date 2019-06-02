@@ -137,6 +137,7 @@ public:
   void notifyWrite(uint16_t sz);
   void notifyBusy(boolean _busyState);
   void notifyWifiStatus(const char *status);
+  void notifyPrintStatus(boolean isPrinting, int printed, int toPrint);
 
 private:
   boolean busyState = true;
@@ -149,6 +150,9 @@ private:
   uint16_t write = 0;
   char wifiStatus[21];
   const char *writeStatus = "!/-\\";
+  boolean isPrinting;
+  int printed = 0;
+  int toPrint = 0;
 };
 
 class TFT_Console : public TFT_Widget
