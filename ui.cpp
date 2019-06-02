@@ -82,6 +82,9 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, "admin", 8, 14 + 44 * 3, 40, 40);
     this->d->setEvent(EVENT_BTN_ADM);
     this->add(this->d);
+    // Status bar
+    this->status = new TFT_StatusBar(WIDGET_ID_DEFAULT, 0, 230);
+    this->add(this->status);
 }
 
 // Notification
@@ -120,55 +123,9 @@ void TFT_LayerMenu::notify(const Event *event)
 }
 
 // control layer
-TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
-{
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Admin", 0, 0, 265, 240);
-    this->add(this->group);
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
-    this->group->add(this->title);
-    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, "Print", 0, 14, 40, 40);
-    this->print->setEvent(EVENT_START_PRINT);
-    this->group->add(print);
-    this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, "Unlock", 44, 14, 40, 40);
-    this->group->add(this->unlock);
-    this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, "Reset", 44 * 2, 14, 40, 40);
-    this->group->add(this->reset);
-    this->status = new TFT_Button(WIDGET_ID_LAYER_ADM_STATUS, "Status", 44 * 3, 14, 40, 40);
-    this->group->add(this->status);
-    this->pause = new TFT_Button(WIDGET_ID_LAYER_ADM_PAUSE, "Pause", 44 * 4, 14, 40, 40);
-    this->group->add(this->pause);
-    this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, "Resume", 44 * 5, 14, 40, 40);
-    this->group->add(this->resume);
-    this->grblCommand = new TFT_Console(WIDGET_ID_DEFAULT, "grbl", 12, 0, 60, 265, 180);
-    this->group->add(this->grblCommand);
-}
-
-void TFT_LayerAdmin::grblInputConsole(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    // use utils buffer to protect memory
-    vsprintf(Utils::vsprintfBuffer(), format, args);
-    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
-    va_end(args);
-    this->grblCommand->write(this->log_message);
-}
-
-void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    // use utils buffer to protect memory
-    vsprintf(Utils::vsprintfBuffer(), format, args);
-    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
-    va_end(args);
-    this->grblCommand->write(this->log_message);
-}
-
-// control layer
 TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Control", 0, 0, 265, 240);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Control", 0, 0, 265, 230);
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
     this->group->add(this->title);
@@ -217,7 +174,7 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->grblWposValue = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14 * 4);
     this->group->add(this->grblWposValue);
 
-    this->groupNunchuk = new TFT_Group(WIDGET_ID_DEFAULT, "Nunchuk", 0, 14 * 4 + 10, 265, 14 * 6);
+    this->groupNunchuk = new TFT_Group(WIDGET_ID_DEFAULT, "Nunchuk", 0, 14 * 5, 265, 14 * 5);
     this->add(this->groupNunchuk);
 
     this->nunchuk = new TFT_Label(WIDGET_ID_DEFAULT, "Chuk", 0, 0);
@@ -233,7 +190,7 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->nunchukLader = new TFT_Label(WIDGET_ID_DEFAULT, "0", 100, 14);
     this->groupNunchuk->add(this->nunchukLader);
 
-    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 150, 265, 90);
+    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 14 * 10, 265, 14 * 6);
     this->group->add(this->console);
 }
 
@@ -259,6 +216,9 @@ void TFT_LayerStatistic::notify(const Event *event)
         {
         case GRBL_IDLE:
             this->grblStatusValue->setLabel("IDLE");
+            break;
+        case GRBL_RUN:
+            this->grblStatusValue->setLabel("RUN");
             break;
         default:
             this->grblStatusValue->setLabel("UNKNOWN");
@@ -315,7 +275,7 @@ void TFT_LayerStatistic::notify(const Event *event)
 // files layer
 TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 240);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 230);
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Files", 0, 0);
     this->group->add(title);
@@ -373,6 +333,52 @@ void TFT_LayerFile::refresh()
             this->files->set(i, StorageCtrl::instance()->getEntries(i + this->files->offset)->getPath());
         }
     }
+}
+
+// adminn layer
+TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
+{
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Admin", 0, 0, 265, 230);
+    this->add(this->group);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
+    this->group->add(this->title);
+    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, "Print", 0, 14, 40, 40);
+    this->print->setEvent(EVENT_START_PRINT);
+    this->group->add(print);
+    this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, "Unlock", 44, 14, 40, 40);
+    this->group->add(this->unlock);
+    this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, "Reset", 44 * 2, 14, 40, 40);
+    this->group->add(this->reset);
+    this->status = new TFT_Button(WIDGET_ID_LAYER_ADM_STATUS, "Status", 44 * 3, 14, 40, 40);
+    this->group->add(this->status);
+    this->pause = new TFT_Button(WIDGET_ID_LAYER_ADM_PAUSE, "Pause", 44 * 4, 14, 40, 40);
+    this->group->add(this->pause);
+    this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, "Resume", 44 * 5, 14, 40, 40);
+    this->group->add(this->resume);
+    this->grblCommand = new TFT_Console(WIDGET_ID_DEFAULT, "grbl", 12, 0, 60, 265, 14 * 12);
+    this->group->add(this->grblCommand);
+}
+
+void TFT_LayerAdmin::grblInputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
+    va_end(args);
+    this->grblCommand->write(this->log_message);
+}
+
+void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
+    va_end(args);
+    this->grblCommand->write(this->log_message);
 }
 
 // touch calibration
@@ -445,4 +451,28 @@ void TFT_Screen::notify(const Event *event)
 {
     // Dispatch to layers
     this->TFT_Widget::notify(event);
+}
+
+void TFT_Screen::notifyWrite(uint16_t sz)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyWrite(sz);
+    }
+}
+
+void TFT_Screen::notifyBusy(boolean _busyState)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyBusy(_busyState);
+    }
+}
+
+void TFT_Screen::notifyWifiStatus(const char *status)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyWifiStatus(status);
+    }
 }

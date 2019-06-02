@@ -377,6 +377,64 @@ void TFT_Label::draw()
     this->tft->setTextColor(this->fontNormal, this->background); // when only 1 parameter, background = fond);
     this->tft->setTextDatum(TL_DATUM);                           // align rigth ( option la plus pratique pour les float ou le statut GRBL)
     this->tft->drawString(label, x, y);
+    this->TFT_Widget::draw();
+}
+
+// Constructor
+TFT_StatusBar::TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y)
+{
+    init(_id, "status", _x, _y, 320, 10);
+    Utils::strcpy(this->wifiStatus, "...", 20);
+}
+
+void TFT_StatusBar::draw()
+{
+    this->tft->setTextFont(1);
+    this->tft->setTextSize(1);
+    this->tft->setTextDatum(TL_DATUM);
+    this->tft->drawRect(x, y, w, h, TFT_DARKGREY);
+
+    // green for ok
+    // orange for busy
+    // red for long busy state
+    this->tft->setTextColor(TFT_BLACK, this->busyState ? TFT_ORANGE : TFT_GREEN);
+    this->tft->drawChar('B', x + 1, y + 1);
+    // write status
+    this->tft->setTextColor(TFT_BLACK, millis() - this->lastBusyWrite > 10000 ? TFT_ORANGE : TFT_GREEN);
+    this->tft->drawChar(this->writeStatus[this->write % 4], x + 1 + 8, y + 1);
+    // speed write
+    char work[32];
+    sprintf(work, "%-05.05d B/S", this->writeSpeed);
+    this->tft->drawString(work, x + 1 + (8 * 2), y + 1, 1);
+    // speed write
+    sprintf(work, "%-20.20s", this->wifiStatus);
+    this->tft->drawString(work, x + 1 + (8 * 9), y + 1, 1);
+}
+
+void TFT_StatusBar::notifyWrite(uint16_t sz)
+{
+    if ((millis() - this->lastWrite) > 10000)
+    {
+        this->writeSpeed = this->lastWriteSize / 10;
+        this->lastWriteSize = 0;
+        this->lastWrite = millis();
+    }
+    this->lastWriteSize += sz;
+    this->lastBusyWrite = millis();
+    this->write += sz;
+    this->invalidated = true;
+}
+
+void TFT_StatusBar::notifyBusy(boolean _busyState)
+{
+    this->busyState = _busyState;
+    this->invalidated = true;
+}
+
+void TFT_StatusBar::notifyWifiStatus(const char *status)
+{
+    Utils::strcpy(this->wifiStatus, status, 20);
+    this->invalidated = true;
 }
 
 // Constructor

@@ -25,7 +25,7 @@ void GrblCtrl::init()
 {
     Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
     idx = sim;
-    this->simulation = false;
+    this->simulation = true;
 
     strGrblIdx = 0;
 
@@ -101,9 +101,35 @@ int GrblCtrl::read()
     }
 }
 
+// write
+void GrblCtrl::write(boolean flush, const char *value)
+{
+    // write data
+    Serial2.print(value);
+    // wait for send all data
+    if (flush)
+        Serial2.flush();
+    TFT_Screen::instance()->menu->status->notifyWrite((uint16_t)strlen(value));
+}
+
+void GrblCtrl::setBusy(boolean _busyState)
+{
+    this->busy = _busyState;
+    TFT_Screen::instance()->menu->status->notifyBusy(this->busy);
+}
+
+boolean GrblCtrl::isBusy()
+{
+    return this->busy;
+}
+
 // Capture serial data
 void GrblCtrl::capture(void)
 {
+    if (simulation)
+    {
+        this->setBusy(false);
+    }
     int c;
     while (available())
     {
@@ -293,6 +319,10 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     {
         this->grblState = GRBL_IDLE;
     }
+    if (strcmp(GRBL_STATUS_RUN, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_RUN;
+    }
     EvtCtrl::instance()->sendInt(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, this->grblState);
     char separator = msgTolower[index];
     // now find block
@@ -318,8 +348,8 @@ void GrblCtrl::decodeAlarm(const char *msg, const char *msgTolower)
 
 void GrblCtrl::decodeOk(const char *msg, const char *msgTolower)
 {
-    TFT_Screen::instance()->outputConsole("[OK] %s", msg);
-    this->busy = false;
+    // ok so don't busy anymore
+    this->setBusy(false);
 }
 
 void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
@@ -328,28 +358,17 @@ void GrblCtrl::decodeFeedback(const char *msg, const char *msgTolower)
 }
 
 // force write
-void GrblCtrl::write(boolean flush, const char *grbl, ...)
+void GrblCtrl::forceWrite(boolean flush, const char *grbl, ...)
 {
     this->txWrite++;
     va_list args;
     va_start(args, grbl);
     // use utils buffer to protect memory
     vsprintf(Utils::vsprintfBuffer(), grbl, args);
-    Utils::strcpy(this->writeBuffer, Utils::vsprintfBuffer(), STR_GRBL_BUF_MAX_WRITE_SIZE);
-    if (this->simulation)
-    {
-        TFT_Screen::instance()->outputConsole("[SIMUL]  %06d %s (force)", this->txWrite, this->writeBuffer);
-    }
-    else
-    {
-        TFT_Screen::instance()->outputConsole("[WRITE] %06d %s (force)", this->txWrite, this->writeBuffer);
-        TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
-        Serial2.print(this->writeBuffer);
-        // wait for send all data
-        if (flush)
-            Serial2.flush();
-    }
     va_end(args);
+    Utils::strcpy(this->writeBuffer, Utils::vsprintfBuffer(), STR_GRBL_BUF_MAX_WRITE_SIZE);
+    TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
+    this->write(flush, this->writeBuffer);
 }
 
 // try to write (only when not busy)
@@ -360,6 +379,7 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
     // use utils buffer to protect memory
     vsprintf(Utils::vsprintfBuffer(), grbl, args);
     Utils::strcpy(this->writeBuffer, Utils::vsprintfBuffer(), STR_GRBL_BUF_MAX_WRITE_SIZE);
+    va_end(args);
     // ignore comment ( / ;
     switch (*this->writeBuffer)
     {
@@ -368,35 +388,17 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
     case ';':
         return true;
     }
-
-    if (this->busy)
+    // check busy state
+    if (this->isBusy())
     {
-        if (millis() - this->lastBusyWrite > 10000)
-        {
-            this->lastBusyWrite = millis();
-            TFT_Screen::instance()->outputConsole("[BUSY] %s", this->writeBuffer);
-        }
         return false;
     }
     else
     {
         this->txWrite++;
-        this->lastBusyWrite = millis();
-        if (this->simulation)
-        {
-            TFT_Screen::instance()->outputConsole("[SIMUL] %06d %s", this->txWrite, this->writeBuffer);
-            this->busy = true;
-        }
-        else
-        {
-            TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
-            Serial2.print(this->writeBuffer);
-            // wait for send all data
-            if (flush)
-                Serial2.flush();
-            this->busy = true;
-        }
-        va_end(args);
+        this->setBusy(true);
+        this->write(flush, this->writeBuffer);
+        TFT_Screen::instance()->grblInputConsole(this->writeBuffer);
         return true;
     }
 }
@@ -443,7 +445,7 @@ void GrblCtrl::spool()
             }
             break;
         case full:
-            if (!this->busy)
+            if (!this->isBusy())
             {
                 // command is waiting for sending
                 if (this->tryWrite(true, this->printBuffer))
@@ -454,7 +456,7 @@ void GrblCtrl::spool()
             break;
         case waitForStatus:
             // status needed to know what we are doing
-            if (!this->busy)
+            if (!this->isBusy())
             {
                 this->grblPrintStatus = empty;
             }
@@ -482,7 +484,7 @@ boolean GrblCtrl::home()
 // unlock command
 boolean GrblCtrl::unlock()
 {
-    this->write(true, "$X\n");
+    this->forceWrite(true, "$X\n");
     return true;
 }
 
@@ -492,14 +494,14 @@ boolean GrblCtrl::reset()
     // stop printing
     this->isPrinting = false;
     // and reset
-    this->write(true, "%c\n", 0x18);
+    this->forceWrite(true, "%c\n", 0x18);
     return true;
 }
 
 // pause command
 boolean GrblCtrl::pause()
 {
-    this->write(true, "!\n");
+    this->forceWrite(true, "!\n");
     this->isPaused = true;
     return true;
 }
@@ -507,7 +509,7 @@ boolean GrblCtrl::pause()
 // resume command
 boolean GrblCtrl::resume()
 {
-    this->write(true, "~\n");
+    this->forceWrite(true, "~\n");
     this->isPaused = false;
     return true;
 }
@@ -515,7 +517,7 @@ boolean GrblCtrl::resume()
 // status
 boolean GrblCtrl::status()
 {
-    this->write(true, "?\n");
+    this->forceWrite(true, "?\n");
     return true;
 }
 

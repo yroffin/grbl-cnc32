@@ -108,6 +108,9 @@ public:
   TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
   virtual void notify(const Event *event);
 
+public:
+  TFT_StatusBar *status;
+
 protected:
   // local component
   TFT_Label *title;
@@ -132,6 +135,10 @@ public:
   void grblOutputConsole(const char *format, ...);
 
   static TFT_Screen *instance();
+
+  void notifyWrite(uint16_t sz);
+  void notifyBusy(boolean _busyState);
+  void notifyWifiStatus(const char *status);
 
 public:
   TFT_LayerMenu *menu;

@@ -58,12 +58,12 @@ void WifiCtrl::init()
             }
             else
             {
-                TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_PASS));
+                log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_PASS));
             }
         }
         else
         {
-            TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_SSID));
+            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_VALID_SSID));
         }
     }
 }
@@ -78,17 +78,16 @@ void WifiCtrl::serve()
         {
             return;
         }
-        log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, this->ssid));
+        TFT_Screen::instance()->notifyWifiStatus(this->ssid);
         this->lastConnect = millis();
         if (WiFi.status() == WL_CONNECTED)
         {
-            char ip[MAXSIZE_OF_IP];
-            Utils::strcpy(ip, WiFi.localIP().toString().c_str(), MAXSIZE_OF_IP);
-            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_IP, ip));
+            TFT_Screen::instance()->notifyWifiStatus(WiFi.localIP().toString().c_str());
             this->phase = wifiConnected;
             return;
         }
-        log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, this->ssid));
+        TFT_Screen::instance()->notifyWifiStatus("KO");
+        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, this->ssid));
         break;
     case wifiConnected:
         WiFi.setSleep(false);

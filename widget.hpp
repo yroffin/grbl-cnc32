@@ -128,6 +128,29 @@ public:
 private:
 };
 
+class TFT_StatusBar : public TFT_Widget
+{
+public:
+  TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y);
+  virtual void draw();
+
+  void notifyWrite(uint16_t sz);
+  void notifyBusy(boolean _busyState);
+  void notifyWifiStatus(const char *status);
+
+private:
+  boolean busyState = true;
+  // timers
+  long lastWrite = 0;
+  long lastBusyWrite = 0;
+  // bytes counter
+  uint16_t lastWriteSize = 0;
+  uint16_t writeSpeed = 0;
+  uint16_t write = 0;
+  char wifiStatus[21];
+  const char *writeStatus = "!/-\\";
+};
+
 class TFT_Console : public TFT_Widget
 {
 public:

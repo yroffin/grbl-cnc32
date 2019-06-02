@@ -25,7 +25,8 @@
 enum GrblStatus
 {
   GRBL_UNKNOWN,
-  GRBL_IDLE
+  GRBL_IDLE,
+  GRBL_RUN
 };
 
 #define MAXSIZE_OF_SIM 512
@@ -60,6 +61,9 @@ public:
   void print(const char *filename);
   void spool();
 
+  void setBusy(boolean _busyState);
+  boolean isBusy();
+
   boolean home();
   boolean unlock();
   boolean reset();
@@ -81,6 +85,8 @@ protected:
   void status(const char *message);
   int available();
   int read();
+  void write(boolean flush, const char *data);
+
   void flush();
   void decodeStatus(const char *, const char *);
   void decodeError(const char *, const char *);
@@ -88,7 +94,7 @@ protected:
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
 
-  void write(boolean flush, const char *grbl, ...);
+  void forceWrite(boolean flush, const char *grbl, ...);
   bool tryWrite(boolean flush, const char *grbl, ...);
 
 private:
@@ -117,7 +123,6 @@ private:
   char sim[MAXSIZE_OF_SIM];
   char *idx;
   boolean simulation = true;
-  long lastBusyWrite = 0;
 };
 
 #endif
