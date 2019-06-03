@@ -40,7 +40,7 @@ void WifiCtrl::setup()
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
 
     this->lastConnect = millis();
-    if (jsonConfig->config.wifiConfigSize > 0)
+    if (jsonConfig->getSize("wifi") > 0)
     {
         this->phase = wifiNext;
     }
@@ -54,42 +54,49 @@ void WifiCtrl::loop()
     switch (this->phase)
     {
     case wifiNext:
-        if (jsonConfig->config.wifiConfigSize > 0)
+        if (jsonConfig->getSize("wifi") > 0)
         {
-            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, jsonConfig->config.wifi[current].ssid));
-            WiFi.begin(jsonConfig->config.wifi[current].ssid, jsonConfig->config.wifi[current].pass);
-            TFT_Screen::instance()->notifyWifiStatus(jsonConfig->config.wifi[current].ssid);
+            const char *ssid = jsonConfig->getAsString("wifi", current, "ssid", "");
+            const char *pass = jsonConfig->getAsString("wifi", current, "pass", "");
+            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, ssid));
+            WiFi.begin(ssid, pass);
+            TFT_Screen::instance()->notifyWifiStatus(ssid);
             this->phase = wifiInit;
         }
         break;
     case wifiInit:
-        if (millis() - this->lastConnect < 1000)
+        if (jsonConfig->getSize("wifi") > 0)
         {
-            return;
+            const char *ssid = jsonConfig->getAsString("wifi", current, "ssid", "");
+            const char *pass = jsonConfig->getAsString("wifi", current, "pass", "");
+            if (millis() - this->lastConnect < 1000)
+            {
+                return;
+            }
+            this->lastConnect = millis();
+            if (WiFi.status() == WL_CONNECTED)
+            {
+                TFT_Screen::instance()->notifyWifiStatus(WiFi.localIP().toString().c_str());
+                this->phase = wifiConnected;
+                return;
+            }
+            // stay on current with some retry
+            if (this->retry < 5)
+            {
+                TFT_Screen::instance()->notifyWifiStatus("retry");
+                this->retry++;
+                return;
+            }
+            TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, ssid));
+            this->retry = 0;
+            this->current++;
+            if (this->current >= jsonConfig->getSize("wifi"))
+            {
+                this->current = 0;
+            }
+            this->phase = wifiNext;
+            TFT_Screen::instance()->notifyWifiStatus("KO");
         }
-        this->lastConnect = millis();
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            TFT_Screen::instance()->notifyWifiStatus(WiFi.localIP().toString().c_str());
-            this->phase = wifiConnected;
-            return;
-        }
-        // stay on current with some retry
-        if (this->retry < 5)
-        {
-            TFT_Screen::instance()->notifyWifiStatus("retry");
-            this->retry++;
-            return;
-        }
-        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, jsonConfig->config.wifi[current].ssid));
-        this->retry = 0;
-        this->current++;
-        if (this->current >= jsonConfig->config.wifiConfigSize)
-        {
-            this->current = 0;
-        }
-        this->phase = wifiNext;
-        TFT_Screen::instance()->notifyWifiStatus("KO");
         break;
     case wifiConnected:
         WiFi.setSleep(false);

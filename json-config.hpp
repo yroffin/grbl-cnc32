@@ -1,31 +1,27 @@
 #ifndef _JSON_CONFIG_CONTROLLER_
 #define _JSON_CONFIG_CONTROLLER_
 
-typedef struct
-{
-  char ssid[32];
-  char pass[32];
-} ConfigWifi;
+#include "json-store.hpp"
 
-struct Config
-{
-  int wifiConfigSize;
-  ConfigWifi wifi[4];
-};
+#include "config.h"
 
-class JsonConfigCtrl
+#include "ArduinoJson/ArduinoJson.h"
+#include <SD.h>
+#include <SPI.h>
+
+class JsonConfigCtrl : public JsonStore
 {
 public:
   JsonConfigCtrl();
   static JsonConfigCtrl *instance();
 
   void setup();
-  void loadConfiguration(const char *filename, Config &config);
-  void saveConfiguration(const char *filename, const Config &config);
-  void printFile(const char *filename);
 
-public:
-  Config config;
+private:
+  // Allocate a temporary JsonDocument
+  // Don't forget to change the capacity to match your requirements.
+  // Use arduinojson.org/v6/assistant to compute the capacity.
+  StaticJsonDocument<JSON_CONFIG_SIZE> config;
 };
 
 #endif

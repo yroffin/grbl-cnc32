@@ -1,6 +1,10 @@
 #ifndef _I18N_CONTROLLER_
 #define _I18N_CONTROLLER_
 
+#include "json-store.hpp"
+
+#include "config.h"
+
 #include "stdio.h"
 #include "stdarg.h"
 
@@ -27,7 +31,7 @@ enum STD_MSG
   I18N_WIFI_SERVE
 };
 
-class I18nCtrl
+class I18nCtrl : public JsonStore
 {
 public:
   I18nCtrl();
@@ -38,10 +42,8 @@ public:
   virtual const char *std(int code);
   virtual const char *translate(int type, int code, ...);
 
-  void loadi18n(const char *filename);
-
 private:
-  StaticJsonDocument<4096> i18n;
+  StaticJsonDocument<JSON_I18N_SIZE> i18n;
 
 private:
   char i18n_message[MAXSIZE_OF_I18N_MESSAGE];
