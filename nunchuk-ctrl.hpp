@@ -15,10 +15,6 @@ enum NUNCHUK_STATE
   NUNCHUK_OK
 };
 
-// Calibration joystick values
-#define NUNCHUK_JOYSTICK_X_ZERO 127
-#define NUNCHUK_JOYSTICK_Y_ZERO 128
-
 // The Nunchuk I2C address
 #define NUNCHUK_ADDRESS 0x52
 
@@ -39,8 +35,9 @@ public:
   NunchukCtrl();
   static NunchukCtrl *instance();
 
-  void init();
-  void capture();
+  void setup();
+  void loop();
+
   void disableEncription();
   boolean read();
 

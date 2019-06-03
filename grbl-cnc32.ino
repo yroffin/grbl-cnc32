@@ -40,7 +40,7 @@ void setup()
 
     // NunchukCtrl controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "NunchukCtrl"));
-    NunchukCtrl::instance()->init();
+    NunchukCtrl::instance()->setup();
 }
 
 void loop()
@@ -48,7 +48,7 @@ void loop()
     // capture events
     EvtCtrl::instance()->capture();
     // capture events
-    NunchukCtrl::instance()->capture();
+    NunchukCtrl::instance()->loop();
     // init wifi, capture http request
     WifiCtrl::instance()->loop();
     // flush grbl events

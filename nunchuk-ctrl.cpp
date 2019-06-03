@@ -1,6 +1,7 @@
 #include "nunchuk-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "evt-ctrl.hpp"
+#include "json-config.hpp"
 
 // NunchukCtrl controller
 NunchukCtrl *__instance_NunchukCtrl = 0;
@@ -19,13 +20,14 @@ NunchukCtrl::NunchukCtrl()
 {
 }
 
-void NunchukCtrl::init()
+void NunchukCtrl::setup()
 {
-    this->xcenter = 134;
-    this->ycenter = 134;
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    this->xcenter = jsonConfig->getAsInt("nunchuk", "calibration", "x", 134);
+    this->ycenter = jsonConfig->getAsInt("nunchuk", "calibration", "y", 134);
 }
 
-void NunchukCtrl::capture()
+void NunchukCtrl::loop()
 {
     switch (this->state)
     {

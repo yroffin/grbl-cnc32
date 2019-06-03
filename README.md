@@ -19,7 +19,13 @@ Simply add a config.json on your SDCARD
             "ssid": "<your SSID>",
             "pass": "<your password>"
         }
-    ]
+    ],
+    "nunchuk": {
+        "calibration": {
+            "x": 100,
+            "y": 100
+        }
+    }
 }
 ```
 
