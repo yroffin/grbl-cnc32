@@ -18,6 +18,9 @@ public:
   const char *getAsString(const char *k1, int k2, const char *k3, const char *def);
   int getAsInt(const char *k1, const char *k2, const char *k3, int def);
 
+  void get(char *buffer, int size);
+  void set(char *buffer, int size);
+
 private:
   JsonDocument &store;
 };

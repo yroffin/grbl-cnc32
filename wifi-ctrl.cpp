@@ -34,6 +34,34 @@ void HomePage()
     server.client().stop(); // Stop is needed because no content length was sent
 }
 
+void ApiConfig()
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[2048];
+    switch (server.method())
+    {
+    case HTTP_GET:
+        jsonConfig->get(buffer, 2048);
+        break;
+    case HTTP_PUT:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                strcpy(buffer, server.arg(i).c_str());
+                jsonConfig->set(buffer, 2048);
+            }
+        }
+        break;
+    }
+    // send body
+    server.setContentLength(strlen(buffer));
+    server.send(200, "application/json", buffer);
+}
+
 // Init phase
 void WifiCtrl::setup()
 {
@@ -101,6 +129,7 @@ void WifiCtrl::loop()
     case wifiConnected:
         WiFi.setSleep(false);
         server.on("/", HomePage);
+        server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));
         this->phase = serveData;

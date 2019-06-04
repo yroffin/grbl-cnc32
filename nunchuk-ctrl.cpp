@@ -23,8 +23,8 @@ NunchukCtrl::NunchukCtrl()
 void NunchukCtrl::setup()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
-    this->xcenter = jsonConfig->getAsInt("nunchuk", "calibration", "x", 134);
-    this->ycenter = jsonConfig->getAsInt("nunchuk", "calibration", "y", 134);
+    this->xcenter = jsonConfig->getAsInt("nunchuk", "calibrate", "x", 134);
+    this->ycenter = jsonConfig->getAsInt("nunchuk", "calibrate", "y", 134);
 }
 
 void NunchukCtrl::loop()

@@ -55,6 +55,28 @@ void JsonStore::load(const char *filename)
   file.close();
 }
 
+// get current content
+void JsonStore::get(char *buffer, int size)
+{
+  serializeJson(this->store, buffer, size);
+}
+
+// set current content
+void JsonStore::set(char *buffer, int size)
+{
+  StaticJsonDocument<1024> doc;
+
+  // Deserialize the JSON document
+  deserializeJson(doc, buffer);
+  doc["last_modification"] = millis();
+
+  // set new version
+  this->store.set(doc);
+
+  // return new version
+  serializeJson(this->store, buffer, size);
+}
+
 // save store
 void JsonStore::save(const char *filename, const char *old)
 {

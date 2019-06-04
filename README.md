@@ -21,12 +21,18 @@ Simply add a config.json on your SDCARD
         }
     ],
     "nunchuk": {
-        "calibration": {
+        "calibrate": {
             "x": 100,
             "y": 100
         }
     }
 }
+```
+
+# api
+
+```console
+GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
 ```
 
 ## feature

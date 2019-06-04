@@ -18,10 +18,6 @@ public:
   void setup();
 
 private:
-  // Allocate a temporary JsonDocument
-  // Don't forget to change the capacity to match your requirements.
-  // Use arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<JSON_CONFIG_SIZE> config;
 };
 
 #endif
