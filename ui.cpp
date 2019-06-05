@@ -1,5 +1,6 @@
 #include "ui.hpp"
 #include "grbl-ctrl.hpp"
+#include "json-config.hpp"
 #include "storage-ctrl.hpp"
 
 // screen controller
@@ -385,8 +386,9 @@ void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
 // touch calibration
 void TFT_Screen::calibrate()
 {
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     uint16_t calData[5] = {386, 3530, 220, 3627, 7};
-    uint8_t calDataOK = 1;
+    boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
 
     if (calDataOK)
     {
@@ -407,9 +409,11 @@ void TFT_Screen::calibrate()
 
         this->tft->calibrateTouch(calData, SCREEN_ALERT_TEXT, SCREEN_BACKGROUND, 15);
         this->tft->setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
-        //this->tft->printf("Cal data %d %d %d %d %d\n", calData[0], calData[1], calData[2], calData[3], calData[4]);
+        log_i("Cal data %d %d %d %d %d", calData[0], calData[1], calData[2], calData[3], calData[4]);
 
         TFT_Widget::init(WIDGET_ID_LAYER_MENU, "", 0, 0, calData[0], calData[1]);
+        jsonConfig->setAsArray("tft", "calibrate", calData, 5);
+        jsonConfig->write();
     }
 }
 

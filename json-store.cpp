@@ -16,6 +16,31 @@ int JsonStore::getSize(const char *k1)
   }
 }
 
+boolean JsonStore::getAsArray(const char *k1, const char *k2, uint16_t *calData, int size)
+{
+  if (this->store.containsKey(k1) && this->store[k1].containsKey(k2) && !this->store[k1][k2].isNull())
+  {
+    for (int i = 0; i < size; i++)
+    {
+      calData[i] = this->store[k1][k2][i];
+    }
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+void JsonStore::setAsArray(const char *k1, const char *k2, uint16_t *calData, int size)
+{
+  this->store[k1].createNestedArray(k2);
+  for (int i = 0; i < size; i++)
+  {
+    this->store[k1][k2].add(calData[i]);
+  }
+}
+
 const char *JsonStore::getAsString(const char *k1, int k2, const char *k3, const char *def)
 {
   if (this->store.containsKey(k1) && k2 < this->store[k1].size() && this->store[k1].getElement(k2).containsKey(k3) && !this->store[k1].getElement(k2)[k3].isNull())

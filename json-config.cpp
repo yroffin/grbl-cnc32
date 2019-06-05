@@ -35,3 +35,8 @@ void JsonConfigCtrl::setup()
   // load global configuration
   this->load("/config.json");
 }
+
+void JsonConfigCtrl::write()
+{
+  this->save("/config.json", "/config.bak");
+}

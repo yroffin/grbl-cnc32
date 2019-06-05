@@ -16,6 +16,7 @@ public:
   static JsonConfigCtrl *instance();
 
   void setup();
+  void write();
 
 private:
 };

@@ -20,6 +20,9 @@ Simply add a config.json on your SDCARD
             "pass": "<your password>"
         }
     ],
+    "tft": {
+        "calibrate": [386, 3530, 220, 3627, 7]
+    },
     "nunchuk": {
         "calibrate": {
             "x": 100,
@@ -35,6 +38,19 @@ Simply add a config.json on your SDCARD
 GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
 ```
 
+* root
+    * wifi
+        * array of {string, string}
+            * ssid
+            * pass
+    * tft
+        * calibrate
+            * array of 5 int
+    * nunchuk
+        * calibrate
+            * x
+            * y
+
 ## feature
 
 * move your tools on each axis with TFT or a nunchuk
@@ -43,6 +59,8 @@ GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
 * mount a SDCARD and print your GCODE files
 * handle GRBL admin order (reset, alarm ...)
 * wifi and rest server support
+    * all configuration handle by api rest (read and write)
+* ntp connect to obtain local time
 
 ## todo
 

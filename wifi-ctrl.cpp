@@ -53,7 +53,7 @@ void ApiConfig()
             {
                 strcpy(buffer, server.arg(i).c_str());
                 jsonConfig->set(buffer, 2048);
-                jsonConfig->save("/config.json", "/config.bak");
+                jsonConfig->write();
             }
         }
         break;
