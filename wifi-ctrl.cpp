@@ -53,6 +53,7 @@ void ApiConfig()
             {
                 strcpy(buffer, server.arg(i).c_str());
                 jsonConfig->set(buffer, 2048);
+                jsonConfig->save("/config.json", "/config.bak");
             }
         }
         break;
@@ -132,6 +133,16 @@ void WifiCtrl::loop()
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));
+        this->phase = unixTime;
+        break;
+    case unixTime:
+    {
+        time_t unixTime = Utils::fixTime();
+        struct tm *lt = localtime(&unixTime);
+        char str[32];
+        strftime(str, sizeof str, "%d/%m/%Y %H:%M:%S", lt);
+        log_i("Local time %s", str);
+    }
         this->phase = serveData;
         break;
     case serveData:
