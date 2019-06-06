@@ -390,7 +390,7 @@ void TFT_FileGrid::notify(const Event *event)
         this->invalidated = true;
     }
     // select line
-    for (int l = 1; l < this->maxLines; l++)
+    for (int l = 0; l < this->maxLines; l++)
     {
         if (event->type == SELECT_FILE && event->sender == this->id + 2 + l)
         {

@@ -293,6 +293,9 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->group->add(misc);
     this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 42);
     this->group->add(miscValue);
+    this->sw = new TFT_Button(WIDGET_ID_DEFAULT, "File", 210, 6, 40, 40);
+    this->sw->setEvent(SWITCH_SELECTED);
+    this->group->add(this->sw);
     this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, "files", 0, 54, 265, 160);
     this->group->add(files);
 }
@@ -318,6 +321,19 @@ void TFT_LayerFile::notify(const Event *event)
         this->cwf->setLabel(event->message);
         this->invalidated = true;
     }
+    if (event->type == SWITCH_SELECTED)
+    {
+        switch (StorageCtrl::instance()->toggle())
+        {
+        case COMMANDS:
+            this->sw->setLabel("Cmd");
+            break;
+        case FILES:
+            this->sw->setLabel("File");
+            break;
+        }
+        this->refresh();
+    }
     this->TFT_Widget::notify(event);
 }
 
@@ -327,8 +343,7 @@ void TFT_LayerFile::refresh()
     this->files->clear();
     this->miscValue->setLabel("offset: %d", this->files->offset);
     this->files->count = StorageCtrl::instance()->scan();
-    this->files->set(0, "..");
-    for (int i = 1; i < this->files->maxLines; i++)
+    for (int i = 0; i < this->files->maxLines; i++)
     {
         if ((i + this->files->offset) < this->files->count)
         {

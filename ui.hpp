@@ -99,6 +99,7 @@ protected:
   TFT_Label *cwf;
   TFT_Label *misc;
   TFT_Label *miscValue;
+  TFT_Button *sw;
   TFT_FileGrid *files;
 };
 

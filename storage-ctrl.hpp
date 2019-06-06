@@ -35,7 +35,6 @@ public:
   virtual void close() {}
 
 protected:
-
   int16_t storageEntryCount = 0;
   StorageEntry *storageEntry[MAXSIZE_OF_ENTRY];
 };
@@ -54,12 +53,32 @@ private:
   File file;
 };
 
+class StorageCmdStore : public StorageStore
+{
+public:
+  virtual int scan(const char *base);
+  virtual int open(const char *filename);
+  virtual boolean readline(char *buffer, int16_t maxLength);
+  virtual void close();
+
+private:
+  char name[32];
+  int offset = 0;
+};
+
+enum selector
+{
+  FILES,
+  COMMANDS
+};
+
 class StorageCtrl
 {
 public:
   StorageCtrl();
   void init();
 
+  selector toggle();
   int scan();
   const char *path(int index);
   int open(const char *filename);
@@ -70,6 +89,8 @@ public:
 
 protected:
   StorageFileStore fileStore;
+  StorageCmdStore cmdStore;
+  selector state = FILES;
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "config.h"
 #include "storage-ctrl.hpp"
+#include "json-config.hpp"
 #include "utils.hpp"
 
 // Storage controller
@@ -21,31 +22,86 @@ StorageCtrl::StorageCtrl()
 
 void StorageCtrl::init()
 {
+    this->state = FILES;
+}
+
+selector StorageCtrl::toggle()
+{
+    if (this->state == COMMANDS)
+    {
+        this->state = FILES;
+    }
+    else
+    {
+        this->state = COMMANDS;
+    }
+    this->scan();
+    return this->state;
 }
 
 int StorageCtrl::scan()
 {
-    return this->fileStore.scan("/");
+    switch (this->state)
+    {
+    case FILES:
+        return this->fileStore.scan("/");
+        break;
+    case COMMANDS:
+        return this->cmdStore.scan("/");
+        break;
+    }
 }
 
 const char *StorageCtrl::path(int index)
 {
-    return this->fileStore.get(index)->getPath();
+    switch (this->state)
+    {
+    case FILES:
+        return this->fileStore.get(index)->getPath();
+        break;
+    case COMMANDS:
+        return this->cmdStore.get(index)->getPath();
+        break;
+    }
 }
 
 int StorageCtrl::open(const char *filename)
 {
-    return this->fileStore.open(filename);
+    switch (this->state)
+    {
+    case FILES:
+        return this->fileStore.open(filename);
+        break;
+    case COMMANDS:
+        return this->cmdStore.open(filename);
+        break;
+    }
 }
 
 boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
 {
-    return this->fileStore.readline(buffer, maxLength);
+    switch (this->state)
+    {
+    case FILES:
+        return this->fileStore.readline(buffer, maxLength);
+        break;
+    case COMMANDS:
+        return this->cmdStore.readline(buffer, maxLength);
+        break;
+    }
 }
 
 void StorageCtrl::close()
 {
-    this->fileStore.close();
+    switch (this->state)
+    {
+    case FILES:
+        this->fileStore.close();
+        break;
+    case COMMANDS:
+        this->cmdStore.close();
+        break;
+    }
 }
 
 boolean StorageEntry::isDirectory()
@@ -185,4 +241,44 @@ void StorageFileStore::close()
 {
     this->file.close();
     this->isOpen = false;
+}
+
+int StorageCmdStore::scan(const char *base)
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    if (jsonConfig->store.containsKey("commands"))
+    {
+        // clear all entry
+        this->clear();
+
+        JsonObject root = jsonConfig->store["commands"].as<JsonObject>();
+        for (JsonObject::iterator it = root.begin(); it != root.end(); ++it)
+        {
+            this->addFile(it->key().c_str());
+        }
+    }
+    return this->storageEntryCount;
+}
+
+int StorageCmdStore::open(const char *filename)
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    this->offset = 0;
+    Utils::strcpy(this->name, filename, sizeof(this->name));
+    return jsonConfig->store["commands"][this->name].size();
+}
+
+boolean StorageCmdStore::readline(char *buffer, int16_t maxLength)
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    if (this->offset < jsonConfig->store["commands"][this->name].size())
+    {
+        Utils::strcpy(buffer, jsonConfig->store["commands"][this->name][this->offset++], maxLength);
+        return true;
+    }
+    return false;
+}
+
+void StorageCmdStore::close()
+{
 }

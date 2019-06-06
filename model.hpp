@@ -16,6 +16,7 @@ enum EventType
   grblProperty,
   GRID_CHANGE,
   FILE_SELECTED,
+  SWITCH_SELECTED,
   EVENT_GRBL_STATUS,
   EVENT_SETX,
   EVENT_SETY,
