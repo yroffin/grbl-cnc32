@@ -31,6 +31,13 @@ Simply add a config.json on your SDCARD
             "x": 100,
             "y": 100
         }
+    },
+    "commands": {
+        "cmd01": [
+            "Line 1",
+            "Line 2",
+            "..."
+        ]
     }
 }
 ```
@@ -58,6 +65,10 @@ GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
         * calibrate
             * x : x calibration for nunchuk
             * y : y calibration for nunchuk
+    * commands
+        * cmd name
+            * commands 1 : string
+            * commands N : string
 
 ## feature
 
