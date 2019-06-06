@@ -25,10 +25,18 @@ void NunchukCtrl::setup()
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     this->xcenter = jsonConfig->getAsInt("nunchuk", "calibrate", "x", 134);
     this->ycenter = jsonConfig->getAsInt("nunchuk", "calibrate", "y", 134);
+    this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
 }
 
 void NunchukCtrl::loop()
 {
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    if (jsonConfig->getAsInt("fingerprint", "uTime", 0) != this->uTime)
+    {
+        this->xcenter = jsonConfig->getAsInt("nunchuk", "calibrate", "x", 134);
+        this->ycenter = jsonConfig->getAsInt("nunchuk", "calibrate", "y", 134);
+        this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
+    }
     switch (this->state)
     {
     case NUNCHUK_STATE_ZERO:

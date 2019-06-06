@@ -7,6 +7,7 @@
 class Utils
 {
 public:
+  static int basename(const char *filename);
   static const char *strcpy(char *dest, const char *src, size_t size);
   static char *vsprintfBuffer();
   static time_t unixTime();

@@ -1,4 +1,5 @@
 #include "json-store.hpp"
+#include "utils.hpp"
 
 JsonStore::JsonStore(JsonDocument &_store) : store(_store)
 {
@@ -65,6 +66,30 @@ int JsonStore::getAsInt(const char *k1, const char *k2, const char *k3, int def)
   }
 }
 
+int JsonStore::getAsInt(const char *k1, const char *k2, int def)
+{
+  if (this->store.containsKey(k1) && this->store[k1].containsKey(k2))
+  {
+    return this->store[k1][k2];
+  }
+  else
+  {
+    return def;
+  }
+}
+
+boolean JsonStore::getAsBoolean(const char *k1, const char *k2, boolean def)
+{
+  if (this->store.containsKey(k1) && this->store[k1].containsKey(k2))
+  {
+    return this->store[k1][k2] == true;
+  }
+  else
+  {
+    return def;
+  }
+}
+
 // load store
 void JsonStore::load(const char *filename)
 {
@@ -93,7 +118,14 @@ void JsonStore::set(char *buffer, int size)
 
   // Deserialize the JSON document
   deserializeJson(doc, buffer);
-  doc["last_modification"] = millis();
+
+  // Fix last update time
+  time_t unixTime = Utils::unixTime();
+  doc["fingerprint"]["uTime"] = unixTime;
+  struct tm *lt = localtime(&unixTime);
+  char str[32];
+  strftime(str, sizeof str, "%d/%m/%Y %H:%M:%S", lt);
+  doc["fingerprint"]["fTime"] = str;
 
   // set new version
   this->store.set(doc);

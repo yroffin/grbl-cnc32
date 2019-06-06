@@ -2,6 +2,7 @@
 #include "i18n-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
+#include "json-config.hpp"
 #include "utils.hpp"
 
 // GRBL controller
@@ -21,11 +22,13 @@ GrblCtrl::GrblCtrl()
 {
 }
 
-void GrblCtrl::init()
+void GrblCtrl::setup()
 {
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
     idx = sim;
-    this->simulation = false;
+    this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
+    this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
 
     strGrblIdx = 0;
 
@@ -38,6 +41,49 @@ void GrblCtrl::init()
     Serial2.flush();      // this is used to avoid sending to many jogging movements when using the nunchuk
 
     log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_OK, "GRBL"));
+}
+
+// Capture serial data
+void GrblCtrl::loop(void)
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    if (this->uTime != jsonConfig->getAsInt("fingerprint", "uTime", 0))
+    {
+        this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
+        this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
+    }
+
+    if (simulation)
+    {
+        this->setBusy(false);
+    }
+    int c;
+    while (available())
+    {
+        c = read();
+        this->byteRead++;
+        if (c < 32)
+        {
+            // control char
+            strGrblBuf[strGrblIdx++] = 0;
+            flush();
+        }
+        else
+        {
+            if (strGrblIdx < STR_GRBL_BUF_MAX_SIZE - 1)
+            {
+                strGrblBuf[strGrblIdx++] = c;
+            }
+            else
+            {
+                // buffer overrun
+                strGrblBuf[strGrblIdx++] = 0;
+                flush();
+            }
+        }
+    }
+    // Update statistics
+    TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
 // Scan new available bytes
@@ -121,42 +167,6 @@ void GrblCtrl::setBusy(boolean _busyState)
 boolean GrblCtrl::isBusy()
 {
     return this->busy;
-}
-
-// Capture serial data
-void GrblCtrl::capture(void)
-{
-    if (simulation)
-    {
-        this->setBusy(false);
-    }
-    int c;
-    while (available())
-    {
-        c = read();
-        this->byteRead++;
-        if (c < 32)
-        {
-            // control char
-            strGrblBuf[strGrblIdx++] = 0;
-            flush();
-        }
-        else
-        {
-            if (strGrblIdx < STR_GRBL_BUF_MAX_SIZE - 1)
-            {
-                strGrblBuf[strGrblIdx++] = c;
-            }
-            else
-            {
-                // buffer overrun
-                strGrblBuf[strGrblIdx++] = 0;
-                flush();
-            }
-        }
-    }
-    // Update statistics
-    TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
 // string function

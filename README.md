@@ -23,6 +23,9 @@ Simply add a config.json on your SDCARD
     "tft": {
         "calibrate": [386, 3530, 220, 3627, 7]
     },
+    "grbl": {
+        "emulate": false
+    },
     "nunchuk": {
         "calibrate": {
             "x": 100,
@@ -46,10 +49,15 @@ GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
     * tft
         * calibrate
             * array of 5 int
+    * grbl
+        * emulate (boolean) : only for dev
+    * fingerprint
+        * uTime : last update time in unix second
+        * fTime : last update time
     * nunchuk
         * calibrate
-            * x
-            * y
+            * x : x calibration for nunchuk
+            * y : y calibration for nunchuk
 
 ## feature
 

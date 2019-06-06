@@ -36,7 +36,7 @@ void setup()
 
     // grbl controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "GrblCtrl"));
-    GrblCtrl::instance()->init();
+    GrblCtrl::instance()->setup();
 
     // NunchukCtrl controller
     TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "NunchukCtrl"));
@@ -52,7 +52,7 @@ void loop()
     // init wifi, capture http request
     WifiCtrl::instance()->loop();
     // flush grbl events
-    GrblCtrl::instance()->capture();
+    GrblCtrl::instance()->loop();
     // dispatch event
     EvtCtrl::instance()->dispatchPrimaryEvents();
     // dispatch event (until any)

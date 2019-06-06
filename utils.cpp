@@ -7,6 +7,14 @@ const char *Utils::strcpy(char *dest, const char *src, size_t size)
     dest[len] = 0;
 }
 
+int Utils::basename(const char *filename)
+{
+    int l = strlen(filename) - 1;
+    for (; l >= 0 && filename[l] != '/'; l--)
+        ;
+    return l + 1;
+}
+
 char __vsprintfBuffer[1024];
 
 char *Utils::vsprintfBuffer()

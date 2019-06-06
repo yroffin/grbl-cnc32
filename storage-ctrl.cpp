@@ -21,71 +21,131 @@ StorageCtrl::StorageCtrl()
 
 void StorageCtrl::init()
 {
-    if (!SD.exists("/"))
-    { // check if root exist
-        log_e("Root ('/') not found on SD card");
-        return;
-    }
-    // Set "/" as root folder
-    Utils::strcpy(cwd, "/", MAXSIZE_OF_CWD);
+}
+
+int StorageCtrl::scan()
+{
+    return this->fileStore.scan("/");
+}
+
+const char *StorageCtrl::path(int index)
+{
+    return this->fileStore.get(index)->getPath();
+}
+
+int StorageCtrl::open(const char *filename)
+{
+    return this->fileStore.open(filename);
+}
+
+boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
+{
+    return this->fileStore.readline(buffer, maxLength);
+}
+
+void StorageCtrl::close()
+{
+    this->fileStore.close();
+}
+
+boolean StorageEntry::isDirectory()
+{
+    return dir;
+}
+
+const char *StorageEntry::getPath()
+{
+    return path;
+}
+
+void StorageEntry::setDirectory(boolean value)
+{
+    this->dir = value;
+}
+
+void StorageEntry::setPath(const char *path)
+{
+    Utils::strcpy(this->path, path, MAXSIZE_OF_CWD);
+}
+
+void StorageEntry::clear()
+{
+    Utils::strcpy(this->path, "", MAXSIZE_OF_CWD);
+}
+
+StorageStore::StorageStore()
+{
+    // clear all entry
     for (int i = 0; i < MAXSIZE_OF_ENTRY; i++)
     {
-        this->storageEntry[i] = 0;
+        this->storageEntry[i] = new StorageEntry();
     }
-    log_i("File system ok.");
 }
 
-int basename(const char *filename)
+void StorageStore::clear()
 {
-    int l = strlen(filename) - 1;
-    for (; l >= 0 && filename[l] != '/'; l--)
-        ;
-    return l + 1;
+    // clear all entry
+    for (int i = 0; i < MAXSIZE_OF_ENTRY; i++)
+    {
+        this->storageEntry[i]->clear();
+    }
+    this->storageEntryCount = 0;
 }
 
-void StorageCtrl::scan(const char *base)
+StorageEntry *StorageStore::get(int index)
 {
+    return this->storageEntry[index];
+}
+
+void StorageStore::addDirectory(const char *value)
+{
+    this->storageEntry[this->storageEntryCount]->setDirectory(true);
+    this->storageEntry[this->storageEntryCount]->setPath(value);
+    this->storageEntryCount++;
+}
+
+void StorageStore::addFile(const char *value)
+{
+    this->storageEntry[this->storageEntryCount]->setDirectory(false);
+    this->storageEntry[this->storageEntryCount]->setPath(value);
+    this->storageEntryCount++;
+}
+
+int StorageFileStore::scan(const char *base)
+{
+    if (!SD.exists(base))
+    {
+        return 0;
+    }
+
+    // Fix cwd
+    Utils::strcpy(cwd, base, MAXSIZE_OF_CWD);
+
+    // clear all entry
+    this->clear();
+
     File root = SD.open(base);
     File entry = root.openNextFile();
     for (; entry; entry = root.openNextFile())
     {
         // ignore hidden files
-        if (entry.name()[basename(entry.name())] == '.')
+        if (entry.name()[Utils::basename(entry.name())] == '.')
         {
             continue;
         }
-        if (this->storageEntry[this->storageEntryCount] == 0)
-        {
-            this->storageEntry[this->storageEntryCount] = new StorageEntry();
-        }
         if (entry.isDirectory())
         {
-            this->storageEntry[this->storageEntryCount]->setDirectory(true);
-            this->storageEntry[this->storageEntryCount]->setPath(entry.name());
-            this->storageEntryCount++;
+            this->addDirectory(entry.name());
         }
         else
         {
-            this->storageEntry[this->storageEntryCount]->setDirectory(false);
-            this->storageEntry[this->storageEntryCount]->setPath(entry.name());
-            this->storageEntryCount++;
+            this->addFile(entry.name());
         }
     }
-}
-
-int16_t StorageCtrl::getCount()
-{
-    this->storageEntryCount = 0;
-    scan(cwd);
     return this->storageEntryCount;
 }
 
-StorageEntry *StorageCtrl::getEntries(int16_t index)
-{
-    return this->storageEntry[index];
-}
-
-int StorageCtrl::open(const char *filename)
+int StorageFileStore::open(const char *filename)
 {
     if (this->isOpen)
     {
@@ -108,7 +168,7 @@ int StorageCtrl::open(const char *filename)
     return lines;
 }
 
-boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
+boolean StorageFileStore::readline(char *buffer, int16_t maxLength)
 {
     if (this->file.available())
     {
@@ -121,7 +181,7 @@ boolean StorageCtrl::readline(char *buffer, int16_t maxLength)
     return false;
 }
 
-void StorageCtrl::close()
+void StorageFileStore::close()
 {
     this->file.close();
     this->isOpen = false;

@@ -55,8 +55,8 @@ class GrblCtrl
 public:
   GrblCtrl();
 
-  void init();
-  void capture();
+  void setup();
+  void loop();
 
   void print(const char *filename);
   void spool();
@@ -131,6 +131,7 @@ private:
   char sim[MAXSIZE_OF_SIM];
   char *idx;
   boolean simulation = true;
+  int uTime = 0;
 };
 
 #endif

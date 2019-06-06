@@ -326,13 +326,13 @@ void TFT_LayerFile::refresh()
 {
     this->files->clear();
     this->miscValue->setLabel("offset: %d", this->files->offset);
-    this->files->count = StorageCtrl::instance()->getCount();
+    this->files->count = StorageCtrl::instance()->scan();
     this->files->set(0, "..");
     for (int i = 1; i < this->files->maxLines; i++)
     {
         if ((i + this->files->offset) < this->files->count)
         {
-            this->files->set(i, StorageCtrl::instance()->getEntries(i + this->files->offset)->getPath());
+            this->files->set(i, StorageCtrl::instance()->path(i + this->files->offset));
         }
     }
 }
