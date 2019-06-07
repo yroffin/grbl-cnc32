@@ -42,38 +42,47 @@ Simply add a config.json on your SDCARD
 }
 ```
 
+## wifi bloc
+
+setup your wifi access :
+* an array of SSID/PASS to scan
+
+## tft bloc
+
+setup your tft :
+* with a 5 values array of tft calibration
+
+## grbl bloc
+
+setup your grbl :
+* emulate is a boolean to setup a mock behaviour
+
+## nunchuk bloc
+
+setup your nunchuk :
+* calibrate contain 2 fields x and y to setup nunchuk calibration
+
+## commands bloc
+
+setup your commands :
+* a lines array for the command
+
+## fingerprint bloc
+
+timestamp
+* uTime le last update time in unix second
+* fTime le last update time
+
 # api
 
 ```console
 GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
 ```
 
-* root
-    * wifi
-        * array of {string, string}
-            * ssid
-            * pass
-    * tft
-        * calibrate
-            * array of 5 int
-    * grbl
-        * emulate (boolean) : only for dev
-    * fingerprint
-        * uTime : last update time in unix second
-        * fTime : last update time
-    * nunchuk
-        * calibrate
-            * x : x calibration for nunchuk
-            * y : y calibration for nunchuk
-    * commands
-        * cmd name
-            * commands 1 : string
-            * commands N : string
-
 ## feature
 
 * move your tools on each axis with TFT or a nunchuk
-* order homing, set coordinate
+* order homing, set coordinate ...
 * get usefull statistics (logs, GRBL output)
 * mount a SDCARD and print your GCODE files
 * handle GRBL admin order (reset, alarm ...)
@@ -83,9 +92,6 @@ GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
 
 ## todo
 
-* store simulation state in configuration
-* design calibration process
-* store nunchuk configuration in files
 * design telnet feature
 * slack alerting, or any other kind of tools
 
