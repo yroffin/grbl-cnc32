@@ -63,6 +63,12 @@ void ApiConfig()
     server.send(200, "application/json", buffer);
 }
 
+void (*resetFunc)(void) = 0;
+void Reboot()
+{
+    resetFunc();
+}
+
 // Init phase
 void WifiCtrl::setup()
 {
@@ -131,6 +137,7 @@ void WifiCtrl::loop()
         WiFi.setSleep(false);
         server.on("/", HomePage);
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
+        server.on("/api/v1/reboot", Reboot);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));
         this->phase = unixTime;
