@@ -6,11 +6,45 @@ Work based on https://github.com/mstrens/grbl_controller_esp32.
 
 Thanks to https://github.com/mstrens for his initial work.
 
-# setup and features
+# features and todos
+
+## feature
+
+* move your tools on each axis with TFT or a nunchuk
+* order homing, set coordinate ...
+* get usefull statistics (logs, GRBL output)
+* mount a SDCARD and print your GCODE files
+* handle GRBL admin order (reset, alarm ...)
+* wifi and rest server support
+    * all configuration handle by api rest (read and write)
+* ntp connect to obtain local time
+
+## todo
+
+* design telnet feature
+* slack alerting, or any other kind of tools
+
+# api
+
+This firmware is API REST based.
+
+## config.json resource (see bellow in setup bloc)
+
+```console
+GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
+```
+
+## system commands resource
+
+```console
+GET <localhost:8080>/api/v1/reboot to reboot TFT.
+```
+
+# setup and more
 
 ## setup
 
-Simply add a config.json on your SDCARD
+Simply add a first config.json on your root SDCARD (it will be updated by API after)
 
 ```json
 {
@@ -72,28 +106,6 @@ setup your commands :
 timestamp
 * uTime le last update time in unix second
 * fTime le last update time
-
-# api
-
-```console
-GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
-```
-
-## feature
-
-* move your tools on each axis with TFT or a nunchuk
-* order homing, set coordinate ...
-* get usefull statistics (logs, GRBL output)
-* mount a SDCARD and print your GCODE files
-* handle GRBL admin order (reset, alarm ...)
-* wifi and rest server support
-    * all configuration handle by api rest (read and write)
-* ntp connect to obtain local time
-
-## todo
-
-* design telnet feature
-* slack alerting, or any other kind of tools
 
 # Hardware and software
 
