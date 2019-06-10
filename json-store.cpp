@@ -114,7 +114,8 @@ void JsonStore::get(char *buffer, int size)
 // set current content
 void JsonStore::set(char *buffer, int size)
 {
-  StaticJsonDocument<1024> doc;
+  // Allocate with current capacity
+  DynamicJsonDocument doc(this->store.capacity());
 
   // Deserialize the JSON document
   deserializeJson(doc, buffer);
@@ -124,7 +125,7 @@ void JsonStore::set(char *buffer, int size)
   doc["fingerprint"]["uTime"] = unixTime;
   struct tm *lt = localtime(&unixTime);
   char str[32];
-  strftime(str, sizeof str, "%d/%m/%Y %H:%M:%S", lt);
+  strftime(str, sizeof(str), "%d/%m/%Y %H:%M:%S", lt);
   doc["fingerprint"]["fTime"] = str;
 
   // set new version

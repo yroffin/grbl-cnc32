@@ -213,7 +213,7 @@ int StorageFileStore::open(const char *filename)
     char buffer[1024];
     for (; this->file.available();)
     {
-        int sz = this->file.readBytes(buffer, 1024);
+        int sz = this->file.readBytes(buffer, sizeof(buffer));
         for (int i = 0; i < sz; i++)
             if (buffer[i] == 10)
                 lines++;
