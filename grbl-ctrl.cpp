@@ -53,10 +53,6 @@ void GrblCtrl::loop(void)
         this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
     }
 
-    if (simulation)
-    {
-        this->setBusy(false);
-    }
     int c;
     while (available())
     {
@@ -86,6 +82,24 @@ void GrblCtrl::loop(void)
     TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
 }
 
+// Simulate a write
+void GrblCtrl::simulate(const char *message)
+{
+    /*
+    Sample code
+    Utils::strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n", MAXSIZE_OF_SIM);
+    Utils::strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n", MAXSIZE_OF_SIM);
+    Utils::strcpy(sim, "[Caution: Unlocked]\r\n", MAXSIZE_OF_SIM);
+    Utils::strcpy(sim, "error:Modal group violation\n\r", MAXSIZE_OF_SIM);
+    Utils::strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n", MAXSIZE_OF_SIM);
+    Utils::strcpy(sim, "error:20\n\r", MAXSIZE_OF_SIM);
+    */
+
+    sprintf(sim, "%s\n", message);
+    idx = sim;
+    log_i("GRBL: [%s]", message);
+}
+
 // Scan new available bytes
 int GrblCtrl::available()
 {
@@ -93,36 +107,7 @@ int GrblCtrl::available()
     {
         if (*idx == 0)
         {
-            int r = random(0, 65536);
-            switch (r)
-            {
-            case 0:
-                Utils::strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            case 1:
-                Utils::strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            case 2:
-                Utils::strcpy(sim, "[Caution: Unlocked]\r\n", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            case 3:
-                Utils::strcpy(sim, "error:Modal group violation\n\r", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            case 4:
-                Utils::strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            case 5:
-                Utils::strcpy(sim, "error:20\n\r", MAXSIZE_OF_SIM);
-                idx = sim;
-                break;
-            default:
-                return 0;
-            }
+            return 0;
         }
         return 1;
     }

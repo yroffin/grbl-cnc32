@@ -61,6 +61,7 @@ public:
   void print(const char *filename);
   void spool();
 
+  void simulate(const char *message);
   void setBusy(boolean _busyState);
   boolean isBusy();
 

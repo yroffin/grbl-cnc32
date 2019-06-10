@@ -15,7 +15,7 @@
 #define MAXSIZE_OF_I18N_MESSAGE 256
 
 #define I18N_STD "Std"
-#define I18N_GRBL "grbl"
+#define I18N_GRBL "Grbl"
 
 class I18nCtrl : public JsonStore
 {

@@ -1,5 +1,6 @@
 #include "wifi-ctrl.hpp"
 #include "i18n-ctrl.hpp"
+#include "grbl-ctrl.hpp"
 #include "json-config.hpp"
 #include "utils.hpp"
 
@@ -32,6 +33,30 @@ void HomePage()
     server.send(200, "text/html", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     server.sendContent("");
     server.client().stop(); // Stop is needed because no content length was sent
+}
+
+void Simulate()
+{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[4096];
+    switch (server.method())
+    {
+    case HTTP_PUT:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                strcpy(buffer, server.arg(i).c_str());
+                GrblCtrl::instance()->simulate(buffer);
+            }
+        }
+        break;
+    }
+    // send body
+    server.setContentLength(strlen(buffer));
+    server.send(200, "application/json", buffer);
 }
 
 void ApiJson(JsonStore *json, const char *filename, const char *backup)
@@ -147,6 +172,7 @@ void WifiCtrl::loop()
         server.on("/", HomePage);
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
         server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18n);
+        server.on("/api/v1/simulate", HTTP_ANY, Simulate);
         server.on("/api/v1/reboot", Reboot);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "SRV", 80));
