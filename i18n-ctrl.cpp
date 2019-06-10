@@ -26,46 +26,19 @@ void I18nCtrl::setup()
     log_i("%d grbl keys loaded ...", this->i18n["grbl"].size());
 }
 
+// find key
 const char *I18nCtrl::getKey(const char *k1, const char *k2)
 {
     return this->getAsString(k1, k2, k2);
 }
 
-const char *I18nCtrl::grblError(int code)
-{
-    if (code < 0 || code >= this->i18n["grbl"].size())
-    {
-        code = 0;
-    }
-    return this->getAsString("grbl", code, "msg", "");
-}
-
-const char *I18nCtrl::std(int code)
-{
-    if (code < 0 || code >= this->i18n["std"].size())
-    {
-        code = 0;
-    }
-    return this->getAsString("std", code, "msg", "");
-}
-
 // translate message
-const char *I18nCtrl::translate(int type, int code, ...)
+const char *I18nCtrl::translate(const char *section, const char *code, ...)
 {
     va_list args;
     va_start(args, code);
-    const char *format;
-    switch (type)
-    {
-    case I18N_STD:
-        format = std(code);
-        break;
-    case I18N_GRBL:
-        format = grblError(code);
-        break;
-    }
     // use utils buffer to protect memory
-    vsprintf(Utils::vsprintfBuffer(), format, args);
+    vsprintf(Utils::vsprintfBuffer(), this->getKey(section, code), args);
     Utils::strcpy(this->i18n_message, Utils::vsprintfBuffer(), MAXSIZE_OF_I18N_MESSAGE);
     va_end(args);
     return this->i18n_message;

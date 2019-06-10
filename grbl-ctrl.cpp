@@ -40,7 +40,7 @@ void GrblCtrl::setup()
     Serial2.println(" "); // $10=3 is used in order to get available space in GRBL buffer in GRBL status messages; il also means we are asking GRBL to sent always MPos.
     Serial2.flush();      // this is used to avoid sending to many jogging movements when using the nunchuk
 
-    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_OK, "GRBL"));
+    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, "OK", "GRBL"));
 }
 
 // Capture serial data
@@ -298,11 +298,13 @@ boolean scanError(const char *pattern, EventType e, const char *value)
 {
     if (match(pattern, value))
     {
-        int code;
         if (isNumber(value[strlen(pattern)]))
         {
+            int code;
             sscanf(&(value[strlen(pattern)]), "%d", &code);
-            const char *msg = I18nCtrl::instance()->translate(I18N_GRBL, code);
+            char scode[8];
+            sprintf(scode, "m%02d", code);
+            const char *msg = I18nCtrl::instance()->translate(I18N_GRBL, scode);
             EvtCtrl::instance()
                 ->sendWithString(0, e, msg);
         }

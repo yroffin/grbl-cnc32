@@ -19,27 +19,27 @@ void setup()
     I18nCtrl::instance()->setup();
 
     // screen controller
-    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "TFT_Screen"));
+    log_i("%s", I18nCtrl::instance()->translate(I18N_STD, "INI", "TFT_Screen"));
     TFT_Screen::instance()->init();
 
     // event controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "EvtCtrl"));
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "INI", "EvtCtrl"));
     EvtCtrl::instance()->init();
 
     // storage controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "StorageCtrl"));
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "INI", "StorageCtrl"));
     StorageCtrl::instance()->init();
 
     // wifi controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "WifiCtrl"));
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "INI", "WifiCtrl"));
     WifiCtrl::instance()->setup();
 
     // grbl controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "GrblCtrl"));
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "INI", "GrblCtrl"));
     GrblCtrl::instance()->setup();
 
     // NunchukCtrl controller
-    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_INIT, "NunchukCtrl"));
+    TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "INI", "NunchukCtrl"));
     NunchukCtrl::instance()->setup();
 }
 

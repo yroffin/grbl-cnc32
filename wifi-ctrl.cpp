@@ -102,7 +102,7 @@ void WifiCtrl::loop()
         {
             const char *ssid = jsonConfig->getAsString("wifi", current, "ssid", "");
             const char *pass = jsonConfig->getAsString("wifi", current, "pass", "");
-            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_TRYING, ssid));
+            log_i("%s", I18nCtrl::instance()->translate(I18N_STD, "TRY", ssid));
             WiFi.begin(ssid, pass);
             TFT_Screen::instance()->notifyWifiStatus(ssid);
             this->phase = wifiInit;
@@ -131,7 +131,7 @@ void WifiCtrl::loop()
                 this->retry++;
                 return;
             }
-            TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_KO, ssid));
+            TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "FAIL", ssid));
             this->retry = 0;
             this->current++;
             if (this->current >= jsonConfig->getSize("wifi"))
@@ -149,7 +149,7 @@ void WifiCtrl::loop()
         server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18n);
         server.on("/api/v1/reboot", Reboot);
         server.begin();
-        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));
+        TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "SRV", 80));
         this->phase = unixTime;
         break;
     case unixTime:

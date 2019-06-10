@@ -14,22 +14,8 @@
 
 #define MAXSIZE_OF_I18N_MESSAGE 256
 
-enum STD_CAT
-{
-  I18N_STD,
-  I18N_GRBL
-};
-
-enum STD_MSG
-{
-  I18N_ZERO,
-  I18N_INIT,
-  I18N_OK,
-  I18N_WIFI_TRYING,
-  I18N_WIFI_IP,
-  I18N_WIFI_KO,
-  I18N_WIFI_SERVE
-};
+#define I18N_STD "Std"
+#define I18N_GRBL "grbl"
 
 class I18nCtrl : public JsonStore
 {
@@ -39,9 +25,7 @@ public:
   static I18nCtrl *instance();
 
   virtual const char *getKey(const char *k1, const char *k2);
-  virtual const char *grblError(int code);
-  virtual const char *std(int code);
-  virtual const char *translate(int type, int code, ...);
+  virtual const char *translate(const char *section, const char *code, ...);
 
 private:
   StaticJsonDocument<JSON_I18N_SIZE> i18n;
