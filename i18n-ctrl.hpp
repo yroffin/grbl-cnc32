@@ -38,6 +38,7 @@ public:
   void setup();
   static I18nCtrl *instance();
 
+  virtual const char *getKey(const char *k1, const char *k2);
   virtual const char *grblError(int code);
   virtual const char *std(int code);
   virtual const char *translate(int type, int code, ...);

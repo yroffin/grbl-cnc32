@@ -2,6 +2,7 @@
 #include "evt-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
+#include "i18n-ctrl.hpp"
 #include "utils.hpp"
 
 // Global for internal use
@@ -15,6 +16,7 @@ TFT_Widget::TFT_Widget()
 // Init this widget
 void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
+    this->i18n = I18nCtrl::instance();
     this->x = _x;
     this->y = _y;
     this->w = _w;
@@ -28,6 +30,11 @@ void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, i
     Utils::strcpy(label, _label, MAXSIZE_OF_LABEL);
     this->visible = true;
     this->tft = &_tft;
+}
+
+const char *TFT_Widget::getKey(const char *k1, const char *k2)
+{
+    return this->i18n->getKey(k1, k2);
 }
 
 void TFT_Widget::setLabel(const char *format, ...)
@@ -273,21 +280,21 @@ TFT_Joystick::TFT_Joystick(int16_t _id, const char *_label, int16_t _x, int16_t 
     init(_id, _label, _x, _y, _w, _h);
 
     // Init all button
-    this->xleft = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Left", JOG_XM, 0, 44, 40, 40);
+    this->xleft = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "XM"), JOG_XM, 0, 44, 40, 40);
     this->add(this->xleft);
-    this->xright = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Right", JOG_XP, 44 * 2, 44, 40, 40);
+    this->xright = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "XP"), JOG_XP, 44 * 2, 44, 40, 40);
     this->add(this->xright);
-    this->yup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Up", JOG_YP, 44, 0, 40, 40);
+    this->yup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "YP"), JOG_YP, 44, 0, 40, 40);
     this->add(this->yup);
-    this->ydown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Down", JOG_YM, 44, 44 * 2, 40, 40);
+    this->ydown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "YM"), JOG_YM, 44, 44 * 2, 40, 40);
     this->add(this->ydown);
-    this->zup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Up", JOG_ZP, 44 * 4, 0, 40, 40);
+    this->zup = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "ZP"), JOG_ZP, 44 * 4, 0, 40, 40);
     this->add(this->zup);
-    this->zdown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, "Down", JOG_ZM, 44 * 4, 44 * 2, 40, 40);
+    this->zdown = new TFT_ButtonJog(WIDGET_ID_DEFAULT, this->getKey("Joystick", "ZM"), JOG_ZM, 44 * 4, 44 * 2, 40, 40);
     this->add(this->zdown);
 
-    // Pas 0.1, 1, 10 and 100
-    this->pas = new TFT_Button(_id + 1, "Pas", 44, 44, 40, 40);
+    // Step 0.1, 1, 10 and 100
+    this->pas = new TFT_Button(_id + 1, this->getKey("Joystick", "P"), 44, 44, 40, 40);
     this->add(this->pas);
 }
 

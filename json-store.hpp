@@ -17,6 +17,7 @@ public:
   int getSize(const char *k1);
 
   const char *getAsString(const char *k1, int k2, const char *k3, const char *def);
+  const char *getAsString(const char *k1, const char *k2, const char *def);
   boolean getAsArray(const char *k1, const char *k2, uint16_t *calData, int size);
   void setAsArray(const char *k1, const char *k2, uint16_t *calData, int size);
   int getAsInt(const char *k1, const char *k2, int def);

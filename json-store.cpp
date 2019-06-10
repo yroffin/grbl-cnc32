@@ -54,6 +54,18 @@ const char *JsonStore::getAsString(const char *k1, int k2, const char *k3, const
   }
 }
 
+const char *JsonStore::getAsString(const char *k1, const char *k2, const char *def)
+{
+  if (this->store.containsKey(k1) && this->store[k1].containsKey(k2) && !this->store[k1][k2].isNull())
+  {
+    return this->store[k1][k2];
+  }
+  else
+  {
+    return def;
+  }
+}
+
 int JsonStore::getAsInt(const char *k1, const char *k2, const char *k3, int def)
 {
   if (this->store.containsKey(k1) && this->store[k1].containsKey(k2) && this->store[k1][k2].containsKey(k3))

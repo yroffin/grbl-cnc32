@@ -1,4 +1,13 @@
 {
+    "Joystick": {
+        "XP": "Right",
+        "XM": "Left",
+        "YP": "Back",
+        "YM": "Front",
+        "ZP": "Up",
+        "ZM": "Down",
+        "P": "Step"
+    },
     "std": [
         {
             "msg": "Unknown ..."

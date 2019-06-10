@@ -26,6 +26,11 @@ void I18nCtrl::setup()
     log_i("%d grbl keys loaded ...", this->i18n["grbl"].size());
 }
 
+const char *I18nCtrl::getKey(const char *k1, const char *k2)
+{
+    return this->getAsString(k1, k2, k2);
+}
+
 const char *I18nCtrl::grblError(int code)
 {
     if (code < 0 || code >= this->i18n["grbl"].size())
