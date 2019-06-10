@@ -74,7 +74,10 @@ void NunchukCtrl::loop()
         this->state = NUNCHUK_STATE_START_READ;
         break;
     case NUNCHUK_STATE_START_READ:
-        read();
+        if (!read())
+        {
+            break;
+        }
         this->wait = millis();
         this->state = NUNCHUK_OK;
 
@@ -173,16 +176,15 @@ boolean NunchukCtrl::read()
             error |= (1 << i);
         }
     }
-    error = (error == 0b00111111); // error when all received bytes are 00 or FF.
-    if (error)
+    // error when all received bytes are 00 or FF.
+    if (error == 0b00111111)
     {
-        log_e("nunchuk error %d", error);
         disableEncription(); // try to reactivate nunchunck in case of error.
     }
     I2C_START(NUNCHUK_ADDRESS);
     I2C_WRITE(0x00);
     I2C_STOP();
-    return !error; // return true when there is no error
+    return !(error == 0b00111111); // return true when there is no error
 }
 
 boolean NunchukCtrl::Z()

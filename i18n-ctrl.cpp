@@ -22,8 +22,8 @@ I18nCtrl::I18nCtrl() : JsonStore(i18n)
 void I18nCtrl::setup()
 {
     this->load("/i18n_enUS.json");
-    log_i("%d std keys loaded ...", this->i18n["std"].size());
-    log_i("%d grbl keys loaded ...", this->i18n["grbl"].size());
+    log_i("%d std keys loaded ...", this->i18n["Std"].size());
+    log_i("%d grbl keys loaded ...", this->i18n["Grbl"].size());
 }
 
 // find key
