@@ -26,12 +26,26 @@ enum GrblStatus
 {
   GRBL_UNKNOWN,
   GRBL_IDLE,
-  GRBL_RUN
+  GRBL_RUN,
+  GRBL_HOLD,
+  GRBL_JOG,
+  GRBL_ALARM,
+  GRBL_DOOR,
+  GRBL_CHECK,
+  GRBL_HOME,
+  GRBL_SLEEP
 };
 
 #define MAXSIZE_OF_SIM 512
 #define GRBL_STATUS_IDLE "idle"
 #define GRBL_STATUS_RUN "run"
+#define GRBL_STATUS_HOLD "hold"
+#define GRBL_STATUS_JOG "jog"
+#define GRBL_STATUS_ALARM "alarm"
+#define GRBL_STATUS_DOOR "door"
+#define GRBL_STATUS_CHECK "check"
+#define GRBL_STATUS_HOME "home"
+#define GRBL_STATUS_SLEEP "sleep"
 
 #define STR_GRBL_BUF_MAX_SIZE 256
 #define STR_GRBL_BUF_MAX_WRITE_SIZE 256

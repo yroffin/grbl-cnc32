@@ -221,8 +221,23 @@ void TFT_LayerStatistic::notify(const Event *event)
         case GRBL_RUN:
             this->grblStatusValue->setLabel("RUN");
             break;
+        case GRBL_ALARM:
+            this->grblStatusValue->setLabel("ALARM");
+            break;
+        case GRBL_CHECK:
+            this->grblStatusValue->setLabel("CHECK");
+            break;
+        case GRBL_DOOR:
+            this->grblStatusValue->setLabel("DOOR");
+            break;
+        case GRBL_HOLD:
+            this->grblStatusValue->setLabel("HOLD");
+            break;
+        case GRBL_SLEEP:
+            this->grblStatusValue->setLabel("SLEEP");
+            break;
         default:
-            this->grblStatusValue->setLabel("UNKNOWN");
+            this->grblStatusValue->setLabel("?????");
         }
     }
     if (event->type == EVENT_MPOS)

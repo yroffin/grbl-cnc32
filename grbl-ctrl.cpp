@@ -320,6 +320,30 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     {
         this->grblState = GRBL_RUN;
     }
+    if (strcmp(GRBL_STATUS_ALARM, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_ALARM;
+    }
+    if (strcmp(GRBL_STATUS_CHECK, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_CHECK;
+    }
+    if (strcmp(GRBL_STATUS_DOOR, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_DOOR;
+    }
+    if (strcmp(GRBL_STATUS_HOLD, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_HOLD;
+    }
+    if (strcmp(GRBL_STATUS_HOME, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_HOME;
+    }
+    if (strcmp(GRBL_STATUS_SLEEP, extract(&(msgTolower[1]), index - indexStatus)) == 0)
+    {
+        this->grblState = GRBL_SLEEP;
+    }
     EvtCtrl::instance()->sendInt(WIDGET_ID_GRBL, EVENT_GRBL_STATUS, this->grblState);
     char separator = msgTolower[index];
     // now find block
