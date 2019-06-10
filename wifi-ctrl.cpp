@@ -34,17 +34,16 @@ void HomePage()
     server.client().stop(); // Stop is needed because no content length was sent
 }
 
-void ApiConfig()
+void ApiJson(JsonStore *json, const char *filename, const char *backup)
 {
-    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     server.sendHeader("Pragma", "no-cache");
     server.sendHeader("Expires", "-1");
-    char buffer[2048];
+    char buffer[4096];
     switch (server.method())
     {
     case HTTP_GET:
-        jsonConfig->get(buffer, 2048);
+        json->get(buffer, sizeof(buffer));
         break;
     case HTTP_PUT:
         for (int i = 0; i < server.args(); i++)
@@ -52,8 +51,8 @@ void ApiConfig()
             if (strcmp(server.argName(i).c_str(), "plain") == 0)
             {
                 strcpy(buffer, server.arg(i).c_str());
-                jsonConfig->set(buffer, 2048);
-                jsonConfig->write();
+                json->set(buffer, sizeof(buffer));
+                json->save(filename, backup);
             }
         }
         break;
@@ -61,6 +60,16 @@ void ApiConfig()
     // send body
     server.setContentLength(strlen(buffer));
     server.send(200, "application/json", buffer);
+}
+
+void ApiConfig()
+{
+    ApiJson(JsonConfigCtrl::instance(), "/config.json", "/config.bak");
+}
+
+void ApiI18n()
+{
+    ApiJson(I18nCtrl::instance(), "/i18n_enUS.json", "/i18n_enUS.bak");
 }
 
 void (*resetFunc)(void) = 0;
@@ -137,6 +146,7 @@ void WifiCtrl::loop()
         WiFi.setSleep(false);
         server.on("/", HomePage);
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
+        server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18n);
         server.on("/api/v1/reboot", Reboot);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, I18N_WIFI_SERVE, 80));

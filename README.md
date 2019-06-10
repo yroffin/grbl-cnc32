@@ -44,6 +44,8 @@ GET <localhost:8080>/api/v1/reboot to reboot TFT.
 
 ## setup
 
+Simply add a first i18n_enUS.json on your root SDCARD (it will be updated by API after)
+
 Simply add a first config.json on your root SDCARD (it will be updated by API after)
 
 ```json
