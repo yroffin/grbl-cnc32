@@ -12,6 +12,9 @@
 
 void setup()
 {
+    // prepare TFT
+    TFT_Screen::instance()->prepare();
+
     // JsonConfigCtrl controller
     JsonConfigCtrl::instance()->setup();
 

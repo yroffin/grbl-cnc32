@@ -126,10 +126,12 @@ class TFT_Screen : public TFT_Widget
 {
 public:
   TFT_Screen();
+  void prepare();
   void init();
   void calibrate();
   virtual void notify(const Event *event);
   boolean getTouch(int16_t *x, int16_t *y);
+  void console(const char *text);
 
   void outputConsole(const char *format, ...);
   void grblInputConsole(const char *format, ...);

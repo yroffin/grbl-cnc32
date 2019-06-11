@@ -1,4 +1,5 @@
 #include "json-config.hpp"
+#include "ui.hpp"
 #include "config.h"
 
 // I18nCtrl controller
@@ -28,7 +29,7 @@ void JsonConfigCtrl::setup()
   // Initialize SD library
   while (!SD.begin(SD_CHIPSELECT_PIN))
   {
-    log_i("Failed to initialize SD library");
+    TFT_Screen::instance()->console("Failed to initialize SD library");
     delay(1000);
   }
 

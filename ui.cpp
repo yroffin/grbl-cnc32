@@ -26,7 +26,7 @@ TFT_Screen::TFT_Screen()
 }
 
 // init screen
-void TFT_Screen::init()
+void TFT_Screen::prepare()
 {
     // Setup TFT
     pinMode(TFT_LED_PIN, OUTPUT);
@@ -36,7 +36,12 @@ void TFT_Screen::init()
     this->tft->init(); // Initialise l'écran avec les pins définies dans setup
     // Set the rotation before we calibrate
     this->tft->setRotation(1); // normally, this is already done in this->tft->int() but it is not clear how is rotation set (probably 0); so it can be usefull to change it here
+    this->tft->fillRect(0, 0, 400, 400, TFT_BLACK);
+}
 
+// init screen
+void TFT_Screen::init()
+{
     log_i("TFT_Screen calibration ...");
     calibrate(); // call screen calibration
 
@@ -59,6 +64,12 @@ void TFT_Screen::init()
     // First render
     log_i("TFT_Screen render ...");
     draw();
+}
+
+// init screen
+void TFT_Screen::console(const char *text)
+{
+    this->tft->println(text);
 }
 
 boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
