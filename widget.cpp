@@ -449,12 +449,15 @@ void TFT_StatusBar::draw()
     sprintf(work, "%-05.05d B/S", this->writeSpeed);
     this->tft->drawString(work, x + 1 + (8 * 2), y + 1, 1);
     // wifi status
-    sprintf(work, "%-20.20s", this->wifiStatus);
+    sprintf(work, "%-15.15s", this->wifiStatus);
     this->tft->drawString(work, x + 1 + (8 * 9), y + 1, 1);
     // print status
     int ratio = this->toPrint == 0 ? 0 : this->printed * 100 / this->toPrint;
     sprintf(work, "%-03.03d %c %-06.06d/%-06.06d", ratio, '%', this->printed, this->toPrint);
-    this->tft->drawString(work, x + 1 + (8 * 25), y + 1, 1);
+    this->tft->drawString(work, x + 1 + (8 * 21), y + 1, 1);
+    // semver
+    sprintf(work, "%-05.05s", SEMVER);
+    this->tft->drawString(work, x + 1 + (9 * 32), y + 1, 1);
 }
 
 void TFT_StatusBar::notifyWrite(uint16_t sz)
