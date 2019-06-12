@@ -1,0 +1,33 @@
+{
+    "sys": {
+        "lang": "/i18n_enUS.json"
+    },
+    "wifi": [
+        {
+            "ssid": "<your SSID>",
+            "pass": "<your password>"
+        }
+    ],
+    "tft": {
+        "calibrate": [
+            386,
+            3530,
+            220,
+            3627,
+            7
+        ]
+    },
+    "nunchuk": {
+        "calibrate": {
+            "x": 134,
+            "y": 134
+        }
+    },
+    "commands": {
+        "cmd01": [
+            "Line 1",
+            "Line 2",
+            "..."
+        ]
+    }
+}

@@ -1,3 +1,4 @@
+#include "json-config.hpp"
 #include "i18n-ctrl.hpp"
 #include "config.h"
 #include "utils.hpp"
@@ -21,7 +22,7 @@ I18nCtrl::I18nCtrl() : JsonStore(i18n)
 
 void I18nCtrl::setup()
 {
-    this->load("/i18n_enUS.json");
+    this->load(JsonConfigCtrl::instance()->lang);
     log_i("%d std keys loaded ...", this->i18n["Std"].size());
     log_i("%d grbl keys loaded ...", this->i18n["Grbl"].size());
 }

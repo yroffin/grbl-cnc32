@@ -80,18 +80,18 @@ boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
 // menu layer
 TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Menu", 0, 0);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Menu", "MENU"), 0, 0);
     this->add(this->title);
-    this->a = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, "move", 8, 14, 40, 40);
+    this->a = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, this->getKey("Menu", "MV"), 8, 14, 40, 40);
     this->a->setEvent(EVENT_BTN_MOVE);
     this->add(this->a);
-    this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, "stat", 8, 14 + 44, 40, 40);
+    this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, this->getKey("Menu", "STA"), 8, 14 + 44, 40, 40);
     this->b->setEvent(EVENT_BTN_STAT);
     this->add(this->b);
-    this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, "files", 8, 14 + 44 * 2, 40, 40);
+    this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, this->getKey("Menu", "FIL"), 8, 14 + 44 * 2, 40, 40);
     this->c->setEvent(EVENT_BTN_FILES);
     this->add(this->c);
-    this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, "admin", 8, 14 + 44 * 3, 40, 40);
+    this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
     this->d->setEvent(EVENT_BTN_ADM);
     this->add(this->d);
     // Status bar
@@ -137,72 +137,72 @@ void TFT_LayerMenu::notify(const Event *event)
 // control layer
 TFT_LayerControl::TFT_LayerControl(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Control", 0, 0, 265, 230);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Control", "CTRL"), 0, 0, 265, 230);
     this->add(this->group);
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Control", "CTRL"), 0, 0);
     this->group->add(this->title);
-    this->setx = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETX, "SetX", 0, 14, 40, 40);
+    this->setx = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETX, this->getKey("Control", "SX"), 0, 14, 40, 40);
     this->setx->setEvent(EVENT_SETX);
     this->group->add(this->setx);
-    this->sety = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETY, "SetY", 44, 14, 40, 40);
+    this->sety = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETY, this->getKey("Control", "SY"), 44, 14, 40, 40);
     this->sety->setEvent(EVENT_SETY);
     this->group->add(this->sety);
-    this->setz = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETZ, "SetZ", 44 * 2, 14, 40, 40);
+    this->setz = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETZ, this->getKey("Control", "SZ"), 44 * 2, 14, 40, 40);
     this->setz->setEvent(EVENT_SETZ);
     this->group->add(this->setz);
-    this->setall = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETALL, "SetAll", 44 * 3, 14, 40, 40);
+    this->setall = new TFT_Button(WIDGET_ID_LAYER_CTRL_SETALL, this->getKey("Control", "SA"), 44 * 3, 14, 40, 40);
     this->setall->setEvent(EVENT_SETXYZ);
     this->group->add(this->setall);
-    this->home = new TFT_Button(WIDGET_ID_LAYER_CTRL_HOME, "Home", 44 * 4, 14, 40, 40);
+    this->home = new TFT_Button(WIDGET_ID_LAYER_CTRL_HOME, this->getKey("Control", "HME"), 44 * 4, 14, 40, 40);
     this->group->add(this->home);
-    this->joystick = new TFT_Joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, "Control", 0, 58, 265, 140);
+    this->joystick = new TFT_Joystick(WIDGET_ID_LAYER_CTRL_JOYSTICK, this->getKey("Control", "CTRL"), 0, 58, 265, 140);
     this->group->add(this->joystick);
 }
 
 // stat layer
 TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 14 * 5);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Stat", "STA"), 0, 0, 265, 14 * 5);
     this->add(this->group);
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Stat", 0, 0);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "STA"), 0, 0);
     this->group->add(this->title);
-    this->grblStatusLabel = new TFT_Label(WIDGET_ID_DEFAULT, "status", 0, 14);
+    this->grblStatusLabel = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "ST"), 0, 14);
     this->group->add(this->grblStatusLabel);
-    this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, "...", 40, 14);
+    this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, this->getKey("Stat", "NIL"), 40, 14);
     this->group->add(this->grblStatusValue);
 
-    this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, "I/O", 0, 14 * 2);
+    this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "IO"), 0, 14 * 2);
     this->group->add(this->grblIoStatus);
-    this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 14 * 2);
+    this->grblIoStatusValues = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, this->getKey("Stat", "NIL"), 40, 14 * 2);
     this->group->add(this->grblIoStatusValues);
 
-    this->grblMpos = new TFT_Label(WIDGET_ID_DEFAULT, "MPos", 0, 14 * 3);
+    this->grblMpos = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "MP"), 0, 14 * 3);
     this->group->add(this->grblMpos);
-    this->grblMposValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, "...", 40, 14 * 3);
+    this->grblMposValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_IO, this->getKey("Stat", "NIL"), 40, 14 * 3);
     this->group->add(this->grblMposValue);
 
-    this->grblWpos = new TFT_Label(WIDGET_ID_DEFAULT, "WPos", 0, 14 * 4);
+    this->grblWpos = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "WP"), 0, 14 * 4);
     this->group->add(this->grblWpos);
-    this->grblWposValue = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14 * 4);
+    this->grblWposValue = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "NIL"), 40, 14 * 4);
     this->group->add(this->grblWposValue);
 
-    this->groupNunchuk = new TFT_Group(WIDGET_ID_DEFAULT, "Nunchuk", 0, 14 * 5, 265, 14 * 5);
+    this->groupNunchuk = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Stat", "CHK"), 0, 14 * 5, 265, 14 * 5);
     this->add(this->groupNunchuk);
 
-    this->nunchuk = new TFT_Label(WIDGET_ID_DEFAULT, "Chuk", 0, 0);
+    this->nunchuk = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "CHK"), 0, 0);
     this->groupNunchuk->add(this->nunchuk);
-    this->nunchukZ = new TFT_Label(WIDGET_ID_DEFAULT, "0", 40, 0);
+    this->nunchukZ = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "ZERO"), 40, 0);
     this->groupNunchuk->add(this->nunchukZ);
-    this->nunchukC = new TFT_Label(WIDGET_ID_DEFAULT, "0", 70, 0);
+    this->nunchukC = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "ZERO"), 70, 0);
     this->groupNunchuk->add(this->nunchukC);
-    this->nunchukPlane = new TFT_Label(WIDGET_ID_DEFAULT, "0", 100, 0);
+    this->nunchukPlane = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "ZERO"), 100, 0);
     this->groupNunchuk->add(this->nunchukPlane);
-    this->nunchukMove = new TFT_Label(WIDGET_ID_DEFAULT, "...", 40, 14);
+    this->nunchukMove = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "NIL"), 40, 14);
     this->groupNunchuk->add(this->nunchukMove);
-    this->nunchukLader = new TFT_Label(WIDGET_ID_DEFAULT, "0", 100, 14);
+    this->nunchukLader = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "ZERO"), 100, 14);
     this->groupNunchuk->add(this->nunchukLader);
 
-    this->console = new TFT_Console(WIDGET_ID_DEFAULT, "output", 6, 0, 14 * 10, 265, 14 * 6);
+    this->console = new TFT_Console(WIDGET_ID_DEFAULT, this->getKey("Stat", "OUT"), 6, 0, 14 * 10, 265, 14 * 6);
     this->group->add(this->console);
 }
 
@@ -253,29 +253,29 @@ void TFT_LayerStatistic::notify(const Event *event)
     }
     if (event->type == EVENT_MPOS)
     {
-        this->grblMposValue->setLabel("x: %7.2f y: %7.2f z: %7.2f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+        this->grblMposValue->setLabel(this->getKey("Stat", "GRBL"), event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
     }
     if (event->type == EVENT_WPOS)
     {
-        this->grblWposValue->setLabel("x: %7.2f y: %7.2f z: %7.2f", event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
+        this->grblWposValue->setLabel(this->getKey("Stat", "GRBL"), event->fvalue.f1, event->fvalue.f2, event->fvalue.f3);
     }
     if (event->type == NUNCHUK_Z)
     {
-        this->nunchukZ->setLabel("z: %01d", event->ivalue);
+        this->nunchukZ->setLabel(this->getKey("Stat", "NKZ"), event->ivalue);
         this->nunchukLader->setLabel("");
         this->nunchukMove->setLabel("");
         this->groupNunchuk->setInvalidated(true);
     }
     if (event->type == NUNCHUK_C)
     {
-        this->nunchukC->setLabel("c: %01d", event->ivalue);
+        this->nunchukC->setLabel(this->getKey("Stat", "NKC"), event->ivalue);
         this->nunchukLader->setLabel("");
         this->nunchukMove->setLabel("");
         this->groupNunchuk->setInvalidated(true);
     }
     if (event->type == NUNCHUK_DATA)
     {
-        this->nunchukPlane->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
+        this->nunchukPlane->setLabel(this->getKey("Stat", "NKXY"), event->touch.x, event->touch.y);
         this->nunchukLader->setLabel("");
         this->nunchukMove->setLabel("");
         this->groupNunchuk->setInvalidated(true);
@@ -286,12 +286,12 @@ void TFT_LayerStatistic::notify(const Event *event)
         switch (event->type)
         {
         case JOG_MOVEXY:
-            this->nunchukLader->setLabel("x: %+03.03d y: %+03.03d", event->touch.x, event->touch.y);
-            this->nunchukMove->setLabel("Move XY");
+            this->nunchukLader->setLabel(this->getKey("Stat", "JGXY"), event->touch.x, event->touch.y);
+            this->nunchukMove->setLabel(this->getKey("Stat", "MGXY"));
             break;
         case JOG_MOVEZ:
-            this->nunchukLader->setLabel("z: %+03.03d", event->touch.y);
-            this->nunchukMove->setLabel("Move Z");
+            this->nunchukLader->setLabel(this->getKey("Stat", "JGZ"), event->touch.y);
+            this->nunchukMove->setLabel(this->getKey("Stat", "MGZ"));
             break;
         }
         this->groupNunchuk->setInvalidated(true);
@@ -303,26 +303,26 @@ void TFT_LayerStatistic::notify(const Event *event)
 // files layer
 TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Statistics", 0, 0, 265, 230);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Files", "FIL"), 0, 0, 265, 230);
     this->add(this->group);
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Files", 0, 0);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "FIL"), 0, 0);
     this->group->add(title);
-    this->dir = new TFT_Label(WIDGET_ID_DEFAULT, "Dir", 0, 14);
+    this->dir = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "DIR"), 0, 14);
     this->group->add(dir);
-    this->cwd = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 14);
+    this->cwd = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "NIL"), 40, 14);
     this->group->add(cwd);
-    this->file = new TFT_Label(WIDGET_ID_DEFAULT, "File", 0, 28);
+    this->file = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "FN"), 0, 28);
     this->group->add(file);
-    this->cwf = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 28);
+    this->cwf = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "NIL"), 40, 28);
     this->group->add(cwf);
-    this->misc = new TFT_Label(WIDGET_ID_DEFAULT, "Misc", 0, 42);
+    this->misc = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "MC"), 0, 42);
     this->group->add(misc);
-    this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, "", 40, 42);
+    this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "NIL"), 40, 42);
     this->group->add(miscValue);
-    this->sw = new TFT_Button(WIDGET_ID_DEFAULT, "File", 210, 6, 40, 40);
+    this->sw = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Files", "FIL"), 210, 6, 40, 40);
     this->sw->setEvent(SWITCH_SELECTED);
     this->group->add(this->sw);
-    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, "files", 0, 54, 265, 160);
+    this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, this->getKey("Files", "FIL"), 0, 54, 265, 160);
     this->group->add(files);
 }
 
@@ -352,10 +352,10 @@ void TFT_LayerFile::notify(const Event *event)
         switch (StorageCtrl::instance()->toggle())
         {
         case COMMANDS:
-            this->sw->setLabel("Cmd");
+            this->sw->setLabel(this->getKey("Files", "SWC"));
             break;
         case FILES:
-            this->sw->setLabel("File");
+            this->sw->setLabel(this->getKey("Files", "SWF"));
             break;
         }
         this->refresh();
@@ -367,7 +367,7 @@ void TFT_LayerFile::notify(const Event *event)
 void TFT_LayerFile::refresh()
 {
     this->files->clear();
-    this->miscValue->setLabel("offset: %d", this->files->offset);
+    this->miscValue->setLabel(this->getKey("Files", "OFF"), this->files->offset);
     this->files->count = StorageCtrl::instance()->scan();
     for (int i = 0; i < this->files->maxLines; i++)
     {
@@ -381,24 +381,24 @@ void TFT_LayerFile::refresh()
 // adminn layer
 TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    this->group = new TFT_Group(WIDGET_ID_DEFAULT, "Admin", 0, 0, 265, 230);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 0, 0, 265, 230);
     this->add(this->group);
-    this->title = new TFT_Label(WIDGET_ID_DEFAULT, "Control", 0, 0);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 0, 0);
     this->group->add(this->title);
-    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, "Print", 0, 14, 40, 40);
+    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, this->getKey("Admin", "PRT"), 0, 14, 40, 40);
     this->print->setEvent(EVENT_START_PRINT);
     this->group->add(print);
-    this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, "Unlock", 44, 14, 40, 40);
+    this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, this->getKey("Admin", "ULK"), 44, 14, 40, 40);
     this->group->add(this->unlock);
-    this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, "Reset", 44 * 2, 14, 40, 40);
+    this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, this->getKey("Admin", "RST"), 44 * 2, 14, 40, 40);
     this->group->add(this->reset);
-    this->status = new TFT_Button(WIDGET_ID_LAYER_ADM_STATUS, "Status", 44 * 3, 14, 40, 40);
+    this->status = new TFT_Button(WIDGET_ID_LAYER_ADM_STATUS, this->getKey("Admin", "STA"), 44 * 3, 14, 40, 40);
     this->group->add(this->status);
-    this->pause = new TFT_Button(WIDGET_ID_LAYER_ADM_PAUSE, "Pause", 44 * 4, 14, 40, 40);
+    this->pause = new TFT_Button(WIDGET_ID_LAYER_ADM_PAUSE, this->getKey("Admin", "PSE"), 44 * 4, 14, 40, 40);
     this->group->add(this->pause);
-    this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, "Resume", 44 * 5, 14, 40, 40);
+    this->resume = new TFT_Button(WIDGET_ID_LAYER_ADM_RESUME, this->getKey("Admin", "RES"), 44 * 5, 14, 40, 40);
     this->group->add(this->resume);
-    this->grblCommand = new TFT_Console(WIDGET_ID_DEFAULT, "grbl", 12, 0, 60, 265, 14 * 12);
+    this->grblCommand = new TFT_Console(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 12, 0, 60, 265, 14 * 12);
     this->group->add(this->grblCommand);
 }
 
@@ -467,7 +467,7 @@ void TFT_Screen::outputConsole(const char *format, ...)
     vsprintf(Utils::vsprintfBuffer(), format, args);
     Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
-    this->statistic->outputConsole("> %s", this->log_message);
+    this->statistic->outputConsole(this->getKey("Misc", "CSL"), this->log_message);
 }
 
 // Update screen printing

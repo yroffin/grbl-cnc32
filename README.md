@@ -50,6 +50,9 @@ Simply add a first config.json on your root SDCARD (it will be updated by API af
 
 ```json
 {
+    "sys": {
+        "lang": "/i18n_enUS.json"
+    },
     "wifi": [
         {
             "ssid": "<your SSID>",
