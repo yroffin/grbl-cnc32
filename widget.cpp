@@ -11,12 +11,18 @@ TFT_eSPI _tft = TFT_eSPI();
 // constructor
 TFT_Widget::TFT_Widget()
 {
+    this->i18n = I18nCtrl::instance();
+    this->config = JsonConfigCtrl::instance();
+    this->background = this->getKeyAsInt("widget", "background", TFT_BLACK);
+    this->selectedBackground = this->getKeyAsInt("widget", "selectedBackground", TFT_WHITE);
+    this->fontNormal = this->getKeyAsInt("widget", "fontNormal", TFT_WHITE);
+    this->fontSelected = this->getKeyAsInt("widget", "fontSelected", TFT_BLACK);
+    this->border = this->getKeyAsInt("widget", "border", TFT_DARKGREY);
 }
 
 // Init this widget
 void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
 {
-    this->i18n = I18nCtrl::instance();
     this->x = _x;
     this->y = _y;
     this->w = _w;
@@ -35,6 +41,15 @@ void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, i
 const char *TFT_Widget::getKey(const char *k1, const char *k2)
 {
     return this->i18n->getKey(k1, k2);
+}
+
+int TFT_Widget::getKeyAsInt(const char *k1, const char *k2, int def)
+{
+    if (this->config == 0)
+    {
+        return def;
+    }
+    return this->config->getAsInt(k1, k2, def);
 }
 
 void TFT_Widget::setLabel(const char *format, ...)
@@ -423,10 +438,17 @@ void TFT_Label::draw()
 }
 
 // Constructor
-TFT_StatusBar::TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y)
+TFT_StatusBar::TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y) : TFT_Widget()
 {
     init(_id, "status", _x, _y, 320, 10);
     Utils::strcpy(this->wifiStatus, "...", 20);
+
+    this->busyStateFgColor = this->getKeyAsInt("status", "busyStateFgColor", TFT_BLACK);
+    this->busyStateBgColor = this->getKeyAsInt("status", "busyStateBgColor", TFT_GREEN);
+    this->busyStateBgColorWarn = this->getKeyAsInt("status", "busyStateBgColorWarn", TFT_ORANGE);
+    this->writeStatusFgColor = this->getKeyAsInt("status", "writeStatusFgColor", TFT_BLACK);
+    this->writeStatusBgColor = this->getKeyAsInt("status", "writeStatusBgColor", TFT_GREEN);
+    this->writeStatusBgColorWarn = this->getKeyAsInt("status", "writeStatusBgColorWarn", TFT_ORANGE);
 }
 
 void TFT_StatusBar::draw()
@@ -439,10 +461,10 @@ void TFT_StatusBar::draw()
     // green for ok
     // orange for busy
     // red for long busy state
-    this->tft->setTextColor(TFT_BLACK, this->busyState ? TFT_ORANGE : TFT_GREEN);
+    this->tft->setTextColor(this->busyStateFgColor, this->busyState ? this->busyStateBgColorWarn : this->busyStateBgColor);
     this->tft->drawChar('B', x + 1, y + 1);
     // write status
-    this->tft->setTextColor(TFT_BLACK, millis() - this->lastBusyWrite > 10000 ? TFT_ORANGE : TFT_GREEN);
+    this->tft->setTextColor(this->writeStatusFgColor, millis() - this->lastBusyWrite > 10000 ? this->writeStatusBgColorWarn : this->writeStatusBgColor);
     this->tft->drawChar(this->writeStatus[this->write % 4], x + 1 + 8, y + 1);
     // speed write
     char work[32];

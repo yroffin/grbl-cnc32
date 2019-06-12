@@ -5,6 +5,7 @@
 #include "config.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "evt-ctrl.hpp"
+#include "json-config.hpp"
 #include "i18n-ctrl.hpp"
 
 #define MAXSIZE_OF_NAME 32
@@ -15,6 +16,7 @@ class TFT_Widget
 public:
   TFT_Widget();
   const char *getKey(const char *k1, const char *k2);
+  int getKeyAsInt(const char *k1, const char *k2, int def);
   virtual void notify(const Event *event);
   virtual void render();
   virtual void draw();
@@ -40,17 +42,19 @@ protected:
 protected:
   void init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   I18nCtrl *i18n;
+  JsonConfigCtrl *config;
   int16_t x;
   int16_t y;
   int16_t w;
   int16_t h;
   int16_t id;
   // Colors
-  int16_t background = TFT_BLACK;
-  int16_t selectedBackground = TFT_WHITE;
-  int16_t fontNormal = TFT_WHITE;
-  int16_t fontSelected = TFT_BLACK;
-  int16_t border = TFT_DARKGREY;
+  int background = TFT_BLACK;
+  int selectedBackground = TFT_WHITE;
+  int fontNormal = TFT_WHITE;
+  int fontSelected = TFT_BLACK;
+  int border = TFT_DARKGREY;
+  // Fields
   char name[MAXSIZE_OF_NAME];
   char label[MAXSIZE_OF_LABEL];
   bool visible = false;
@@ -177,6 +181,13 @@ private:
   boolean isPrinting;
   int printed = 0;
   int toPrint = 0;
+  // Colors
+  int busyStateFgColor;
+  int busyStateBgColor;
+  int busyStateBgColorWarn;
+  int writeStatusFgColor;
+  int writeStatusBgColor;
+  int writeStatusBgColorWarn;
 };
 
 class TFT_Console : public TFT_Widget

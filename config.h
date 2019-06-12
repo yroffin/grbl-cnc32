@@ -1,9 +1,6 @@
 #ifndef _config_h
 #define _config_h
 
-// select your language between EN, FR, DE
-#define LANGUAGE EN
-
 // Note: SPI is currently hardcoded for using following pins
 // MOSI=13, MISO=12, SCK=14
 // Those are used for the display, the touch panel and the SD card reader.
@@ -38,15 +35,6 @@
 // TFT_ORANGE      0xFDA0      /* 255, 180,   0 */
 // TFT_GREENYELLOW 0xB7E0      /* 180, 255,   0 */
 // TFT_PINK        0xFC9F
-
-#define BUTTON_BORDER_NOT_PRESSED TFT_BLACK
-#define BUTTON_BORDER_PRESSED TFT_RED
-#define BUTTON_BACKGROUND TFT_GREEN
-#define BUTTON_TEXT TFT_BLACK
-#define SCREEN_BACKGROUND TFT_DARKGREY
-#define SCREEN_NORMAL_TEXT TFT_GREEN
-#define SCREEN_ALERT_TEXT TFT_RED
-#define SCREEN_HEADER_TEXT TFT_WHITE
 
 #define JSON_CONFIG_SIZE 8192
 #define JSON_I18N_SIZE 8192
