@@ -11,20 +11,18 @@ TFT_eSPI _tft = TFT_eSPI();
 // constructor
 TFT_Widget::TFT_Widget()
 {
-}
-
-// Init this widget
-void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
-{
     this->i18n = I18nCtrl::instance();
     this->config = JsonConfigCtrl::instance();
-
     this->background = this->getKeyAsInt("widget", "background", TFT_BLACK);
     this->selectedBackground = this->getKeyAsInt("widget", "selectedBackground", TFT_WHITE);
     this->fontNormal = this->getKeyAsInt("widget", "fontNormal", TFT_WHITE);
     this->fontSelected = this->getKeyAsInt("widget", "fontSelected", TFT_BLACK);
     this->border = this->getKeyAsInt("widget", "border", TFT_DARKGREY);
+}
 
+// Init this widget
+void TFT_Widget::init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+{
     this->x = _x;
     this->y = _y;
     this->w = _w;
@@ -47,6 +45,10 @@ const char *TFT_Widget::getKey(const char *k1, const char *k2)
 
 int16_t TFT_Widget::getKeyAsInt(const char *k1, const char *k2, int16_t def)
 {
+    if (this->config == 0)
+    {
+        return def;
+    }
     return this->config->getAsInt(k1, k2, def);
 }
 
