@@ -8,7 +8,24 @@
             "pass": "<your password>"
         }
     ],
+    "widget": {
+        "background": 0,
+        "selectedBackground": 65535,
+        "fontNormal": 65535,
+        "fontSelected": 0,
+        "border": 31727
+    },
+    "status": {
+        "busyStateFgColor": 0,
+        "busyStateBgColor": 2016,
+        "busyStateBgColorWarn": 64928,
+        "writeStatusFgColor": 0,
+        "writeStatusBgColor": 2016,
+        "writeStatusBgColorWarn": 64928
+    },
     "tft": {
+        "background": 0,
+        "calColor": 65535,
         "calibrate": [
             386,
             3530,

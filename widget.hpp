@@ -5,6 +5,7 @@
 #include "config.h"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "evt-ctrl.hpp"
+#include "json-config.hpp"
 #include "i18n-ctrl.hpp"
 
 #define MAXSIZE_OF_NAME 32
@@ -15,6 +16,7 @@ class TFT_Widget
 public:
   TFT_Widget();
   const char *getKey(const char *k1, const char *k2);
+  int16_t getKeyAsInt(const char *k1, const char *k2, int16_t def);
   virtual void notify(const Event *event);
   virtual void render();
   virtual void draw();
@@ -40,6 +42,7 @@ protected:
 protected:
   void init(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
   I18nCtrl *i18n;
+  JsonConfigCtrl *config;
   int16_t x;
   int16_t y;
   int16_t w;
@@ -177,6 +180,13 @@ private:
   boolean isPrinting;
   int printed = 0;
   int toPrint = 0;
+  // Colors
+  uint16_t busyStateFgColor;
+  uint16_t busyStateBgColor;
+  uint16_t busyStateBgColorWarn;
+  uint16_t writeStatusFgColor;
+  uint16_t writeStatusBgColor;
+  uint16_t writeStatusBgColorWarn;
 };
 
 class TFT_Console : public TFT_Widget

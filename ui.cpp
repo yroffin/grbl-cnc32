@@ -21,7 +21,7 @@ TFT_Screen::TFT_Screen()
 {
     // create instance for touchscreeen
     this->tft = &_tft;
-    this->background = TFT_BLACK;
+    this->background = this->getKeyAsInt("tft", "background", TFT_BLACK);
     log_i("TFT_Screen allocated ...");
 }
 
@@ -36,7 +36,7 @@ void TFT_Screen::prepare()
     this->tft->init(); // Initialise l'écran avec les pins définies dans setup
     // Set the rotation before we calibrate
     this->tft->setRotation(1); // normally, this is already done in this->tft->int() but it is not clear how is rotation set (probably 0); so it can be usefull to change it here
-    this->tft->fillRect(0, 0, 400, 400, TFT_BLACK);
+    this->tft->fillRect(0, 0, 400, 400, this->getKeyAsInt("tft", "background", TFT_BLACK));
 }
 
 // init screen
@@ -438,18 +438,10 @@ void TFT_Screen::calibrate()
     }
     else
     {
-        // data not valid so recalibrate
-        this->tft->fillScreen(SCREEN_BACKGROUND);
         this->tft->setCursor(20, 0);
-        this->tft->setTextFont(2);
-        this->tft->setTextSize(1);
-        this->tft->setTextColor(SCREEN_HEADER_TEXT, SCREEN_BACKGROUND);
-
         this->tft->setTextFont(1);
-        this->tft->println();
 
-        this->tft->calibrateTouch(calData, SCREEN_ALERT_TEXT, SCREEN_BACKGROUND, 15);
-        this->tft->setTextColor(SCREEN_NORMAL_TEXT, SCREEN_BACKGROUND);
+        this->tft->calibrateTouch(calData, this->getKeyAsInt("tft", "calColor", TFT_WHITE), this->getKeyAsInt("tft", "background", TFT_BLACK), 15);
         log_i("Cal data %d %d %d %d %d", calData[0], calData[1], calData[2], calData[3], calData[4]);
 
         TFT_Widget::init(WIDGET_ID_LAYER_MENU, "", 0, 0, calData[0], calData[1]);
