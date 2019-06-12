@@ -43,7 +43,7 @@ const char *TFT_Widget::getKey(const char *k1, const char *k2)
     return this->i18n->getKey(k1, k2);
 }
 
-int16_t TFT_Widget::getKeyAsInt(const char *k1, const char *k2, int16_t def)
+int TFT_Widget::getKeyAsInt(const char *k1, const char *k2, int def)
 {
     if (this->config == 0)
     {
@@ -438,17 +438,17 @@ void TFT_Label::draw()
 }
 
 // Constructor
-TFT_StatusBar::TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y)
+TFT_StatusBar::TFT_StatusBar(int16_t _id, int16_t _x, int16_t _y) : TFT_Widget()
 {
     init(_id, "status", _x, _y, 320, 10);
     Utils::strcpy(this->wifiStatus, "...", 20);
 
     this->busyStateFgColor = this->getKeyAsInt("status", "busyStateFgColor", TFT_BLACK);
-    this->busyStateBgColor = this->getKeyAsInt("status", "busyStateFgColor", TFT_GREEN);
-    this->busyStateBgColorWarn = this->getKeyAsInt("status", "busyStateFgColor", TFT_ORANGE);
-    this->writeStatusFgColor = this->getKeyAsInt("status", "busyStateFgColor", TFT_BLACK);
-    this->writeStatusBgColor = this->getKeyAsInt("status", "busyStateFgColor", TFT_GREEN);
-    this->writeStatusBgColorWarn = this->getKeyAsInt("status", "busyStateFgColor", TFT_ORANGE);
+    this->busyStateBgColor = this->getKeyAsInt("status", "busyStateBgColor", TFT_GREEN);
+    this->busyStateBgColorWarn = this->getKeyAsInt("status", "busyStateBgColorWarn", TFT_ORANGE);
+    this->writeStatusFgColor = this->getKeyAsInt("status", "writeStatusFgColor", TFT_BLACK);
+    this->writeStatusBgColor = this->getKeyAsInt("status", "writeStatusBgColor", TFT_GREEN);
+    this->writeStatusBgColorWarn = this->getKeyAsInt("status", "writeStatusBgColorWarn", TFT_ORANGE);
 }
 
 void TFT_StatusBar::draw()

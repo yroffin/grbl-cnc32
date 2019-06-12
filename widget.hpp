@@ -16,7 +16,7 @@ class TFT_Widget
 public:
   TFT_Widget();
   const char *getKey(const char *k1, const char *k2);
-  int16_t getKeyAsInt(const char *k1, const char *k2, int16_t def);
+  int getKeyAsInt(const char *k1, const char *k2, int def);
   virtual void notify(const Event *event);
   virtual void render();
   virtual void draw();
@@ -49,11 +49,12 @@ protected:
   int16_t h;
   int16_t id;
   // Colors
-  int16_t background = TFT_BLACK;
-  int16_t selectedBackground = TFT_WHITE;
-  int16_t fontNormal = TFT_WHITE;
-  int16_t fontSelected = TFT_BLACK;
-  int16_t border = TFT_DARKGREY;
+  int background = TFT_BLACK;
+  int selectedBackground = TFT_WHITE;
+  int fontNormal = TFT_WHITE;
+  int fontSelected = TFT_BLACK;
+  int border = TFT_DARKGREY;
+  // Fields
   char name[MAXSIZE_OF_NAME];
   char label[MAXSIZE_OF_LABEL];
   bool visible = false;
@@ -181,12 +182,12 @@ private:
   int printed = 0;
   int toPrint = 0;
   // Colors
-  uint16_t busyStateFgColor;
-  uint16_t busyStateBgColor;
-  uint16_t busyStateBgColorWarn;
-  uint16_t writeStatusFgColor;
-  uint16_t writeStatusBgColor;
-  uint16_t writeStatusBgColorWarn;
+  int busyStateFgColor;
+  int busyStateBgColor;
+  int busyStateBgColorWarn;
+  int writeStatusFgColor;
+  int writeStatusBgColor;
+  int writeStatusBgColorWarn;
 };
 
 class TFT_Console : public TFT_Widget
