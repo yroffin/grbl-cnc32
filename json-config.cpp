@@ -35,6 +35,9 @@ void JsonConfigCtrl::setup()
 
   // load global configuration
   this->load("/config.json");
+
+  // fix language
+  strcpy(this->lang, this->getAsString("sys", "lang", "/i18n_enUS.json"));
 }
 
 void JsonConfigCtrl::write()

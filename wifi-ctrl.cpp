@@ -92,9 +92,14 @@ void ApiConfig()
     ApiJson(JsonConfigCtrl::instance(), "/config.json", "/config.bak");
 }
 
-void ApiI18n()
+void ApiI18nEnUS()
 {
     ApiJson(I18nCtrl::instance(), "/i18n_enUS.json", "/i18n_enUS.bak");
+}
+
+void ApiI18nFrFR()
+{
+    ApiJson(I18nCtrl::instance(), "/i18n_frFR.json", "/i18n_frFR.bak");
 }
 
 void (*resetFunc)(void) = 0;
@@ -171,7 +176,8 @@ void WifiCtrl::loop()
         WiFi.setSleep(false);
         server.on("/", HomePage);
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
-        server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18n);
+        server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18nEnUS);
+        server.on("/api/v1/i18n/i18n_frFR.json", HTTP_ANY, ApiI18nFrFR);
         server.on("/api/v1/simulate", HTTP_ANY, Simulate);
         server.on("/api/v1/reboot", Reboot);
         server.begin();

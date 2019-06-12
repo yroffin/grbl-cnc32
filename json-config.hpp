@@ -18,6 +18,9 @@ public:
   void setup();
   void write();
 
+public:
+  char lang[32];
+
 private:
 };
 

@@ -1,4 +1,60 @@
 {
+    "Menu": {
+        "MENU": "Menu",
+        "MV": "Move",
+        "STA": "Stat",
+        "FIL": "Files",
+        "ADM": "Admin"
+    },
+    "Control": {
+        "CTRL": "Control",
+        "SX": "SetX",
+        "SY": "SetY",
+        "SZ": "SetZ",
+        "SA": "SetAll",
+        "HME": "Home"
+    },
+    "Stat": {
+        "STA": "Statistics",
+        "ST": "Status",
+        "NIL": "...",
+        "IO": "I/O",
+        "MP": "MPos",
+        "WP": "WPos",
+        "ZERO": "0",
+        "OUT": "Output",
+        "CHK": "NChuk",
+        "GRBL": "x: %7.2f y: %7.2f z: %7.2f",
+        "NKZ": "z: %01d",
+        "NKC": "c: %01d",
+        "NKXY": "x: %+03.03d y: %+03.03d",
+        "JGXY": "x: %+03.03d y: %+03.03d",
+        "MGXY": "Move XY",
+        "JGZ": "z: %+03.03d",
+        "MGZ": "Move Z"
+    },
+    "Files": {
+        "FIL": "Files",
+        "DIR": "Dir",
+        "NIL": "",
+        "FN": "File",
+        "SWF": "File",
+        "SWC": "Cmd",
+        "OFF": "offset: %d",
+        "MC": "Misc"
+    },
+    "Admin": {
+        "ADM": "Admin",
+        "PRT": "Print",
+        "ULK": "Unlock",
+        "RST": "Reset",
+        "STA": "Status",
+        "PSE": "Pause",
+        "RES": "Resume"
+    },
+    "Misc": {
+        "CSL": "> %s"
+    },
     "Joystick": {
         "XP": "Right",
         "XM": "Left",
@@ -25,7 +81,7 @@
         "m05": "5.Homing not enabled",
         "m06": "6.Step pulse <3 usec",
         "m07": "7.EEPROM read fail",
-        "m08": "8. $ while not IDLE",
+        "m08": "8.$ while not IDLE",
         "m09": "9.Locked(alarm or jog)",
         "m10": "10.Soft limit(no Homing)",
         "m11": "11.Line overflow",
