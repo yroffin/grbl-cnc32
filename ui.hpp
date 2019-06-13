@@ -115,11 +115,32 @@ public:
 protected:
   // local component
   TFT_Label *title;
-  TFT_Button *a;
-  TFT_Button *b;
-  TFT_Button *c;
-  TFT_Button *d;
+  TFT_Button *move;
+  TFT_Button *stat;
+  TFT_Button *files;
+  TFT_Button *admin;
   char log_message[MAXSIZE_OF_LOG_MESSAGE];
+};
+
+enum DialogFlow
+{
+  PRINT
+};
+
+class TFT_LayerDialog : public TFT_Layer
+{
+public:
+  TFT_LayerDialog(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
+  virtual void notify(const Event *event);
+  virtual void show(DialogFlow _flow, const char *_data, const char *_title);
+
+protected:
+  TFT_Group *group;
+  TFT_Label *title;
+  TFT_Button *ok;
+  TFT_Button *cancel;
+  DialogFlow flow = PRINT;
+  char data[32];
 };
 
 class TFT_Screen : public TFT_Widget
@@ -150,6 +171,7 @@ public:
   TFT_LayerControl *control;
   TFT_LayerStatistic *statistic;
   TFT_LayerFile *file;
+  TFT_LayerDialog *dialog;
   char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 

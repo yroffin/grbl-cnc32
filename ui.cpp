@@ -2,6 +2,7 @@
 #include "grbl-ctrl.hpp"
 #include "json-config.hpp"
 #include "storage-ctrl.hpp"
+#include "i18n-ctrl.hpp"
 
 // screen controller
 TFT_Screen *__instance_tft = 0;
@@ -60,6 +61,8 @@ void TFT_Screen::init()
     this->add(this->statistic)->show();
     this->file = new TFT_LayerFile(WIDGET_ID_LAYER_FILE, 55, 0, 0, 0);
     this->add(this->file)->hide();
+    this->dialog = new TFT_LayerDialog(WIDGET_ID_DEFAULT, 55, 0, 0, 0);
+    this->add(this->dialog)->hide();
 
     // First render
     log_i("TFT_Screen render ...");
@@ -77,23 +80,122 @@ boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
     return this->tft->getTouch(x, y, 800);
 }
 
+// touch calibration
+void TFT_Screen::calibrate()
+{
+    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
+    uint16_t calData[5] = {386, 3530, 220, 3627, 7};
+    boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
+
+    if (calDataOK)
+    {
+        // calibration data valid
+        this->tft->setTouch(calData);
+    }
+    else
+    {
+        this->tft->setCursor(20, 0);
+        this->tft->setTextFont(1);
+
+        this->tft->calibrateTouch(calData, this->getKeyAsInt("tft", "calColor", TFT_WHITE), this->getKeyAsInt("tft", "background", TFT_BLACK), 15);
+        log_i("Cal data %d %d %d %d %d", calData[0], calData[1], calData[2], calData[3], calData[4]);
+
+        TFT_Widget::init(WIDGET_ID_LAYER_MENU, "", 0, 0, calData[0], calData[1]);
+        jsonConfig->setAsArray("tft", "calibrate", calData, 5);
+        jsonConfig->write();
+    }
+}
+
+// Update screen status
+void TFT_Screen::outputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
+    va_end(args);
+    this->statistic->outputConsole(this->getKey("Misc", "CSL"), this->log_message);
+}
+
+// Update screen printing
+void TFT_Screen::grblInputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    // use utils buffer to protect memory
+    vsprintf(Utils::vsprintfBuffer(), format, args);
+    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
+    va_end(args);
+    this->admin->grblInputConsole(this->log_message);
+}
+
+// Update screen printing
+void TFT_Screen::grblOutputConsole(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vsprintf(this->log_message, format, args);
+    va_end(args);
+    this->admin->grblOutputConsole(this->log_message);
+}
+
+// Notify event
+void TFT_Screen::notify(const Event *event)
+{
+    // Dispatch to layers
+    this->TFT_Widget::notify(event);
+}
+
+void TFT_Screen::notifyWrite(uint16_t sz)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyWrite(sz);
+    }
+}
+
+void TFT_Screen::notifyBusy(boolean _busyState)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyBusy(_busyState);
+    }
+}
+
+void TFT_Screen::notifyWifiStatus(const char *status)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyWifiStatus(status);
+    }
+}
+
+void TFT_Screen::notifyPrintStatus(boolean isPrinting, int printed, int toPrint)
+{
+    if (this->menu && this->menu->status)
+    {
+        this->menu->status->notifyPrintStatus(isPrinting, printed, toPrint);
+    }
+}
+
 // menu layer
 TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Menu", "MENU"), 0, 0);
     this->add(this->title);
-    this->a = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, this->getKey("Menu", "MV"), 8, 14, 40, 40);
-    this->a->setEvent(EVENT_BTN_MOVE);
-    this->add(this->a);
-    this->b = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, this->getKey("Menu", "STA"), 8, 14 + 44, 40, 40);
-    this->b->setEvent(EVENT_BTN_STAT);
-    this->add(this->b);
-    this->c = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, this->getKey("Menu", "FIL"), 8, 14 + 44 * 2, 40, 40);
-    this->c->setEvent(EVENT_BTN_FILES);
-    this->add(this->c);
-    this->d = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
-    this->d->setEvent(EVENT_BTN_ADM);
-    this->add(this->d);
+    this->move = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, this->getKey("Menu", "MV"), 8, 14, 40, 40);
+    this->move->setEvent(EVENT_BTN_MOVE);
+    this->add(this->move);
+    this->stat = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, this->getKey("Menu", "STA"), 8, 14 + 44, 40, 40);
+    this->stat->setEvent(EVENT_BTN_STAT);
+    this->add(this->stat);
+    this->files = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, this->getKey("Menu", "FIL"), 8, 14 + 44 * 2, 40, 40);
+    this->files->setEvent(EVENT_BTN_FILES);
+    this->add(this->files);
+    this->admin = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
+    this->admin->setEvent(EVENT_BTN_ADM);
+    this->add(this->admin);
     // Status bar
     this->status = new TFT_StatusBar(WIDGET_ID_DEFAULT, 0, 230);
     this->add(this->status);
@@ -346,6 +448,7 @@ void TFT_LayerFile::notify(const Event *event)
         this->cwd->setLabel("/");
         this->cwf->setLabel(event->message);
         this->invalidated = true;
+        TFT_Screen::instance()->dialog->show(PRINT, this->cwf->getLabel(), I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRT"), this->cwf->getLabel()));
     }
     if (event->type == SWITCH_SELECTED)
     {
@@ -378,7 +481,7 @@ void TFT_LayerFile::refresh()
     }
 }
 
-// adminn layer
+// admin layer
 TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
     this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 0, 0, 265, 230);
@@ -424,101 +527,63 @@ void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
     this->grblCommand->write(this->log_message);
 }
 
-// touch calibration
-void TFT_Screen::calibrate()
+// dialog layer
+TFT_LayerDialog::TFT_LayerDialog(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
 {
-    JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
-    uint16_t calData[5] = {386, 3530, 220, 3627, 7};
-    boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Dialog", "DLG"), 0, 0, 265, 230);
+    this->add(this->group);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Dialog", "DLG"), 30, 60);
+    this->group->add(this->title);
+    this->ok = new TFT_Button(WIDGET_ID_DIALOG_OK, this->getKey("Dialog", "OK"), 90, 90, 40, 40);
+    this->ok->setEvent(EVENT_DLG_OK);
+    this->group->add(ok);
+    this->cancel = new TFT_Button(WIDGET_ID_DIALOG_CANCEL, this->getKey("Dialog", "CANCEL"), 134, 90, 40, 40);
+    this->cancel->setEvent(EVENT_DLG_CANCEL);
+    this->group->add(cancel);
+}
 
-    if (calDataOK)
+// Notification
+void TFT_LayerDialog::notify(const Event *event)
+{
+    if (event->type == EVENT_DLG_OK)
     {
-        // calibration data valid
-        this->tft->setTouch(calData);
+        this->hide();
+        GrblCtrl::instance()->print(this->data);
+        switch (flow)
+        {
+        case PRINT:
+            TFT_Screen::instance()->control->hide();
+            TFT_Screen::instance()->statistic->hide();
+            TFT_Screen::instance()->file->hide();
+            TFT_Screen::instance()->admin->show();
+            break;
+        }
     }
-    else
+    if (event->type == EVENT_DLG_CANCEL)
     {
-        this->tft->setCursor(20, 0);
-        this->tft->setTextFont(1);
-
-        this->tft->calibrateTouch(calData, this->getKeyAsInt("tft", "calColor", TFT_WHITE), this->getKeyAsInt("tft", "background", TFT_BLACK), 15);
-        log_i("Cal data %d %d %d %d %d", calData[0], calData[1], calData[2], calData[3], calData[4]);
-
-        TFT_Widget::init(WIDGET_ID_LAYER_MENU, "", 0, 0, calData[0], calData[1]);
-        jsonConfig->setAsArray("tft", "calibrate", calData, 5);
-        jsonConfig->write();
+        this->hide();
+        switch (flow)
+        {
+        case PRINT:
+            TFT_Screen::instance()->control->hide();
+            TFT_Screen::instance()->statistic->hide();
+            TFT_Screen::instance()->file->show();
+            TFT_Screen::instance()->admin->hide();
+            break;
+        }
     }
-}
-
-// Update screen status
-void TFT_Screen::outputConsole(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    // use utils buffer to protect memory
-    vsprintf(Utils::vsprintfBuffer(), format, args);
-    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
-    va_end(args);
-    this->statistic->outputConsole(this->getKey("Misc", "CSL"), this->log_message);
-}
-
-// Update screen printing
-void TFT_Screen::grblInputConsole(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    // use utils buffer to protect memory
-    vsprintf(Utils::vsprintfBuffer(), format, args);
-    Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
-    va_end(args);
-    this->admin->grblInputConsole(this->log_message);
-}
-
-// Update screen printing
-void TFT_Screen::grblOutputConsole(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vsprintf(this->log_message, format, args);
-    va_end(args);
-    this->admin->grblOutputConsole(this->log_message);
-}
-
-// Notify event
-void TFT_Screen::notify(const Event *event)
-{
-    // Dispatch to layers
     this->TFT_Widget::notify(event);
 }
 
-void TFT_Screen::notifyWrite(uint16_t sz)
+// Show
+void TFT_LayerDialog::show(DialogFlow _flow, const char *_data, const char *_title)
 {
-    if (this->menu && this->menu->status)
-    {
-        this->menu->status->notifyWrite(sz);
-    }
-}
-
-void TFT_Screen::notifyBusy(boolean _busyState)
-{
-    if (this->menu && this->menu->status)
-    {
-        this->menu->status->notifyBusy(_busyState);
-    }
-}
-
-void TFT_Screen::notifyWifiStatus(const char *status)
-{
-    if (this->menu && this->menu->status)
-    {
-        this->menu->status->notifyWifiStatus(status);
-    }
-}
-
-void TFT_Screen::notifyPrintStatus(boolean isPrinting, int printed, int toPrint)
-{
-    if (this->menu && this->menu->status)
-    {
-        this->menu->status->notifyPrintStatus(isPrinting, printed, toPrint);
-    }
+    this->TFT_Widget::show();
+    this->flow = flow;
+    this->title->setLabel(_title);
+    Utils::strcpy(this->data, _data, sizeof(this->data));
+    TFT_Screen::instance()->control->hide();
+    TFT_Screen::instance()->statistic->hide();
+    TFT_Screen::instance()->file->hide();
+    TFT_Screen::instance()->admin->hide();
 }

@@ -41,6 +41,7 @@
         "SWF": "Fich.",
         "SWC": "Com.",
         "OFF": "Position: %d",
+        "PRT": "Imprimer le fichier %s",
         "MC": "Misc"
     },
     "Admin": {

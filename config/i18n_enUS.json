@@ -41,6 +41,7 @@
         "SWF": "File",
         "SWC": "Cmd",
         "OFF": "offset: %d",
+        "PRT": "Print file %s",
         "MC": "Misc"
     },
     "Admin": {

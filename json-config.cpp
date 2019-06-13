@@ -29,7 +29,7 @@ void JsonConfigCtrl::setup()
   // Initialize SD library
   while (!SD.begin(SD_CHIPSELECT_PIN))
   {
-    TFT_Screen::instance()->console("Failed to initialize SD library");
+    TFT_Screen::instance()->console("Waiting for SD card ...");
     delay(1000);
   }
 
