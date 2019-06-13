@@ -22,15 +22,17 @@ tags:
     url: https://github.com/yroffin/grbl-cnc32
 - name: i18n
   description: All i18n related
+- name: misc
+  description: All misc related
 paths:
   /v1/config/config.json:
     put:
       tags:
       - configuration
-      summary: Get the current configuration
+      summary: Update configuration
       operationId: put-configuration
       requestBody:
-        description: Configuration object for update operation
+        description: Object for update operation
         content:
           application/json:
             schema:
@@ -38,26 +40,16 @@ paths:
         required: true
       responses:
         200:
-          description: Invalid ID supplied
-          content: {}
-        404:
-          description: Pet not found
-          content: {}
-        405:
-          description: Validation exception
-          content: {}
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
     get:
       tags:
       - configuration
-      summary: Get user by user name
+      summary: Get configuration
       operationId: get-configuration
-      parameters:
-      - name: username
-        in: path
-        description: 'The name that needs to be fetched. Use user1 for testing. '
-        required: true
-        schema:
-          type: string
       responses:
         200:
           description: successful operation
@@ -65,36 +57,156 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Configuration'
-        400:
-          description: Invalid username supplied
-          content: {}
-        404:
-          description: User not found
-          content: {}
+  /v1/i18n/i18n_enUS.json:
+    put:
+      tags:
+      - i18n
+      summary: Update i18n enUS
+      operationId: put-i18n-enUS
+      requestBody:
+        description: Object for update operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/i18n'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/i18n'
+    get:
+      tags:
+      - i18n
+      summary: Get i18n enUS
+      operationId: get-i18n-enUS
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+  /v1/i18n/i18n_frFR.json:
+    put:
+      tags:
+      - i18n
+      summary: Update i18n frFR
+      operationId: put-i18n-frFR
+      requestBody:
+        description: Object for update operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/i18n'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/i18n'
+    get:
+      tags:
+      - i18n
+      summary: Get i18n frFR
+      operationId: get-i18n-frFR
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configuration'
+  /v1/reboot:
+    get:
+      tags:
+      - misc
+      summary: Reboot
+      operationId: reboot
+      responses:
+        200:
+          description: successful operation
 components:
   schemas:
     Configuration:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        petId:
-          type: integer
-          format: int64
-        quantity:
-          type: integer
-          format: int32
-        shipDate:
-          type: string
-          format: date-time
+        sys:
+          type: object
+          properties:
+            lang:
+              type: string
+        wifi:
+          type: array
+          items:
+            properties:
+              ssid:
+                type: string
+              pass:
+                type: string
+        widget:
+          properties:
+            background:
+              type: integer
+            selectedBackground:
+              type: integer
+            fontNormal:
+              type: integer
+            fontSelected:
+              type: integer
+            border:
+              type: integer
         status:
-          type: string
-          description: Order Status
-          enum:
-          - placed
-          - approved
-          - delivered
-        complete:
-          type: boolean
-          default: false
+          properties:
+            busyStateFgColor:
+              type: integer
+            busyStateBgColor:
+              type: integer
+            busyStateBgColorWarn:
+              type: integer
+            writeStatusFgColor:
+              type: integer
+            writeStatusBgColor:
+              type: integer
+            writeStatusBgColorWarn:
+              type: integer
+        nunchuk:
+          properties:
+            calibrate:
+              properties:
+                x:
+                  type: string
+                y:
+                  type: string
+        grbl:
+          properties:
+            emulate:
+              type: boolean
+        tft:
+          properties:
+            background:
+              type: integer
+            calcColor:
+              type: integer
+            calibrate:
+              type: array
+              items:
+                type: integer
+        commands:
+          properties:
+            sample-001:
+              type: array
+              items:
+                type: string
+    i18n:
+      type: object
+      properties:
+        key:
+          type: object
+          properties:
+            key:
+              type: string

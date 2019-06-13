@@ -30,15 +30,7 @@ This firmware is API REST based.
 
 ## config.json resource (see bellow in setup bloc)
 
-```console
-GET|PUT <localhost:8080>/api/v1/config/config.json to handle config object.
-```
-
-## system commands resource
-
-```console
-GET <localhost:8080>/api/v1/reboot to reboot TFT.
-```
+See https://yroffin.github.io/grbl-cnc32/swagger-ui
 
 # setup and more
 
