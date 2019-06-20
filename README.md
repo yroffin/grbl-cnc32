@@ -1,6 +1,7 @@
 # grbl-cnc32
 
 Simple controller for my RS-CNC32, this Grbl controller runs on a ESP32.
+Swagger here : https://yroffin.github.io/grbl-cnc32/swagger-ui
 
 Work based on https://github.com/mstrens/grbl_controller_esp32.
 
