@@ -100,7 +100,7 @@ void EvtCtrl::send(int16_t sender, EventType event)
 }
 
 // Register a char* event
-void EvtCtrl::sendWithString(int16_t sender, EventType event, const char *value)
+void EvtCtrl::sendString(int16_t sender, EventType event, const char *value)
 {
     eventStore[count].type = event;
     eventStore[count].timestamp = millis();
@@ -120,6 +120,16 @@ void EvtCtrl::sendInt(int16_t sender, EventType event, int value)
 }
 
 // Register a int event
+void EvtCtrl::sendFloat(int16_t sender, EventType event, float value)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].fvalue.f1 = value;
+    count++;
+}
+
+// Register a int event
 void EvtCtrl::sendTouch(int16_t sender, EventType event, int16_t a, int16_t b)
 {
     eventStore[count].type = event;
@@ -131,17 +141,7 @@ void EvtCtrl::sendTouch(int16_t sender, EventType event, int16_t a, int16_t b)
 }
 
 // Register a float event
-void EvtCtrl::sendWithFloat(int16_t sender, EventType event, float value)
-{
-    eventStore[count].type = event;
-    eventStore[count].timestamp = millis();
-    eventStore[count].sender = sender;
-    eventStore[count].fvalue.f1 = value;
-    count++;
-}
-
-// Register a float event
-void EvtCtrl::sendWithVector(int16_t sender, EventType event, float f1, float f2, float f3)
+void EvtCtrl::sendVector(int16_t sender, EventType event, float f1, float f2, float f3)
 {
     eventStore[count].type = event;
     eventStore[count].timestamp = millis();

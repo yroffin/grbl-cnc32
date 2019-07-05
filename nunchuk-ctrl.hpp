@@ -54,6 +54,8 @@ private:
   int16_t yplane = 0;
   int16_t xcenter = 0;
   int16_t ycenter = 0;
+  float xyzL1Pas = 0.1;
+  float xyzL2Pas = 5.0;
   int uTime = 0;
 };
 

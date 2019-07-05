@@ -388,11 +388,11 @@ void TFT_LayerStatistic::notify(const Event *event)
         switch (event->type)
         {
         case JOG_MOVEXY:
-            this->nunchukLader->setLabel(this->getKey("Stat", "JGXY"), event->touch.x, event->touch.y);
+            this->nunchukLader->setLabel(this->getKey("Stat", "JGXY"), event->fvalue.f1, event->fvalue.f2);
             this->nunchukMove->setLabel(this->getKey("Stat", "MGXY"));
             break;
         case JOG_MOVEZ:
-            this->nunchukLader->setLabel(this->getKey("Stat", "JGZ"), event->touch.y);
+            this->nunchukLader->setLabel(this->getKey("Stat", "JGZ"), event->fvalue.f3);
             this->nunchukMove->setLabel(this->getKey("Stat", "MGZ"));
             break;
         }

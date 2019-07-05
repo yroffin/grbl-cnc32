@@ -30,6 +30,12 @@ void GrblCtrl::setup()
     this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
 
+    // move
+    this->xyzJogPas = jsonConfig->getAsFloat("sys", "speed", "l1", 0.1);
+    this->xyzL1Pas = jsonConfig->getAsFloat("sys", "speed", "l1", 0.1);
+    this->xyzL2Pas = jsonConfig->getAsFloat("sys", "speed", "l2", 0.5);
+    this->xyzL3Pas = jsonConfig->getAsFloat("sys", "speed", "l3", 5);
+
     strGrblIdx = 0;
 
     // initialise le port série vers grbl
@@ -274,7 +280,7 @@ boolean scanPos(const char *pattern, EventType e, const char *value)
     {
         float fvalue1, fvalue2, fvalue3;
         sscanf(&(value[strlen(pattern)]), "%f,%f,%f", &fvalue1, &fvalue2, &fvalue3);
-        EvtCtrl::instance()->sendWithVector(0, e, fvalue1, fvalue2, fvalue3);
+        EvtCtrl::instance()->sendVector(0, e, fvalue1, fvalue2, fvalue3);
     }
 }
 
@@ -291,11 +297,11 @@ boolean scanError(const char *pattern, EventType e, const char *value)
             sprintf(scode, "m%02d", code);
             const char *msg = I18nCtrl::instance()->translate(I18N_GRBL, scode);
             EvtCtrl::instance()
-                ->sendWithString(0, e, msg);
+                ->sendString(0, e, msg);
         }
         else
         {
-            EvtCtrl::instance()->sendWithString(0, e, &(value[strlen(pattern)]));
+            EvtCtrl::instance()->sendString(0, e, &(value[strlen(pattern)]));
         }
     }
 }
@@ -632,8 +638,8 @@ void GrblCtrl::notify(const Event *event)
     if (event->type == JOG_MOVEXY)
     {
         this->move(
-            event->touch.x / 10.,
-            (float)event->touch.y / 10.,
+            (float)event->fvalue.f1,
+            (float)event->fvalue.f2,
             0.,
             2000);
     }
@@ -642,7 +648,7 @@ void GrblCtrl::notify(const Event *event)
         this->move(
             0.,
             0.,
-            event->touch.y / 10.,
+            (float)event->fvalue.f3,
             400);
     }
     if (event->type == EVENT_NEXT_STEP)
@@ -651,16 +657,16 @@ void GrblCtrl::notify(const Event *event)
         switch (this->step)
         {
         case M1:
-            this->xyzJogPas = 1;
+            this->xyzJogPas = this->xyzL1Pas;
             break;
         case M10:
-            this->xyzJogPas = 5;
+            this->xyzJogPas = this->xyzL2Pas;
             break;
         case M100:
-            this->xyzJogPas = 50;
+            this->xyzJogPas = this->xyzL3Pas;
             break;
         }
-        EvtCtrl::instance()->sendInt(0, EVENT_NEW_STEP, this->xyzJogPas);
+        EvtCtrl::instance()->sendFloat(0, EVENT_NEW_STEP, this->xyzJogPas);
     }
     if (event->type == BUTTON_DOWN && event->sender == WIDGET_ID_LAYER_CTRL_HOME)
     {
@@ -713,23 +719,25 @@ void GrblCtrl::notify(const Event *event)
 }
 
 // jog mode xy
-void GrblCtrl::jogMoveXY(int16_t x, int16_t y)
+void GrblCtrl::jogMoveXY(float x, float y)
 {
-    EvtCtrl::instance()->sendTouch(
+    EvtCtrl::instance()->sendVector(
         WIDGET_ID_DEFAULT,
         JOG_MOVEXY,
         x,
-        y);
+        y,
+        0.);
     this->lastJog = millis();
 }
 
 // jog mode z
-void GrblCtrl::jogMoveZ(int16_t z)
+void GrblCtrl::jogMoveZ(float z)
 {
-    EvtCtrl::instance()->sendTouch(
+    EvtCtrl::instance()->sendVector(
         WIDGET_ID_DEFAULT,
         JOG_MOVEZ,
-        0,
+        0.,
+        0.,
         z);
     this->lastJog = millis();
 }

@@ -28,9 +28,9 @@
         "NKZ": "z: %01d",
         "NKC": "c: %01d",
         "NKXY": "x: %+03.03d y: %+03.03d",
-        "JGXY": "x: %+03.03d y: %+03.03d",
+        "JGXY": "x: %+03.03f y: %+03.03f",
         "MGXY": "Depl. XY",
-        "JGZ": "z: %+03.03d",
+        "JGZ": "z: %+03.03f",
         "MGZ": "Depl. Z"
     },
     "Files": {
