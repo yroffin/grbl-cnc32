@@ -225,6 +225,7 @@ TFT_ButtonJog::TFT_ButtonJog(int16_t _id, const char *_label, JOG_WAY _jw, int16
     : TFT_Button(_id, _label, _x, _y, _w, _h)
 {
     this->jw = _jw;
+    this->xyzJogPas = this->config->getAsFloat("sys", "speed", "l1", 0.1);
 }
 
 // Button event handler
@@ -235,7 +236,7 @@ void TFT_ButtonJog::notify(const Event *event)
     {
     // Touch on screen (long)
     case EVENT_NEW_STEP:
-        this->xyzJogPas = event->ivalue;
+        this->xyzJogPas = event->fvalue.f1;
         break;
     // Touch on screen (long)
     case TOUCH_SCREEN:
@@ -245,16 +246,16 @@ void TFT_ButtonJog::notify(const Event *event)
             switch (this->jw)
             {
             case JOG_XP:
-                GrblCtrl::instance()->jogMoveXY(this->xyzJogPas, 0);
+                GrblCtrl::instance()->jogMoveXY(this->xyzJogPas, 0.);
                 break;
             case JOG_XM:
-                GrblCtrl::instance()->jogMoveXY(-this->xyzJogPas, 0);
+                GrblCtrl::instance()->jogMoveXY(-this->xyzJogPas, 0.);
                 break;
             case JOG_YP:
-                GrblCtrl::instance()->jogMoveXY(0, this->xyzJogPas);
+                GrblCtrl::instance()->jogMoveXY(0., this->xyzJogPas);
                 break;
             case JOG_YM:
-                GrblCtrl::instance()->jogMoveXY(0, -this->xyzJogPas);
+                GrblCtrl::instance()->jogMoveXY(0., -this->xyzJogPas);
                 break;
             case JOG_ZP:
                 GrblCtrl::instance()->jogMoveZ(this->xyzJogPas);
@@ -318,7 +319,7 @@ void TFT_Joystick::notify(const Event *event)
 {
     if (event->type == EVENT_NEW_STEP)
     {
-        this->pas->setLabel("%02d", event->ivalue);
+        this->pas->setLabel("%02.02f", event->fvalue.f1);
     }
     if (event->type == BUTTON_DOWN)
     {
@@ -416,7 +417,7 @@ void TFT_FileGrid::notify(const Event *event)
     {
         if (event->type == SELECT_FILE && event->sender == this->id + 2 + l)
         {
-            EvtCtrl::instance()->sendWithString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
+            EvtCtrl::instance()->sendString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
         }
     }
     // Dispatch to others

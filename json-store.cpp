@@ -78,6 +78,18 @@ int JsonStore::getAsInt(const char *k1, const char *k2, const char *k3, int def)
   }
 }
 
+float JsonStore::getAsFloat(const char *k1, const char *k2, const char *k3, float def)
+{
+  if (this->store.containsKey(k1) && this->store[k1].containsKey(k2) && this->store[k1][k2].containsKey(k3))
+  {
+    return this->store[k1][k2][k3];
+  }
+  else
+  {
+    return def;
+  }
+}
+
 int JsonStore::getAsInt(const char *k1, const char *k2, int def)
 {
   if (this->store.containsKey(k1) && this->store[k1].containsKey(k2))

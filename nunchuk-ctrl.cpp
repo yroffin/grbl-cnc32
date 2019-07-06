@@ -26,6 +26,9 @@ void NunchukCtrl::setup()
     this->xcenter = jsonConfig->getAsInt("nunchuk", "calibrate", "x", 134);
     this->ycenter = jsonConfig->getAsInt("nunchuk", "calibrate", "y", 134);
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
+
+    this->xyzL1Pas = jsonConfig->getAsFloat("nunchuk", "speed", "l1", 0.1);
+    this->xyzL2Pas = jsonConfig->getAsFloat("nunchuk", "speed", "l2", 5.0);
 }
 
 void NunchukCtrl::loop()
@@ -121,8 +124,8 @@ void NunchukCtrl::loop()
             {
                 if (abs(xplane) >= 10 || abs(yplane) >= 10)
                 {
-                    int16_t xlader = abs(xplane) < 10 ? 0 : abs(xplane) < 60 ? 1 : 100;
-                    int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 100;
+                    float xlader = abs(xplane) < 10 ? 0. : abs(xplane) < 60 ? this->xyzL1Pas : this->xyzL2Pas;
+                    float ylader = abs(yplane) < 10 ? 0. : abs(yplane) < 60 ? this->xyzL1Pas : this->xyzL2Pas;
                     GrblCtrl::instance()->jogMoveXY(xplane < 0 ? -xlader : xlader, yplane < 0 ? -ylader : ylader);
                 }
             }
@@ -131,7 +134,7 @@ void NunchukCtrl::loop()
             {
                 if (abs(yplane) >= 10)
                 {
-                    int16_t ylader = abs(yplane) < 10 ? 0 : abs(yplane) < 60 ? 1 : 50;
+                    float ylader = abs(yplane) < 10 ? 0. : abs(yplane) < 60 ? this->xyzL1Pas : this->xyzL2Pas;
                     GrblCtrl::instance()->jogMoveZ(yplane < 0 ? -ylader : ylader);
                 }
             }

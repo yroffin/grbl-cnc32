@@ -110,7 +110,7 @@ public:
 
 private:
   JOG_WAY jw;
-  int xyzJogPas = 1;
+  float xyzJogPas = 0.1;
 };
 
 class TFT_File : public TFT_Button

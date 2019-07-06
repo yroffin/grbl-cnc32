@@ -140,6 +140,15 @@ components:
           properties:
             lang:
               type: string
+            speed:
+              type: object
+              properties:
+                l1:
+                  type: number
+                l2:
+                  type: number
+                l3:
+                  type: number
         wifi:
           type: array
           items:
@@ -182,6 +191,13 @@ components:
                   type: string
                 y:
                   type: string
+            speed:
+              type: object
+              properties:
+                l1:
+                  type: number
+                l2:
+                  type: number
         grbl:
           properties:
             emulate:

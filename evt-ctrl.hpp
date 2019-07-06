@@ -16,10 +16,10 @@ public:
   // Events
   void send(int16_t sender, EventType action);
   void sendInt(int16_t sender, EventType action, int value);
+  void sendFloat(int16_t sender, EventType event, float value);
   void sendTouch(int16_t sender, EventType action, int16_t _x, int16_t _y);
-  void sendWithString(int16_t sender, EventType action, const char *value);
-  void sendWithFloat(int16_t sender, EventType action, float value);
-  void sendWithVector(int16_t sender, EventType action, float f1, float f2, float f3);
+  void sendString(int16_t sender, EventType action, const char *value);
+  void sendVector(int16_t sender, EventType action, float f1, float f2, float f3);
 
   static EvtCtrl *instance();
 

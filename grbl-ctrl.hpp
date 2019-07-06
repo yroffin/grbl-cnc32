@@ -89,8 +89,8 @@ public:
   boolean move(float x, float y, float z, int speed);
   boolean setXYZ(EventGrbl param);
 
-  void jogMoveXY(int16_t x, int16_t y);
-  void jogMoveZ(int16_t z);
+  void jogMoveXY(float x, float y);
+  void jogMoveZ(float z);
 
   // Event handler
   void notify(const Event *event);
@@ -118,7 +118,10 @@ protected:
 private:
   // jog
   long lastJog = 0;
-  int xyzJogPas = 0;
+  float xyzJogPas = 0.1;
+  float xyzL1Pas = 0.1;
+  float xyzL2Pas = 0.5;
+  float xyzL3Pas = 5;
 
   // this buffer is used to store a few char received from GRBL before decoding them
   char strGrblBuf[STR_GRBL_BUF_MAX_SIZE];
