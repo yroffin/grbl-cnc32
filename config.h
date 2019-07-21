@@ -39,5 +39,5 @@
 #define JSON_CONFIG_SIZE 8192
 #define JSON_I18N_SIZE 8192
 
-#define SEMVER "v0.81"
+#define SEMVER "v0.82"
 #endif

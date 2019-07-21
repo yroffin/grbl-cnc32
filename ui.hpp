@@ -7,6 +7,17 @@
 #define MAXSIZE_OF_LOG_MESSAGE 1024
 #define MAXSIZE_OF_VSPRINTF_MESSAGE 256
 
+class TFT_LayerCmd : public TFT_Layer
+{
+public:
+  TFT_LayerCmd(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
+
+protected:
+  TFT_Group *group;
+  TFT_Label *title;
+  TFT_Button *commands[30];
+};
+
 class TFT_LayerAdmin : public TFT_Layer
 {
 public:
@@ -99,7 +110,6 @@ protected:
   TFT_Label *cwf;
   TFT_Label *misc;
   TFT_Label *miscValue;
-  TFT_Button *sw;
   TFT_FileGrid *files;
 };
 
@@ -119,12 +129,15 @@ protected:
   TFT_Button *stat;
   TFT_Button *files;
   TFT_Button *admin;
+  TFT_Button *cmd;
   char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
 
-enum DialogFlow
+enum DialogAction
 {
-  PRINT
+  NONE,
+  PRINT_CMD,
+  PRINT_FIL
 };
 
 class TFT_LayerDialog : public TFT_Layer
@@ -132,14 +145,14 @@ class TFT_LayerDialog : public TFT_Layer
 public:
   TFT_LayerDialog(int16_t _id, int16_t _x, int16_t _y, int16_t _w = 10, int16_t _h = 10);
   virtual void notify(const Event *event);
-  virtual void show(DialogFlow _flow, const char *_data, const char *_title);
+  virtual void show(DialogAction _action, const char *_data, const char *_title);
 
 protected:
   TFT_Group *group;
   TFT_Label *title;
   TFT_Button *ok;
   TFT_Button *cancel;
-  DialogFlow flow = PRINT;
+  DialogAction action = NONE;
   char data[32];
 };
 
@@ -171,6 +184,7 @@ public:
   TFT_LayerControl *control;
   TFT_LayerStatistic *statistic;
   TFT_LayerFile *file;
+  TFT_LayerCmd *cmd;
   TFT_LayerDialog *dialog;
   char log_message[MAXSIZE_OF_LOG_MESSAGE];
 };
