@@ -61,6 +61,8 @@ void TFT_Screen::init()
     this->add(this->statistic)->show();
     this->file = new TFT_LayerFile(WIDGET_ID_LAYER_FILE, 55, 0, 0, 0);
     this->add(this->file)->hide();
+    this->cmd = new TFT_LayerCmd(WIDGET_ID_DEFAULT, 55, 0, 0, 0);
+    this->add(this->cmd)->hide();
     this->dialog = new TFT_LayerDialog(WIDGET_ID_DEFAULT, 55, 0, 0, 0);
     this->add(this->dialog)->hide();
 
@@ -84,13 +86,15 @@ boolean TFT_Screen::getTouch(int16_t *x, int16_t *y)
 void TFT_Screen::calibrate()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
-    uint16_t calData[5] = {386, 3530, 220, 3627, 7};
-    boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
+    uint16_t calData[5] = {442, 3449, 207, 3359, 7};
+    //boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
+    boolean calDataOK = true;
 
     if (calDataOK)
     {
         // calibration data valid
         this->tft->setTouch(calData);
+        log_i("Cal data %d %d %d %d %d", calData[0], calData[1], calData[2], calData[3], calData[4]);
     }
     else
     {
@@ -196,6 +200,9 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->admin = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
     this->admin->setEvent(EVENT_BTN_ADM);
     this->add(this->admin);
+    this->cmd = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "CMD"), 8, 14 + 44 * 4, 40, 40);
+    this->cmd->setEvent(EVENT_BTN_CMD);
+    this->add(this->cmd);
     // Status bar
     this->status = new TFT_StatusBar(WIDGET_ID_DEFAULT, 0, 230);
     this->add(this->status);
@@ -210,6 +217,7 @@ void TFT_LayerMenu::notify(const Event *event)
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
+        TFT_Screen::instance()->cmd->hide();
     }
     if (event->type == EVENT_BTN_STAT)
     {
@@ -217,6 +225,7 @@ void TFT_LayerMenu::notify(const Event *event)
         TFT_Screen::instance()->statistic->show();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->hide();
+        TFT_Screen::instance()->cmd->hide();
     }
     if (event->type == EVENT_BTN_FILES)
     {
@@ -224,6 +233,7 @@ void TFT_LayerMenu::notify(const Event *event)
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->show();
         TFT_Screen::instance()->admin->hide();
+        TFT_Screen::instance()->cmd->hide();
     }
     if (event->type == EVENT_BTN_ADM)
     {
@@ -231,6 +241,15 @@ void TFT_LayerMenu::notify(const Event *event)
         TFT_Screen::instance()->statistic->hide();
         TFT_Screen::instance()->file->hide();
         TFT_Screen::instance()->admin->show();
+        TFT_Screen::instance()->cmd->hide();
+    }
+    if (event->type == EVENT_BTN_CMD)
+    {
+        TFT_Screen::instance()->control->hide();
+        TFT_Screen::instance()->statistic->hide();
+        TFT_Screen::instance()->file->hide();
+        TFT_Screen::instance()->admin->hide();
+        TFT_Screen::instance()->cmd->show();
     }
     // Dispatch to layers
     this->TFT_Widget::notify(event);
@@ -525,6 +544,24 @@ void TFT_LayerAdmin::grblOutputConsole(const char *format, ...)
     Utils::strcpy(this->log_message, Utils::vsprintfBuffer(), MAXSIZE_OF_LOG_MESSAGE);
     va_end(args);
     this->grblCommand->write(this->log_message);
+}
+
+// command layer
+TFT_LayerCmd::TFT_LayerCmd(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int16_t _h) : TFT_Layer(_id, _x, _y, _w, _h)
+{
+    this->group = new TFT_Group(WIDGET_ID_DEFAULT, this->getKey("Cmd", "ADM"), 0, 0, 265, 230);
+    this->add(this->group);
+    this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 0, 0);
+    this->group->add(this->title);
+
+    // scan all files
+    StorageCtrl::instance()->commands();
+    int16_t count = StorageCtrl::instance()->scan();
+    for (int i = 0; i < sizeof(this->commands); i++)
+    {
+        //this->commands[i] = new TFT_Button(WIDGET_ID_DEFAULT, StorageCtrl::instance()->path(i), 0 * 44 * (i % 6), 14, 40, 40);
+        //this->group->add(this->commands[i]);
+    }
 }
 
 // dialog layer

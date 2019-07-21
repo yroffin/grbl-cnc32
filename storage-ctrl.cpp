@@ -29,13 +29,23 @@ selector StorageCtrl::toggle()
 {
     if (this->state == COMMANDS)
     {
-        this->state = FILES;
+        return this->files();
     }
     else
     {
-        this->state = COMMANDS;
+        return this->commands();
     }
-    this->scan();
+}
+
+selector StorageCtrl::files()
+{
+    this->state = FILES;
+    return this->state;
+}
+
+selector StorageCtrl::commands()
+{
+    this->state = COMMANDS;
     return this->state;
 }
 

@@ -79,6 +79,9 @@ public:
   void init();
 
   selector toggle();
+  selector files();
+  selector commands();
+
   int scan();
   const char *path(int index);
   int open(const char *filename);
