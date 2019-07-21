@@ -25,18 +25,6 @@ void StorageCtrl::init()
     this->state = FILES;
 }
 
-selector StorageCtrl::toggle()
-{
-    if (this->state == COMMANDS)
-    {
-        return this->files();
-    }
-    else
-    {
-        return this->commands();
-    }
-}
-
 selector StorageCtrl::files()
 {
     this->state = FILES;
@@ -47,6 +35,16 @@ selector StorageCtrl::commands()
 {
     this->state = COMMANDS;
     return this->state;
+}
+
+boolean StorageCtrl::isFiles()
+{
+    return this->state == FILES;
+}
+
+boolean StorageCtrl::isCommands()
+{
+    return this->state == COMMANDS;
 }
 
 int StorageCtrl::scan()

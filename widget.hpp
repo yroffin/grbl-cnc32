@@ -92,6 +92,15 @@ protected:
   EventType eventType = BUTTON_DOWN;
 };
 
+class TFT_ButtonCmd : public TFT_Button
+{
+public:
+  TFT_ButtonCmd(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h);
+  virtual void notify(const Event *event);
+
+protected:
+};
+
 enum JOG_WAY
 {
   JOG_XP,

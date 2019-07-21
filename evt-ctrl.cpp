@@ -105,7 +105,8 @@ void EvtCtrl::sendString(int16_t sender, EventType event, const char *value)
     eventStore[count].type = event;
     eventStore[count].timestamp = millis();
     eventStore[count].sender = sender;
-    Utils::strcpy(eventStore[count].message, value, MAXSIZE_OF_MESSAGE);
+    Utils::strcpy(eventStore[count].message, value, sizeof(eventStore[count].message));
+    log_i("%d %s", eventStore[count].type, eventStore[count].message);
     count++;
 }
 

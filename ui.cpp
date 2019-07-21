@@ -87,8 +87,7 @@ void TFT_Screen::calibrate()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     uint16_t calData[5] = {442, 3449, 207, 3359, 7};
-    //boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
-    boolean calDataOK = true;
+    boolean calDataOK = jsonConfig->getAsArray("tft", "calibrate", calData, 5);
 
     if (calDataOK)
     {
@@ -440,9 +439,6 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
     this->group->add(misc);
     this->miscValue = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Files", "NIL"), 40, 42);
     this->group->add(miscValue);
-    this->sw = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Files", "FIL"), 210, 6, 40, 40);
-    this->sw->setEvent(SWITCH_SELECTED);
-    this->group->add(this->sw);
     this->files = new TFT_FileGrid(WIDGET_ID_LAYER_FILE_LIST, this->getKey("Files", "FIL"), 0, 54, 265, 160);
     this->group->add(files);
 }
@@ -450,10 +446,6 @@ TFT_LayerFile::TFT_LayerFile(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
 // Notification
 void TFT_LayerFile::notify(const Event *event)
 {
-    if (event->type == EVENT_START_PRINT)
-    {
-        GrblCtrl::instance()->print(this->cwf->getLabel());
-    }
     if (event->type == EVENT_BTN_FILES)
     {
         this->refresh();
@@ -467,20 +459,14 @@ void TFT_LayerFile::notify(const Event *event)
         this->cwd->setLabel("/");
         this->cwf->setLabel(event->message);
         this->invalidated = true;
-        TFT_Screen::instance()->dialog->show(PRINT, this->cwf->getLabel(), I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRT"), this->cwf->getLabel()));
+        TFT_Screen::instance()->dialog->show(PRINT_FIL, event->message, I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRF"), event->message));
     }
-    if (event->type == SWITCH_SELECTED)
+    if (event->type == COMMAND_SELECTED)
     {
-        switch (StorageCtrl::instance()->toggle())
-        {
-        case COMMANDS:
-            this->sw->setLabel(this->getKey("Files", "SWC"));
-            break;
-        case FILES:
-            this->sw->setLabel(this->getKey("Files", "SWF"));
-            break;
-        }
-        this->refresh();
+        this->cwd->setLabel("/");
+        this->cwf->setLabel(event->message);
+        this->invalidated = true;
+        TFT_Screen::instance()->dialog->show(PRINT_CMD, event->message, I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRC"), event->message));
     }
     this->TFT_Widget::notify(event);
 }
@@ -489,6 +475,7 @@ void TFT_LayerFile::notify(const Event *event)
 void TFT_LayerFile::refresh()
 {
     this->files->clear();
+    StorageCtrl::instance()->files();
     this->miscValue->setLabel(this->getKey("Files", "OFF"), this->files->offset);
     this->files->count = StorageCtrl::instance()->scan();
     for (int i = 0; i < this->files->maxLines; i++)
@@ -507,9 +494,6 @@ TFT_LayerAdmin::TFT_LayerAdmin(int16_t _id, int16_t _x, int16_t _y, int16_t _w, 
     this->add(this->group);
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Admin", "ADM"), 0, 0);
     this->group->add(this->title);
-    this->print = new TFT_Button(WIDGET_ID_LAYER_BTN_PRINT, this->getKey("Admin", "PRT"), 0, 14, 40, 40);
-    this->print->setEvent(EVENT_START_PRINT);
-    this->group->add(print);
     this->unlock = new TFT_Button(WIDGET_ID_LAYER_ADM_UNLOCK, this->getKey("Admin", "ULK"), 44, 14, 40, 40);
     this->group->add(this->unlock);
     this->reset = new TFT_Button(WIDGET_ID_LAYER_ADM_RESET, this->getKey("Admin", "RST"), 44 * 2, 14, 40, 40);
@@ -557,10 +541,16 @@ TFT_LayerCmd::TFT_LayerCmd(int16_t _id, int16_t _x, int16_t _y, int16_t _w, int1
     // scan all files
     StorageCtrl::instance()->commands();
     int16_t count = StorageCtrl::instance()->scan();
-    for (int i = 0; i < sizeof(this->commands); i++)
+    for (int i = 0; i < count && i < sizeof(this->commands); i++)
     {
-        //this->commands[i] = new TFT_Button(WIDGET_ID_DEFAULT, StorageCtrl::instance()->path(i), 0 * 44 * (i % 6), 14, 40, 40);
-        //this->group->add(this->commands[i]);
+        this->commands[i] = new TFT_ButtonCmd(
+            WIDGET_ID_DEFAULT,
+            StorageCtrl::instance()->path(i), 
+            0 + 44 * (i % 6),
+            14 + (44 * (i / 6)),
+            40,
+            40);
+        this->group->add(this->commands[i]);
     }
 }
 
@@ -585,27 +575,51 @@ void TFT_LayerDialog::notify(const Event *event)
     if (event->type == EVENT_DLG_OK)
     {
         this->hide();
-        GrblCtrl::instance()->print(this->data);
-        switch (flow)
+
+        switch (action)
         {
-        case PRINT:
+        case PRINT_CMD:
+            // switch to command mode
+            StorageCtrl::instance()->commands();
+            GrblCtrl::instance()->print(this->data);
+
             TFT_Screen::instance()->control->hide();
             TFT_Screen::instance()->statistic->hide();
             TFT_Screen::instance()->file->hide();
             TFT_Screen::instance()->admin->show();
-            break;
+            TFT_Screen::instance()->cmd->hide();
+        break;
+        case PRINT_FIL:
+            // switch to file mode
+            StorageCtrl::instance()->files();
+            GrblCtrl::instance()->print(this->data);
+
+            TFT_Screen::instance()->control->hide();
+            TFT_Screen::instance()->statistic->hide();
+            TFT_Screen::instance()->file->hide();
+            TFT_Screen::instance()->admin->show();
+            TFT_Screen::instance()->cmd->hide();
+        break;
         }
     }
     if (event->type == EVENT_DLG_CANCEL)
     {
         this->hide();
-        switch (flow)
+        switch (action)
         {
-        case PRINT:
+        case PRINT_FIL:
             TFT_Screen::instance()->control->hide();
             TFT_Screen::instance()->statistic->hide();
             TFT_Screen::instance()->file->show();
             TFT_Screen::instance()->admin->hide();
+            TFT_Screen::instance()->cmd->hide();
+            break;
+        case PRINT_CMD:
+            TFT_Screen::instance()->control->hide();
+            TFT_Screen::instance()->statistic->hide();
+            TFT_Screen::instance()->file->hide();
+            TFT_Screen::instance()->admin->hide();
+            TFT_Screen::instance()->cmd->show();
             break;
         }
     }
@@ -613,14 +627,15 @@ void TFT_LayerDialog::notify(const Event *event)
 }
 
 // Show
-void TFT_LayerDialog::show(DialogFlow _flow, const char *_data, const char *_title)
+void TFT_LayerDialog::show(DialogAction _action, const char *_data, const char *_title)
 {
     this->TFT_Widget::show();
-    this->flow = flow;
+    this->action = _action;
     this->title->setLabel(_title);
     Utils::strcpy(this->data, _data, sizeof(this->data));
     TFT_Screen::instance()->control->hide();
     TFT_Screen::instance()->statistic->hide();
     TFT_Screen::instance()->file->hide();
     TFT_Screen::instance()->admin->hide();
+    TFT_Screen::instance()->cmd->hide();
 }

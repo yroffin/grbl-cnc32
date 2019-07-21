@@ -78,9 +78,10 @@ public:
   StorageCtrl();
   void init();
 
-  selector toggle();
   selector files();
   selector commands();
+  boolean isFiles();
+  boolean isCommands();
 
   int scan();
   const char *path(int index);

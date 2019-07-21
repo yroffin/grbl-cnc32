@@ -221,6 +221,41 @@ void TFT_Button::draw()
 }
 
 // Constructor
+TFT_ButtonCmd::TFT_ButtonCmd(int16_t _id, const char *_label, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
+    : TFT_Button(_id, _label, _x, _y, _w, _h)
+{
+}
+
+// Button event handler
+void TFT_ButtonCmd::notify(const Event *event)
+{
+    switch (event->type)
+    {
+    // Touch on screen
+    case TOUCH_SCREEN:
+        if (this->visible && event->touch.x > x && event->touch.y > y && event->touch.x < (x + w) && event->touch.y < (y + h))
+        {
+            TFT_Screen::instance()->dialog->show(
+                PRINT_CMD,
+                this->getLabel(),
+                I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRC"), this->getLabel()));
+            state = on;
+            // draw needed
+            this->invalidated = true;
+        }
+        break;
+    // Touch is released
+    case RELEASE_SCREEN:
+        state = off;
+        // draw needed
+        this->invalidated = true;
+        break;
+    default:
+        break;
+    }
+}
+
+// Constructor
 TFT_ButtonJog::TFT_ButtonJog(int16_t _id, const char *_label, JOG_WAY _jw, int16_t _x, int16_t _y, int16_t _w, int16_t _h)
     : TFT_Button(_id, _label, _x, _y, _w, _h)
 {
@@ -417,7 +452,12 @@ void TFT_FileGrid::notify(const Event *event)
     {
         if (event->type == SELECT_FILE && event->sender == this->id + 2 + l)
         {
-            EvtCtrl::instance()->sendString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
+            if( StorageCtrl::instance()->isFiles()) {
+                EvtCtrl::instance()->sendString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
+            }
+            if( StorageCtrl::instance()->isCommands()) {
+                EvtCtrl::instance()->sendString(this->id + 2 + l, COMMAND_SELECTED, this->lines[l]->getLabel());
+            }
         }
     }
     // Dispatch to others

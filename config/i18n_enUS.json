@@ -4,7 +4,8 @@
         "MV": "Move",
         "STA": "Stat",
         "FIL": "Files",
-        "ADM": "Admin"
+        "ADM": "Admin",
+        "CMD": "Comm."
     },
     "Control": {
         "CTRL": "Control",
@@ -38,10 +39,9 @@
         "DIR": "Dir",
         "NIL": "",
         "FN": "File",
-        "SWF": "File",
-        "SWC": "Cmd",
         "OFF": "offset: %d",
-        "PRT": "Print file %s",
+        "PRF": "Print file %s",
+        "PRC": "Launch command %s",
         "MC": "Misc"
     },
     "Admin": {
