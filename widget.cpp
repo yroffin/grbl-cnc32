@@ -455,9 +455,6 @@ void TFT_FileGrid::notify(const Event *event)
             if( StorageCtrl::instance()->isFiles()) {
                 EvtCtrl::instance()->sendString(this->id + 2 + l, FILE_SELECTED, this->lines[l]->getLabel());
             }
-            if( StorageCtrl::instance()->isCommands()) {
-                EvtCtrl::instance()->sendString(this->id + 2 + l, COMMAND_SELECTED, this->lines[l]->getLabel());
-            }
         }
     }
     // Dispatch to others

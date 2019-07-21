@@ -461,13 +461,6 @@ void TFT_LayerFile::notify(const Event *event)
         this->invalidated = true;
         TFT_Screen::instance()->dialog->show(PRINT_FIL, event->message, I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRF"), event->message));
     }
-    if (event->type == COMMAND_SELECTED)
-    {
-        this->cwd->setLabel("/");
-        this->cwf->setLabel(event->message);
-        this->invalidated = true;
-        TFT_Screen::instance()->dialog->show(PRINT_CMD, event->message, I18nCtrl::instance()->translate(I18N_STD, this->getKey("Files", "PRC"), event->message));
-    }
     this->TFT_Widget::notify(event);
 }
 
