@@ -78,6 +78,8 @@ protected:
   TFT_Label *title;
   TFT_Label *grblStatusLabel;
   TFT_Label *grblStatusValue;
+  TFT_Label *grblStateCoord;
+  TFT_Label *grblStateMetric;
   TFT_Label *grblIoStatus;
   TFT_Label *grblIoStatusValues;
   TFT_Label *grblMpos;

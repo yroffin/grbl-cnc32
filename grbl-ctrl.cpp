@@ -203,9 +203,14 @@ void GrblCtrl::flush(void)
                     }
                     else
                     {
-                        if (*strGrblBuf == '[')
+                        if (strncmp(strGrblBufNoCase, "[gc:", 4) == 0)
                         {
                             type = 5;
+                        } else {
+                            if (*strGrblBuf == '[')
+                            {
+                                type = 6;
+                            }
                         }
                     }
                 }
@@ -227,6 +232,9 @@ void GrblCtrl::flush(void)
             decodeOk(strGrblBuf, strGrblBufNoCase);
             break;
         case 5:
+            decodeState(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 6:
             decodeFeedback(strGrblBuf, strGrblBufNoCase);
             break;
         default:
@@ -238,10 +246,9 @@ void GrblCtrl::flush(void)
     strGrblIdx = 0;
 }
 
-bool isLetter(char c)
+bool isInDictionnary(char c, const char *matcher, int size)
 {
-    static char *matcher = "abcdefghijklmnopqrstuvwxyz";
-    for (int l = 0; l < 26; l++)
+    for (int l = 0; l < size; l++)
     {
         if (c == matcher[l])
             return true;
@@ -249,15 +256,16 @@ bool isLetter(char c)
     return false;
 }
 
+bool isLetter(char c)
+{
+    static char *matcher = "abcdefghijklmnopqrstuvwxyz";
+    return isInDictionnary(c, matcher, strlen(matcher));
+}
+
 bool isNumber(char c)
 {
     static char *matcher = "0123456789.";
-    for (int l = 0; l < 11; l++)
-    {
-        if (c == matcher[l])
-            return true;
-    }
-    return false;
+    return isInDictionnary(c, matcher, strlen(matcher));
 }
 
 const char *extract(const char *str, int sz)
@@ -361,6 +369,32 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
         scanPos("wpos:", EVENT_WPOS, &(block[b]));
     }
     sep = msgTolower[index];
+}
+
+// Decode state
+void GrblCtrl::decodeState(const char *msg, const char *msgTolower)
+{
+    int index = 4;
+    int indexState = strlen(msgTolower);
+    this->grblStatusMetric = false;
+    this->grblStatusAbs = false;
+    for(;msgTolower[index] != ']'; index++) {
+        const char *pSearch = extract(&(msgTolower[index]), indexState - index);
+        if (match(GRBL_STATE_G20, pSearch)) {
+            this->grblStatusMetric = false;
+        }
+        if (match(GRBL_STATE_G21, pSearch)) {
+            this->grblStatusMetric = true;
+        }
+        if (match(GRBL_STATE_G90, pSearch)) {
+            this->grblStatusAbs = true;
+        }
+        if (match(GRBL_STATE_G91, pSearch)) {
+            this->grblStatusAbs = false;
+        }
+    }
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_METRIC, this->grblStatusMetric);
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_ABS, this->grblStatusAbs);
 }
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)

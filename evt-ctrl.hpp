@@ -16,6 +16,7 @@ public:
   // Events
   void send(int16_t sender, EventType action);
   void sendInt(int16_t sender, EventType action, int value);
+  void sendBool(int16_t sender, EventType event, boolean value);
   void sendFloat(int16_t sender, EventType event, float value);
   void sendTouch(int16_t sender, EventType action, int16_t _x, int16_t _y);
   void sendString(int16_t sender, EventType action, const char *value);

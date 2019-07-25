@@ -47,6 +47,11 @@ enum GrblStatus
 #define GRBL_STATUS_HOME "home"
 #define GRBL_STATUS_SLEEP "sleep"
 
+#define GRBL_STATE_G20 "g20"
+#define GRBL_STATE_G21 "g21"
+#define GRBL_STATE_G90 "g90"
+#define GRBL_STATE_G91 "g91"
+
 #define STR_GRBL_BUF_MAX_SIZE 256
 #define STR_GRBL_BUF_MAX_WRITE_SIZE 256
 
@@ -107,6 +112,7 @@ protected:
 
   void flush();
   void decodeStatus(const char *, const char *);
+  void decodeState(const char *, const char *);
   void decodeError(const char *, const char *);
   void decodeAlarm(const char *, const char *);
   void decodeOk(const char *, const char *);
@@ -132,6 +138,10 @@ private:
   char writeBuffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
   // state
   GrblStatus grblState = GRBL_UNKNOWN;
+
+  // status
+  boolean grblStatusMetric = true;
+  boolean grblStatusAbs = true;
 
   uint8_t strGrblIdx;
   uint8_t txRead = 0;
