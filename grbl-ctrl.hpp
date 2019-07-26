@@ -118,6 +118,9 @@ protected:
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
 
+  void script(const char *input, char *output);
+  void evaluate(const char *input, char *output, int sz);
+
   void forceWrite(boolean flush, const char *grbl, ...);
   bool tryWrite(boolean flush, const char *grbl, ...);
 
@@ -134,6 +137,7 @@ private:
   // lower version of  strGrblBuf
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
   char printBuffer[STR_GRBL_BUF_MAX_SIZE];
+  char evalBuffer[STR_GRBL_BUF_MAX_SIZE];
   // write buffer
   char writeBuffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
   // state

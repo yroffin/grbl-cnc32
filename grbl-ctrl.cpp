@@ -474,6 +474,66 @@ void GrblCtrl::print(const char *filename)
     this->grblPrintStatus = empty;
 }
 
+// Eval internal command
+void GrblCtrl::script(const char *input, char *output)
+{
+    int out = 0;
+    bool inside = false;
+    char scr[256];
+    scr[0] = 0;
+    int iscr = 0;
+
+    int index = 0;
+    int from = 0;
+    int to = 0;
+    for(;input[index] != 0;index++) {
+        if(input[index] == '$' && input[index+1] == '{') {
+            // ignore $
+            index ++;
+            from = index + 1;
+            inside = true;
+        } else {
+            if(from != 0 && input[index] == '}') {
+                to = index - 1;
+                inside = false;
+                this->evaluate(extract(&(input[from]), to - from + 1), scr, sizeof(scr));
+                for(;scr[iscr];iscr++) {
+                    output[out++] = scr[iscr];
+                }
+            } else {
+                if(!inside) {
+                    // store it
+                    output[out++] = input[index];
+                }
+            }
+        }
+    }
+    output[out++] = 0;
+
+    log_i("OUTPUT: [%s]", output);
+}
+
+// evaluate script
+void GrblCtrl::evaluate(const char *script, char *output, int sz)
+{
+    if(match("GET STORED WCS.Z", script)) {
+        sprintf(output, "Z0.0");
+        return;
+    }
+    if(match("STORE WCS", script)) {
+        sprintf(output, "(%s)", script);
+        return;
+    }
+    if(match("STORE MODAL", script)) {
+        sprintf(output, "(%s)", script);
+        return;
+    }
+    if(match("RESTORE MODAL", script)) {
+        sprintf(output, "(%s)", script);
+        return;
+    }
+}
+
 // printer spooler
 void GrblCtrl::spool()
 {
@@ -514,8 +574,11 @@ void GrblCtrl::spool()
         case full:
             if (!this->isBusy())
             {
+                // Evaluate some internal script command
+                this->script(this->printBuffer, this->evalBuffer);
+
                 // command is waiting for sending
-                if (this->tryWrite(true, this->printBuffer))
+                if (this->tryWrite(true, this->evalBuffer))
                 {
                     this->grblPrintStatus = empty;
                 }

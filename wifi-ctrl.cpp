@@ -1,6 +1,7 @@
 #include "wifi-ctrl.hpp"
 #include "i18n-ctrl.hpp"
 #include "grbl-ctrl.hpp"
+#include "storage-ctrl.hpp"
 #include "json-config.hpp"
 #include "utils.hpp"
 
@@ -108,6 +109,43 @@ void Reboot()
     resetFunc();
 }
 
+void Print()
+{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[4096];
+    StaticJsonDocument<256> doc;
+    switch (server.method())
+    {
+    case HTTP_POST:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                strcpy(buffer, server.arg(i).c_str());
+                deserializeJson(doc, buffer);
+                if(doc.containsKey("command")) {
+                    const char* command = doc["command"];
+                    // switch to command mode
+                    StorageCtrl::instance()->commands();
+                    GrblCtrl::instance()->print(command);
+                }
+                if(doc.containsKey("file")) {
+                    const char* file = doc["file"];
+                    // switch to file mode
+                    StorageCtrl::instance()->files();
+                    GrblCtrl::instance()->print(file);
+                }
+            }
+        }
+        break;
+    }
+    // send body
+    server.setContentLength(strlen(buffer));
+    server.send(200, "application/json", buffer);
+}
+
 // Init phase
 void WifiCtrl::setup()
 {
@@ -180,6 +218,7 @@ void WifiCtrl::loop()
         server.on("/api/v1/i18n/i18n_frFR.json", HTTP_ANY, ApiI18nFrFR);
         server.on("/api/v1/simulate", HTTP_ANY, Simulate);
         server.on("/api/v1/reboot", Reboot);
+        server.on("/api/v1/print", Print);
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "SRV", 80));
         this->phase = unixTime;
