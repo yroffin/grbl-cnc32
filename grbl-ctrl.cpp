@@ -26,6 +26,24 @@ void GrblCtrl::setup()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
+    // stored
+    this->stored.mpos.x = 0.;
+    this->stored.mpos.y = 0.;
+    this->stored.mpos.z = 0.;
+    this->stored.wpos.x = 0.;
+    this->stored.wpos.y = 0.;
+    this->stored.wpos.z = 0.;
+    this->stored.grblStatusMetric = true;
+    this->stored.grblStatusAbs = true;
+    // working
+    this->working.mpos.x = 0.;
+    this->working.mpos.y = 0.;
+    this->working.mpos.z = 0.;
+    this->working.wpos.x = 0.;
+    this->working.wpos.y = 0.;
+    this->working.wpos.z = 0.;
+    this->working.grblStatusMetric = true;
+    this->working.grblStatusAbs = true;
     idx = sim;
     this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
@@ -86,6 +104,47 @@ void GrblCtrl::loop(void)
     }
     // Update statistics
     TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
+}
+
+// Get
+void GrblCtrl::getStoredMpos(float *x, float *y, float *z)
+{
+    *x = this->stored.mpos.x;
+    *y = this->stored.mpos.y;
+    *z = this->stored.mpos.z;
+}
+
+void GrblCtrl::getStoredWpos(float *x, float *y, float *z)
+{
+    *x = this->stored.wpos.x;
+    *y = this->stored.wpos.y;
+    *z = this->stored.wpos.z;
+}
+
+void GrblCtrl::getStoredModal(bool *metric, bool *abs)
+{
+    *metric = this->stored.grblStatusMetric;
+    *abs = this->stored.grblStatusAbs;
+}
+
+void GrblCtrl::getWorkingMpos(float *x, float *y, float *z)
+{
+    *x = this->working.mpos.x;
+    *y = this->working.mpos.y;
+    *z = this->working.mpos.z;
+}
+
+void GrblCtrl::getWorkingWpos(float *x, float *y, float *z)
+{
+    *x = this->working.wpos.x;
+    *y = this->working.wpos.y;
+    *z = this->working.wpos.z;
+}
+
+void GrblCtrl::getWorkingModal(bool *metric, bool *abs)
+{
+    *metric = this->working.grblStatusMetric;
+    *abs = this->working.grblStatusAbs;
 }
 
 // Simulate a write
@@ -167,6 +226,11 @@ bool startWithNoCase(const char *str, const char *pattern)
     return status;
 }
 
+boolean match(const char *pattern, const char *value)
+{
+    return strncmp(pattern, value, strlen(pattern)) == 0;
+}
+
 // Flush
 void GrblCtrl::flush(void)
 {
@@ -203,9 +267,14 @@ void GrblCtrl::flush(void)
                     }
                     else
                     {
-                        if (*strGrblBuf == '[')
+                        if (strncmp(strGrblBufNoCase, "[gc:", 4) == 0)
                         {
                             type = 5;
+                        } else {
+                            if (*strGrblBuf == '[')
+                            {
+                                type = 6;
+                            }
                         }
                     }
                 }
@@ -227,6 +296,9 @@ void GrblCtrl::flush(void)
             decodeOk(strGrblBuf, strGrblBufNoCase);
             break;
         case 5:
+            decodeState(strGrblBuf, strGrblBufNoCase);
+            break;
+        case 6:
             decodeFeedback(strGrblBuf, strGrblBufNoCase);
             break;
         default:
@@ -238,10 +310,9 @@ void GrblCtrl::flush(void)
     strGrblIdx = 0;
 }
 
-bool isLetter(char c)
+bool isInDictionnary(char c, const char *matcher, int size)
 {
-    static char *matcher = "abcdefghijklmnopqrstuvwxyz";
-    for (int l = 0; l < 26; l++)
+    for (int l = 0; l < size; l++)
     {
         if (c == matcher[l])
             return true;
@@ -249,15 +320,16 @@ bool isLetter(char c)
     return false;
 }
 
+bool isLetter(char c)
+{
+    static char *matcher = "abcdefghijklmnopqrstuvwxyz";
+    return isInDictionnary(c, matcher, strlen(matcher));
+}
+
 bool isNumber(char c)
 {
     static char *matcher = "0123456789.";
-    for (int l = 0; l < 11; l++)
-    {
-        if (c == matcher[l])
-            return true;
-    }
-    return false;
+    return isInDictionnary(c, matcher, strlen(matcher));
 }
 
 const char *extract(const char *str, int sz)
@@ -268,20 +340,16 @@ const char *extract(const char *str, int sz)
     return buffer;
 }
 
-boolean match(const char *pattern, const char *value)
-{
-    return strncmp(pattern, value, strlen(pattern)) == 0;
-}
-
 // Scan position
-boolean scanPos(const char *pattern, EventType e, const char *value)
+boolean scanPos(const char *pattern, EventType e, const char *value, float *fvalue1, float *fvalue2, float *fvalue3)
 {
     if (match(pattern, value))
     {
-        float fvalue1, fvalue2, fvalue3;
-        sscanf(&(value[strlen(pattern)]), "%f,%f,%f", &fvalue1, &fvalue2, &fvalue3);
-        EvtCtrl::instance()->sendVector(0, e, fvalue1, fvalue2, fvalue3);
+        sscanf(&(value[strlen(pattern)]), "%f,%f,%f", fvalue1, fvalue2, fvalue3);
+        EvtCtrl::instance()->sendVector(0, e, *fvalue1, *fvalue2, *fvalue3);
+        return true;
     }
+    return false;
 }
 
 // Scan error
@@ -357,10 +425,43 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     int blkl = strlen(block);
     for (int b = 0; b < blkl; b++)
     {
-        scanPos("mpos:", EVENT_MPOS, &(block[b]));
-        scanPos("wpos:", EVENT_WPOS, &(block[b]));
+        float fvalue1, fvalue2, fvalue3;
+        if(scanPos("mpos:", EVENT_MPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+            this->working.mpos.x = fvalue1;
+            this->working.mpos.y = fvalue2;
+            this->working.mpos.z = fvalue3;
+        }
+        if(scanPos("wpos:", EVENT_WPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+            this->working.wpos.x = fvalue1;
+            this->working.wpos.y = fvalue2;
+            this->working.wpos.z = fvalue3;
+        }
     }
     sep = msgTolower[index];
+}
+
+// Decode state
+void GrblCtrl::decodeState(const char *msg, const char *msgTolower)
+{
+    int index = 4;
+    int indexState = strlen(msgTolower);
+    for(;msgTolower[index] != ']'; index++) {
+        const char *pSearch = extract(&(msgTolower[index]), indexState - index);
+        if (match(GRBL_STATE_G20, pSearch)) {
+            this->working.grblStatusMetric = false;
+        }
+        if (match(GRBL_STATE_G21, pSearch)) {
+            this->working.grblStatusMetric = true;
+        }
+        if (match(GRBL_STATE_G90, pSearch)) {
+            this->working.grblStatusAbs = true;
+        }
+        if (match(GRBL_STATE_G91, pSearch)) {
+            this->working.grblStatusAbs = false;
+        }
+    }
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_METRIC, this->working.grblStatusMetric);
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_ABS, this->working.grblStatusAbs);
 }
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)
@@ -440,6 +541,84 @@ void GrblCtrl::print(const char *filename)
     this->grblPrintStatus = empty;
 }
 
+// Eval internal command
+void GrblCtrl::script(const char *input, char *output)
+{
+    int out = 0;
+    bool inside = false;
+    char scr[256];
+    scr[0] = 0;
+    int iscr = 0;
+
+    int index = 0;
+    int from = 0;
+    int to = 0;
+    for(;input[index] != 0;index++) {
+        if(input[index] == '$' && input[index+1] == '{') {
+            // ignore $
+            index ++;
+            from = index + 1;
+            inside = true;
+        } else {
+            if(from != 0 && input[index] == '}') {
+                to = index - 1;
+                inside = false;
+                this->evaluate(extract(&(input[from]), to - from + 1), scr, sizeof(scr));
+                for(;scr[iscr];iscr++) {
+                    output[out++] = scr[iscr];
+                }
+            } else {
+                if(!inside) {
+                    // store it
+                    output[out++] = input[index];
+                }
+            }
+        }
+    }
+    output[out++] = 0;
+}
+
+// evaluate script
+void GrblCtrl::evaluate(const char *script, char *output, int sz)
+{
+    if(match("GET STORED WCS.Z", script)) {
+        sprintf(output, "Z%f", this->stored.wpos.z);
+        return;
+    }
+    if(match("STORE WCS", script)) {
+        this->stored.mpos.x = this->working.mpos.x;
+        this->stored.mpos.y = this->working.mpos.y;
+        this->stored.mpos.z = this->working.mpos.z;
+        this->stored.wpos.x = this->working.wpos.x;
+        this->stored.wpos.y = this->working.wpos.y;
+        this->stored.wpos.z = this->working.wpos.z;
+        sprintf(output, "(%s)", script);
+        return;
+    }
+    if(match("STORE MODAL", script)) {
+        this->stored.grblStatusMetric = this->working.grblStatusMetric;
+        this->stored.grblStatusAbs = this->working.grblStatusAbs;
+        sprintf(output, "(%s)", script);
+        return;
+    }
+    if(match("RESTORE MODAL", script)) {
+        char metric[8];
+        if(this->stored.grblStatusMetric) {
+            sprintf(metric, "G21");
+        } else {
+            sprintf(metric, "G20");
+        }
+        char abs[8];
+        if(this->stored.grblStatusAbs) {
+            sprintf(abs, "G90");
+        } else {
+            sprintf(abs, "G91");
+        }
+        sprintf(output, "%s %s", metric, abs);
+        return;
+    }
+}
+
 // printer spooler
 void GrblCtrl::spool()
 {
@@ -474,14 +653,18 @@ void GrblCtrl::spool()
                     this->isPrinting = false;
                     this->grblPrintStatus = empty;
                     StorageCtrl::instance()->close();
+                    TFT_Screen::instance()->notifyPrintStatus(true, this->printedLines, this->toPrintLines);
                 }
             }
             break;
         case full:
             if (!this->isBusy())
             {
+                // Evaluate some internal script command
+                this->script(this->printBuffer, this->evalBuffer);
+
                 // command is waiting for sending
-                if (this->tryWrite(true, this->printBuffer))
+                if (this->tryWrite(true, this->evalBuffer))
                 {
                     this->grblPrintStatus = empty;
                 }

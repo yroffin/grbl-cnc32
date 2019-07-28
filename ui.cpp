@@ -187,19 +187,19 @@ TFT_LayerMenu::TFT_LayerMenu(int16_t _id, int16_t _x, int16_t _y, int16_t _w, in
 {
     this->title = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Menu", "MENU"), 0, 0);
     this->add(this->title);
-    this->move = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNA, this->getKey("Menu", "MV"), 8, 14, 40, 40);
+    this->move = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Menu", "MV"), 8, 14, 40, 40);
     this->move->setEvent(EVENT_BTN_MOVE);
     this->add(this->move);
-    this->stat = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNB, this->getKey("Menu", "STA"), 8, 14 + 44, 40, 40);
+    this->stat = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Menu", "STA"), 8, 14 + 44, 40, 40);
     this->stat->setEvent(EVENT_BTN_STAT);
     this->add(this->stat);
-    this->files = new TFT_Button(WIDGET_ID_LAYER_MENU_BTNC, this->getKey("Menu", "FIL"), 8, 14 + 44 * 2, 40, 40);
+    this->files = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Menu", "FIL"), 8, 14 + 44 * 2, 40, 40);
     this->files->setEvent(EVENT_BTN_FILES);
     this->add(this->files);
-    this->admin = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
+    this->admin = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Menu", "ADM"), 8, 14 + 44 * 3, 40, 40);
     this->admin->setEvent(EVENT_BTN_ADM);
     this->add(this->admin);
-    this->cmd = new TFT_Button(WIDGET_ID_LAYER_MENU_BTND, this->getKey("Menu", "CMD"), 8, 14 + 44 * 4, 40, 40);
+    this->cmd = new TFT_Button(WIDGET_ID_DEFAULT, this->getKey("Menu", "CMD"), 8, 14 + 44 * 4, 40, 40);
     this->cmd->setEvent(EVENT_BTN_CMD);
     this->add(this->cmd);
     // Status bar
@@ -290,6 +290,10 @@ TFT_LayerStatistic::TFT_LayerStatistic(int16_t _id, int16_t _x, int16_t _y, int1
     this->group->add(this->grblStatusLabel);
     this->grblStatusValue = new TFT_Label(WIDGET_ID_LAYER_STAT_GRBL_STATUS, this->getKey("Stat", "NIL"), 40, 14);
     this->group->add(this->grblStatusValue);
+    this->grblStateCoord = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("SCoord", "NIL"), 120, 14);
+    this->group->add(this->grblStateCoord);
+    this->grblStateMetric = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("SMetric", "NIL"), 190, 14);
+    this->group->add(this->grblStateMetric);
 
     this->grblIoStatus = new TFT_Label(WIDGET_ID_DEFAULT, this->getKey("Stat", "IO"), 0, 14 * 2);
     this->group->add(this->grblIoStatus);
@@ -341,6 +345,21 @@ void TFT_LayerStatistic::outputConsole(const char *format, ...)
 // Notification
 void TFT_LayerStatistic::notify(const Event *event)
 {
+    // Handle status
+    if (event->type == EVENT_GRBL_STATE_ABS) {
+        if(event->bvalue) {
+            this->grblStateCoord->setLabel("Coord: ABS");
+        } else {
+            this->grblStateCoord->setLabel("Coord: REL");
+        }
+    }
+    if (event->type == EVENT_GRBL_STATE_METRIC) {
+        if(event->bvalue) {
+            this->grblStateMetric->setLabel("Unit: MET");
+        } else {
+            this->grblStateMetric->setLabel("Unit: INC");
+        }
+    }
     // Handle event on screen level
     if (event->type == EVENT_GRBL_STATUS)
     {

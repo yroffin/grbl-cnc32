@@ -120,6 +120,16 @@ void EvtCtrl::sendInt(int16_t sender, EventType event, int value)
     count++;
 }
 
+// Register a boolean event
+void EvtCtrl::sendBool(int16_t sender, EventType event, boolean value)
+{
+    eventStore[count].type = event;
+    eventStore[count].timestamp = millis();
+    eventStore[count].sender = sender;
+    eventStore[count].bvalue = value;
+    count++;
+}
+
 // Register a int event
 void EvtCtrl::sendFloat(int16_t sender, EventType event, float value)
 {

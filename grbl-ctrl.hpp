@@ -47,6 +47,11 @@ enum GrblStatus
 #define GRBL_STATUS_HOME "home"
 #define GRBL_STATUS_SLEEP "sleep"
 
+#define GRBL_STATE_G20 "g20"
+#define GRBL_STATE_G21 "g21"
+#define GRBL_STATE_G90 "g90"
+#define GRBL_STATE_G91 "g91"
+
 #define STR_GRBL_BUF_MAX_SIZE 256
 #define STR_GRBL_BUF_MAX_WRITE_SIZE 256
 
@@ -97,6 +102,13 @@ public:
 
   static GrblCtrl *instance();
 
+  void getStoredMpos(float *x, float *y, float *z);
+  void getStoredWpos(float *x, float *y, float *z);
+  void getWorkingMpos(float *x, float *y, float *z);
+  void getWorkingWpos(float *x, float *y, float *z);
+  void getStoredModal(bool *metric, bool *abs);
+  void getWorkingModal(bool *metric, bool *abs);
+
 protected:
   void error(const char *message);
   void alarm(const char *message);
@@ -107,10 +119,14 @@ protected:
 
   void flush();
   void decodeStatus(const char *, const char *);
+  void decodeState(const char *, const char *);
   void decodeError(const char *, const char *);
   void decodeAlarm(const char *, const char *);
   void decodeOk(const char *, const char *);
   void decodeFeedback(const char *, const char *);
+
+  void script(const char *input, char *output);
+  void evaluate(const char *input, char *output, int sz);
 
   void forceWrite(boolean flush, const char *grbl, ...);
   bool tryWrite(boolean flush, const char *grbl, ...);
@@ -128,10 +144,35 @@ private:
   // lower version of  strGrblBuf
   char strGrblBufNoCase[STR_GRBL_BUF_MAX_SIZE];
   char printBuffer[STR_GRBL_BUF_MAX_SIZE];
+  char evalBuffer[STR_GRBL_BUF_MAX_SIZE];
   // write buffer
   char writeBuffer[STR_GRBL_BUF_MAX_WRITE_SIZE];
   // state
   GrblStatus grblState = GRBL_UNKNOWN;
+
+  struct
+  {
+    struct {
+      float x, y, z;
+    } mpos;
+    struct {
+      float x, y, z;
+    } wpos;
+    boolean grblStatusMetric;
+    boolean grblStatusAbs;
+  } stored;
+
+  struct
+  {
+    struct {
+      float x, y, z;
+    } mpos;
+    struct {
+      float x, y, z;
+    } wpos;
+    boolean grblStatusMetric;
+    boolean grblStatusAbs;
+  } working;
 
   uint8_t strGrblIdx;
   uint8_t txRead = 0;
