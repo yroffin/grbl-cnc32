@@ -26,6 +26,24 @@ void GrblCtrl::setup()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
+    // stored
+    this->stored.mpos.x = 0.;
+    this->stored.mpos.y = 0.;
+    this->stored.mpos.z = 0.;
+    this->stored.wpos.x = 0.;
+    this->stored.wpos.y = 0.;
+    this->stored.wpos.z = 0.;
+    this->stored.grblStatusMetric = true;
+    this->stored.grblStatusAbs = true;
+    // working
+    this->working.mpos.x = 0.;
+    this->working.mpos.y = 0.;
+    this->working.mpos.z = 0.;
+    this->working.wpos.x = 0.;
+    this->working.wpos.y = 0.;
+    this->working.wpos.z = 0.;
+    this->working.grblStatusMetric = true;
+    this->working.grblStatusAbs = true;
     idx = sim;
     this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
@@ -86,6 +104,47 @@ void GrblCtrl::loop(void)
     }
     // Update statistics
     TFT_Screen::instance()->statistic->setGrblIo("b: %06d r: %06d w: %06d", this->byteRead, this->txRead, this->txWrite);
+}
+
+// Get
+void GrblCtrl::getStoredMpos(float *x, float *y, float *z)
+{
+    *x = this->stored.mpos.x;
+    *y = this->stored.mpos.y;
+    *z = this->stored.mpos.z;
+}
+
+void GrblCtrl::getStoredWpos(float *x, float *y, float *z)
+{
+    *x = this->stored.wpos.x;
+    *y = this->stored.wpos.y;
+    *z = this->stored.wpos.z;
+}
+
+void GrblCtrl::getStoredModal(bool *metric, bool *abs)
+{
+    *metric = this->stored.grblStatusMetric;
+    *abs = this->stored.grblStatusAbs;
+}
+
+void GrblCtrl::getWorkingMpos(float *x, float *y, float *z)
+{
+    *x = this->working.mpos.x;
+    *y = this->working.mpos.y;
+    *z = this->working.mpos.z;
+}
+
+void GrblCtrl::getWorkingWpos(float *x, float *y, float *z)
+{
+    *x = this->working.wpos.x;
+    *y = this->working.wpos.y;
+    *z = this->working.wpos.z;
+}
+
+void GrblCtrl::getWorkingModal(bool *metric, bool *abs)
+{
+    *metric = this->working.grblStatusMetric;
+    *abs = this->working.grblStatusAbs;
 }
 
 // Simulate a write
@@ -165,6 +224,11 @@ bool startWithNoCase(const char *str, const char *pattern)
 {
     bool status = false;
     return status;
+}
+
+boolean match(const char *pattern, const char *value)
+{
+    return strncmp(pattern, value, strlen(pattern)) == 0;
 }
 
 // Flush
@@ -276,20 +340,16 @@ const char *extract(const char *str, int sz)
     return buffer;
 }
 
-boolean match(const char *pattern, const char *value)
-{
-    return strncmp(pattern, value, strlen(pattern)) == 0;
-}
-
 // Scan position
-boolean scanPos(const char *pattern, EventType e, const char *value)
+boolean scanPos(const char *pattern, EventType e, const char *value, float *fvalue1, float *fvalue2, float *fvalue3)
 {
     if (match(pattern, value))
     {
-        float fvalue1, fvalue2, fvalue3;
-        sscanf(&(value[strlen(pattern)]), "%f,%f,%f", &fvalue1, &fvalue2, &fvalue3);
-        EvtCtrl::instance()->sendVector(0, e, fvalue1, fvalue2, fvalue3);
+        sscanf(&(value[strlen(pattern)]), "%f,%f,%f", fvalue1, fvalue2, fvalue3);
+        EvtCtrl::instance()->sendVector(0, e, *fvalue1, *fvalue2, *fvalue3);
+        return true;
     }
+    return false;
 }
 
 // Scan error
@@ -365,8 +425,17 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     int blkl = strlen(block);
     for (int b = 0; b < blkl; b++)
     {
-        scanPos("mpos:", EVENT_MPOS, &(block[b]));
-        scanPos("wpos:", EVENT_WPOS, &(block[b]));
+        float fvalue1, fvalue2, fvalue3;
+        if(scanPos("mpos:", EVENT_MPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+            this->working.mpos.x = fvalue1;
+            this->working.mpos.y = fvalue2;
+            this->working.mpos.z = fvalue3;
+        }
+        if(scanPos("wpos:", EVENT_WPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+            this->working.wpos.x = fvalue1;
+            this->working.wpos.y = fvalue2;
+            this->working.wpos.z = fvalue3;
+        }
     }
     sep = msgTolower[index];
 }
@@ -376,25 +445,23 @@ void GrblCtrl::decodeState(const char *msg, const char *msgTolower)
 {
     int index = 4;
     int indexState = strlen(msgTolower);
-    this->grblStatusMetric = false;
-    this->grblStatusAbs = false;
     for(;msgTolower[index] != ']'; index++) {
         const char *pSearch = extract(&(msgTolower[index]), indexState - index);
         if (match(GRBL_STATE_G20, pSearch)) {
-            this->grblStatusMetric = false;
+            this->working.grblStatusMetric = false;
         }
         if (match(GRBL_STATE_G21, pSearch)) {
-            this->grblStatusMetric = true;
+            this->working.grblStatusMetric = true;
         }
         if (match(GRBL_STATE_G90, pSearch)) {
-            this->grblStatusAbs = true;
+            this->working.grblStatusAbs = true;
         }
         if (match(GRBL_STATE_G91, pSearch)) {
-            this->grblStatusAbs = false;
+            this->working.grblStatusAbs = false;
         }
     }
-    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_METRIC, this->grblStatusMetric);
-    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_ABS, this->grblStatusAbs);
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_METRIC, this->working.grblStatusMetric);
+    EvtCtrl::instance()->sendBool(WIDGET_ID_GRBL, EVENT_GRBL_STATE_ABS, this->working.grblStatusAbs);
 }
 
 void GrblCtrl::decodeError(const char *msg, const char *msgTolower)
@@ -509,27 +576,45 @@ void GrblCtrl::script(const char *input, char *output)
         }
     }
     output[out++] = 0;
-
-    log_i("OUTPUT: [%s]", output);
 }
 
 // evaluate script
 void GrblCtrl::evaluate(const char *script, char *output, int sz)
 {
     if(match("GET STORED WCS.Z", script)) {
-        sprintf(output, "Z0.0");
+        sprintf(output, "Z%f", this->stored.wpos.z);
         return;
     }
     if(match("STORE WCS", script)) {
+        this->stored.mpos.x = this->working.mpos.x;
+        this->stored.mpos.y = this->working.mpos.y;
+        this->stored.mpos.z = this->working.mpos.z;
+        this->stored.wpos.x = this->working.wpos.x;
+        this->stored.wpos.y = this->working.wpos.y;
+        this->stored.wpos.z = this->working.wpos.z;
         sprintf(output, "(%s)", script);
         return;
     }
     if(match("STORE MODAL", script)) {
+        this->stored.grblStatusMetric = this->working.grblStatusMetric;
+        this->stored.grblStatusAbs = this->working.grblStatusAbs;
         sprintf(output, "(%s)", script);
         return;
     }
     if(match("RESTORE MODAL", script)) {
-        sprintf(output, "(%s)", script);
+        char metric[8];
+        if(this->stored.grblStatusMetric) {
+            sprintf(metric, "G21");
+        } else {
+            sprintf(metric, "G20");
+        }
+        char abs[8];
+        if(this->stored.grblStatusAbs) {
+            sprintf(abs, "G90");
+        } else {
+            sprintf(abs, "G91");
+        }
+        sprintf(output, "%s %s", metric, abs);
         return;
     }
 }
@@ -568,6 +653,7 @@ void GrblCtrl::spool()
                     this->isPrinting = false;
                     this->grblPrintStatus = empty;
                     StorageCtrl::instance()->close();
+                    TFT_Screen::instance()->notifyPrintStatus(true, this->printedLines, this->toPrintLines);
                 }
             }
             break;

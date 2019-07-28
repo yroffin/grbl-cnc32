@@ -102,6 +102,13 @@ public:
 
   static GrblCtrl *instance();
 
+  void getStoredMpos(float *x, float *y, float *z);
+  void getStoredWpos(float *x, float *y, float *z);
+  void getWorkingMpos(float *x, float *y, float *z);
+  void getWorkingWpos(float *x, float *y, float *z);
+  void getStoredModal(bool *metric, bool *abs);
+  void getWorkingModal(bool *metric, bool *abs);
+
 protected:
   void error(const char *message);
   void alarm(const char *message);
@@ -143,9 +150,29 @@ private:
   // state
   GrblStatus grblState = GRBL_UNKNOWN;
 
-  // status
-  boolean grblStatusMetric = true;
-  boolean grblStatusAbs = true;
+  struct
+  {
+    struct {
+      float x, y, z;
+    } mpos;
+    struct {
+      float x, y, z;
+    } wpos;
+    boolean grblStatusMetric;
+    boolean grblStatusAbs;
+  } stored;
+
+  struct
+  {
+    struct {
+      float x, y, z;
+    } mpos;
+    struct {
+      float x, y, z;
+    } wpos;
+    boolean grblStatusMetric;
+    boolean grblStatusAbs;
+  } working;
 
   uint8_t strGrblIdx;
   uint8_t txRead = 0;

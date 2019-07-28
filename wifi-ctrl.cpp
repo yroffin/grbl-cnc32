@@ -42,8 +42,46 @@ void Simulate()
     server.sendHeader("Pragma", "no-cache");
     server.sendHeader("Expires", "-1");
     char buffer[4096];
+    StaticJsonDocument<512> doc;
     switch (server.method())
     {
+    case HTTP_GET:
+        {
+            JsonObject store = doc.createNestedObject("stored");
+            JsonObject mpos = store.createNestedObject("mpos");
+            float x, y ,z;
+            bool metric,abs;
+            GrblCtrl::instance()->getStoredMpos(&x,&y,&z);
+            mpos["x"] = x;
+            mpos["y"] = y;
+            mpos["z"] = z;
+            JsonObject wpos = store.createNestedObject("wpos");
+            GrblCtrl::instance()->getStoredWpos(&x,&y,&z);
+            wpos["x"] = x;
+            wpos["y"] = y;
+            wpos["z"] = z;
+            JsonObject smodal = store.createNestedObject("modal");
+            GrblCtrl::instance()->getStoredModal(&metric,&abs);
+            smodal["metric"] = metric;
+            smodal["abs"] = abs;
+            JsonObject working = doc.createNestedObject("working");
+            JsonObject mposw = working.createNestedObject("mpos");
+            GrblCtrl::instance()->getWorkingMpos(&x,&y,&z);
+            mposw["x"] = x;
+            mposw["y"] = y;
+            mposw["z"] = z;
+            JsonObject wposw = working.createNestedObject("wpos");
+            GrblCtrl::instance()->getWorkingWpos(&x,&y,&z);
+            wposw["x"] = x;
+            wposw["y"] = y;
+            wposw["z"] = z;
+            JsonObject wmodal = working.createNestedObject("modal");
+            GrblCtrl::instance()->getWorkingModal(&metric,&abs);
+            wmodal["metric"] = metric;
+            wmodal["abs"] = abs;
+            serializeJson(doc, buffer);
+            break;
+        }
     case HTTP_PUT:
         for (int i = 0; i < server.args(); i++)
         {
@@ -65,7 +103,7 @@ void ApiJson(JsonStore *json, const char *filename, const char *backup)
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     server.sendHeader("Pragma", "no-cache");
     server.sendHeader("Expires", "-1");
-    char buffer[4096];
+    char buffer[4096 + 1024];
     switch (server.method())
     {
     case HTTP_GET:
