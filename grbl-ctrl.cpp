@@ -161,8 +161,16 @@ void GrblCtrl::simulate(const char *message)
     */
 
     sprintf(sim, "%s\n", message);
-    idx = sim;
-    log_i("GRBL: [%s]", message);
+    if (this->simulation)
+    {
+        idx = sim;
+        log_i("GRBL: [%s]", message);
+    }
+    else
+    {
+        // in real write as it come from console
+        this->tryWrite(true, sim);
+    }
 }
 
 // Scan new available bytes
@@ -270,7 +278,9 @@ void GrblCtrl::flush(void)
                         if (strncmp(strGrblBufNoCase, "[gc:", 4) == 0)
                         {
                             type = 5;
-                        } else {
+                        }
+                        else
+                        {
                             if (*strGrblBuf == '[')
                             {
                                 type = 6;
@@ -426,12 +436,14 @@ void GrblCtrl::decodeStatus(const char *msg, const char *msgTolower)
     for (int b = 0; b < blkl; b++)
     {
         float fvalue1, fvalue2, fvalue3;
-        if(scanPos("mpos:", EVENT_MPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+        if (scanPos("mpos:", EVENT_MPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3))
+        {
             this->working.mpos.x = fvalue1;
             this->working.mpos.y = fvalue2;
             this->working.mpos.z = fvalue3;
         }
-        if(scanPos("wpos:", EVENT_WPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3)) {
+        if (scanPos("wpos:", EVENT_WPOS, &(block[b]), &fvalue1, &fvalue2, &fvalue3))
+        {
             this->working.wpos.x = fvalue1;
             this->working.wpos.y = fvalue2;
             this->working.wpos.z = fvalue3;
@@ -445,18 +457,23 @@ void GrblCtrl::decodeState(const char *msg, const char *msgTolower)
 {
     int index = 4;
     int indexState = strlen(msgTolower);
-    for(;msgTolower[index] != ']'; index++) {
+    for (; msgTolower[index] != ']'; index++)
+    {
         const char *pSearch = extract(&(msgTolower[index]), indexState - index);
-        if (match(GRBL_STATE_G20, pSearch)) {
+        if (match(GRBL_STATE_G20, pSearch))
+        {
             this->working.grblStatusMetric = false;
         }
-        if (match(GRBL_STATE_G21, pSearch)) {
+        if (match(GRBL_STATE_G21, pSearch))
+        {
             this->working.grblStatusMetric = true;
         }
-        if (match(GRBL_STATE_G90, pSearch)) {
+        if (match(GRBL_STATE_G90, pSearch))
+        {
             this->working.grblStatusAbs = true;
         }
-        if (match(GRBL_STATE_G91, pSearch)) {
+        if (match(GRBL_STATE_G91, pSearch))
+        {
             this->working.grblStatusAbs = false;
         }
     }
@@ -553,22 +570,31 @@ void GrblCtrl::script(const char *input, char *output)
     int index = 0;
     int from = 0;
     int to = 0;
-    for(;input[index] != 0;index++) {
-        if(input[index] == '$' && input[index+1] == '{') {
+    for (; input[index] != 0; index++)
+    {
+        if (input[index] == '$' && input[index + 1] == '{')
+        {
             // ignore $
-            index ++;
+            index++;
             from = index + 1;
             inside = true;
-        } else {
-            if(from != 0 && input[index] == '}') {
+        }
+        else
+        {
+            if (from != 0 && input[index] == '}')
+            {
                 to = index - 1;
                 inside = false;
                 this->evaluate(extract(&(input[from]), to - from + 1), scr, sizeof(scr));
-                for(;scr[iscr];iscr++) {
+                for (; scr[iscr]; iscr++)
+                {
                     output[out++] = scr[iscr];
                 }
-            } else {
-                if(!inside) {
+            }
+            else
+            {
+                if (!inside)
+                {
                     // store it
                     output[out++] = input[index];
                 }
@@ -581,11 +607,13 @@ void GrblCtrl::script(const char *input, char *output)
 // evaluate script
 void GrblCtrl::evaluate(const char *script, char *output, int sz)
 {
-    if(match("GET STORED WCS.Z", script)) {
+    if (match("GET STORED WCS.Z", script))
+    {
         sprintf(output, "Z%f", this->stored.wpos.z);
         return;
     }
-    if(match("STORE WCS", script)) {
+    if (match("STORE WCS", script))
+    {
         this->stored.mpos.x = this->working.mpos.x;
         this->stored.mpos.y = this->working.mpos.y;
         this->stored.mpos.z = this->working.mpos.z;
@@ -595,23 +623,31 @@ void GrblCtrl::evaluate(const char *script, char *output, int sz)
         sprintf(output, "(%s)", script);
         return;
     }
-    if(match("STORE MODAL", script)) {
+    if (match("STORE MODAL", script))
+    {
         this->stored.grblStatusMetric = this->working.grblStatusMetric;
         this->stored.grblStatusAbs = this->working.grblStatusAbs;
         sprintf(output, "(%s)", script);
         return;
     }
-    if(match("RESTORE MODAL", script)) {
+    if (match("RESTORE MODAL", script))
+    {
         char metric[8];
-        if(this->stored.grblStatusMetric) {
+        if (this->stored.grblStatusMetric)
+        {
             sprintf(metric, "G21");
-        } else {
+        }
+        else
+        {
             sprintf(metric, "G20");
         }
         char abs[8];
-        if(this->stored.grblStatusAbs) {
+        if (this->stored.grblStatusAbs)
+        {
             sprintf(abs, "G90");
-        } else {
+        }
+        else
+        {
             sprintf(abs, "G91");
         }
         sprintf(output, "%s %s", metric, abs);
