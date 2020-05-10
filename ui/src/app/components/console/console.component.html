@@ -1,0 +1,304 @@
+<p-tabView>
+    <p-tabPanel header="Plan X/Y">
+        <ng-template pTemplate="content">
+            <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
+        </ng-template>
+    </p-tabPanel>
+    <p-tabPanel header="Plan Z">
+        <ng-template pTemplate="content">
+            <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
+        </ng-template>
+    </p-tabPanel>
+    <p-tabPanel header="Debug">
+        <p-button label="Refresh" (click)="refresh($event)"></p-button>
+        <pre>
+{{status | json}}
+        </pre>
+    </p-tabPanel>
+    <p-tabPanel header="Info.">
+        <form *ngIf="status" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <table>
+                <tr>
+                    <td>
+                        Working position x
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.mpos.x" pInputText placeholder="Value"
+                                formControlName="wmposx" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working position y
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.mpos.y" pInputText placeholder="Value"
+                                formControlName="wmposy" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working position z
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.mpos.z" pInputText placeholder="Value"
+                                formControlName="wmposz" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working position x
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.wpos.x" pInputText placeholder="Value"
+                                formControlName="wwposx" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working position y
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.wpos.y" pInputText placeholder="Value"
+                                formControlName="wwposy" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working position z
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.working.wpos.z" pInputText placeholder="Value"
+                                formControlName="wwposz" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working modal metric
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <p-checkbox [(ngModel)]="status.working.modal.metric" [binary]="true" label="metric"
+                                formControlName="wm" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }"></p-checkbox>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Working modal absolute
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <p-checkbox [(ngModel)]="status.working.modal.abs" [binary]="true" formControlName="wa"
+                                class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                            </p-checkbox>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position x
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.mpos.x" pInputText placeholder="Value"
+                                formControlName="smposx" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position y
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.mpos.y" pInputText placeholder="Value"
+                                formControlName="smposy" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position z
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.mpos.z" pInputText placeholder="Value"
+                                formControlName="smposz" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position x
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.wpos.x" pInputText placeholder="Value"
+                                formControlName="swposx" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position y
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.wpos.y" pInputText placeholder="Value"
+                                formControlName="swposy" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored position z
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <input type="text" [(ngModel)]="status.stored.wpos.z" pInputText placeholder="Value"
+                                formControlName="swposz" class="form-control"
+                                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored modal metric
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <p-checkbox [(ngModel)]="status.stored.modal.metric" [binary]="true" formControlName="sm"
+                                class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                            </p-checkbox>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Stored modal absolute
+                    </td>
+                    <td>
+                        <div class="ui-inputgroup">
+                            <p-checkbox [(ngModel)]="status.stored.modal.abs" [binary]="true" formControlName="sa"
+                                class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }">
+                            </p-checkbox>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </p-tabPanel>
+    <p-tabPanel header="Control">
+        <div class="p-grid">
+            <div class="p-col">
+                <p-button label="Ok" (click)="setOk($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Unlock" (click)="setUnlock($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Reset" (click)="setReset($event)"></p-button>
+            </div>
+            <div class="p-col">
+            </div>
+            <div class="p-col">
+            </div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col">
+            </div>
+            <div class="p-col">
+            </div>
+            <div class="p-col">
+                <p-button label="Pause" (click)="setPause($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Resume" (click)="setResume($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Status" (click)="setStatus($event)"></p-button>
+            </div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col">
+                <p-button label="SetX" (click)="setX($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="SetY" (click)="setY($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="SetZ" (click)="setZ($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="SetAll" (click)="setAll($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="SetHome" (click)="setDefinedHome($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Home" (click)="setHome($event)"></p-button>
+            </div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col"></div>
+            <div class="p-col">
+                <p-button label="Back" (click)="setBack($event)"></p-button>
+            </div>
+            <div class="p-col"></div>
+            <div class="p-col"></div>
+            <div class="p-col">
+                <p-button label="Up" (click)="setUp($event)"></p-button>
+            </div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col">
+                <p-button label="Left" (click)="setLeft($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Step" (click)="setStep($event)"></p-button>
+            </div>
+            <div class="p-col">
+                <p-button label="Right" (click)="setRight($event)"></p-button>
+            </div>
+            <div class="p-col"></div>
+            <div class="p-col"></div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col"></div>
+            <div class="p-col">
+                <p-button label="Front" (click)="setFront($event)"></p-button>
+            </div>
+            <div class="p-col"></div>
+            <div class="p-col"></div>
+            <div class="p-col">
+                <p-button label="Down" (click)="setDown($event)"></p-button>
+            </div>
+        </div>
+    </p-tabPanel>
+</p-tabView>
+<p-toast></p-toast>
