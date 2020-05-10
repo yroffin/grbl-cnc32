@@ -1,11 +1,20 @@
-import { Component, OnInit, ViewChild, ElementRef, EventEmitter, Output, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, EventEmitter, Output, AfterViewInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import * as paper from 'paper';
 import { FormGroup, FormBuilder } from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import * as _ from 'lodash';
+
+export enum PaperAction {
+  StoredWithShift
+}
 
 @Component({
   selector: 'app-paperjs',
   templateUrl: './paperjs.component.html',
-  styleUrls: ['./paperjs.component.css']
+  styleUrls: ['./paperjs.component.css'],
+  providers: [
+    MessageService
+  ]
 })
 export class PaperjsComponent implements OnInit, AfterViewInit {
 
@@ -19,20 +28,40 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   y = 0;
   z = 0;
 
+  oldZoom = 1;
+  zoom = 1;
+
   private scope: paper.PaperScope;
   private project: paper.Project;
   private formBuilder = new FormBuilder();
 
-  @Output() zoomin: EventEmitter<any> = new EventEmitter();
-  @Output() zoomout: EventEmitter<any> = new EventEmitter();
-  @Output() flag: EventEmitter<any> = new EventEmitter();
+  shiftIsDown = false;
 
-  constructor(private cdr: ChangeDetectorRef) {
+  @Output() flag: EventEmitter<any> = new EventEmitter();
+  @Output() ready: EventEmitter<any> = new EventEmitter();
+
+  constructor(private cdr: ChangeDetectorRef, private messageService: MessageService) {
     this.registerForm = this.formBuilder.group({
       x: [],
       y: [],
       z: [],
     });
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Shift') {
+      console.log('down');
+      this.shiftIsDown = true;
+    }
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  handleKeyUp(event: KeyboardEvent) {
+    if (event.key === 'Shift') {
+      console.log('down');
+      this.shiftIsDown = false;
+    }
   }
 
   ngOnInit() {
@@ -43,56 +72,44 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     const height = this.paperCanvas.nativeElement.offsetHeight;
     const width = this.paperCanvas.nativeElement.offsetWidth;
-    console.log(width, height);
+    this.messageService.add({ severity: 'success', summary: 'Native', detail: `To ${width},${height}` });
 
     this.project = new paper.Project(this.paperCanvas.nativeElement);
-    this.project.view.center = new paper.Point(200, 100);
-    this.project.view.scale(3, -3);
+    this.project.view.center = new paper.Point(width / 8, height / 8);
+    this.project.view.scale(this.zoom, -this.zoom);
 
     this.project.view.onMouseMove = (event) => {
       this.onMouseMove(event);
     };
 
-    this.project.view.onMouseUp = (event) => {
-      this.onMouseUp(event);
-    };
-
-    this.project.view.onDoubleClick = (event) => {
-      this.onDoubleClick(event);
-    };
-
     this.drawGrid(width, height, 10, 1);
-
-    const rect = new paper.Path.Rectangle({
-      from: new paper.Point(0, 0),
-      to: new paper.Size(245, 80),
-      strokeColor: 'black',
-      strokeWidth: 1
-    });
+    this.setZoom(3);
+    this.ready.emit(this.project);
   }
 
-  onWheel(event: any) {
-    event.preventDefault();
-    if (event.deltaY < 0) {
-      this.zoomout.emit(event);
-    } else if (event.deltaY > 0) {
-      this.zoomin.emit(event);
-    }
+  onZoomChange(event: any) {
+    this.setZoom(this.zoom);
   }
 
   onCapture() {
+    if (this.shiftIsDown === false) { return; }
     this.store = {
       x: this.x ? this.x.toFixed(3) : 0.,
       y: this.y ? this.y.toFixed(3) : 0.,
+      status: PaperAction.StoredWithShift
     };
+    this.messageService.add({ severity: 'success', summary: 'Move', detail: `To ${this.store.x},${this.store.y}` });
+    this.flag.emit(this.store);
   }
 
-  move() {
-    this.flag.emit({
-      x: this.store.x,
-      y: this.store.y,
-      event: 'move'
-    });
+  private setZoom(zoom: number) {
+    this.project.view.scale(1 / this.oldZoom, 1 / -this.oldZoom);
+    this.project.view.scale(zoom, -zoom);
+    this.oldZoom = zoom;
+    this.zoom = zoom;
+    const height = this.paperCanvas.nativeElement.offsetHeight;
+    const width = this.paperCanvas.nativeElement.offsetWidth;
+    this.project.view.center = new paper.Point(width / (this.zoom * 2.5), height / (this.zoom * 2));
   }
 
   private onMouseMove(event: any) {
@@ -100,12 +117,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
     this.y = event.point.y;
     this.cdr.detectChanges();
     return false;
-  }
-
-  private onMouseUp(event: any) {
-  }
-
-  private onDoubleClick(event: any) {
   }
 
   private drawGrid(width: number, height: number, heavy: number, light: number) {

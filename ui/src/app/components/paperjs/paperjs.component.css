@@ -4,7 +4,7 @@
 }
 
 .editor-2d-container .hud {
-    position: absolute;
+    position: relative;
     top: 48px;
     left: 0;
     right: 0;

@@ -2,21 +2,27 @@ import { Component, OnInit } from '@angular/core';
 import { GrblService } from 'src/app/services/grbl.service';
 import { Status } from 'src/app/models/grbl';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import * as paper from 'paper';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-console',
   templateUrl: './console.component.html',
-  styleUrls: ['./console.component.css']
+  styleUrls: ['./console.component.css'],
+  providers: [
+    MessageService
+  ]
 })
 export class ConsoleComponent implements OnInit {
 
   status: Status;
   registerForm: FormGroup;
   submitted = false;
+  step = 1;
 
   private formBuilder = new FormBuilder();
 
-  constructor(private grblService: GrblService) {
+  constructor(private grblService: GrblService, private messageService: MessageService) {
     this.grblService.getStatus().subscribe(
       (status) => {
         this.status = status;
@@ -67,16 +73,32 @@ export class ConsoleComponent implements OnInit {
     );
   }
 
-  zoomin(event: any) {
+  selectXY(event: any) {
+    this.command(`X${event.x} Y${event.y}`);
   }
 
-  zoomout(event: any) {
+  drawXY(project: paper.Project) {
+    project.activate();
+    const rect = new paper.Path.Rectangle({
+      from: new paper.Point(0, 0),
+      to: new paper.Size(245, 80),
+      strokeColor: 'black',
+      strokeWidth: 1
+    });
   }
 
-  select(event: any) {
-    if (event.event === 'move') {
-      this.command(`X${event.x} Y${event.y}`);
-    }
+  selectZ(event: any) {
+    this.command(`Z${event.y}`);
+  }
+
+  drawZ(project: paper.Project) {
+    project.activate();
+    const rect = new paper.Path.Rectangle({
+      from: new paper.Point(0, 0),
+      to: new paper.Size(80, 30),
+      strokeColor: 'black',
+      strokeWidth: 1
+    });
   }
 
   setHome(event: any) {
@@ -110,19 +132,28 @@ export class ConsoleComponent implements OnInit {
   setAll(event: any) {
     this.command('G10 L20 P1 X0 Y0 Z0');
   }
-  setLeft(event: any) {
+  setDefinedHome(event: any) {
+    this.command('G28.1');
   }
   setRight(event: any) {
+    this.command(`$J=G91 G21 X${this.step.toFixed(3)} F100`);
+  }
+  setLeft(event: any) {
+    this.command(`$J=G91 G21 X-${this.step.toFixed(3)} F100`);
   }
   setBack(event: any) {
+    this.command(`$J=G91 G21 Y${this.step.toFixed(3)} F100`);
   }
   setFront(event: any) {
+    this.command(`$J=G91 G21 Y-${this.step.toFixed(3)} F100`);
   }
   setStep(event: any) {
   }
   setUp(event: any) {
+    this.command(`$J=G91 G21 Z${this.step.toFixed(3)} F100`);
   }
   setDown(event: any) {
+    this.command(`$J=G91 G21 Z-${this.step.toFixed(3)} F100`);
   }
   setOk(event: any) {
     this.command('ok');
@@ -131,7 +162,10 @@ export class ConsoleComponent implements OnInit {
   private command(command: string) {
     this.grblService.setStatus(command).subscribe(
       (result) => {
-
+        this.messageService.add({ severity: 'success', summary: 'Command', detail: `${command}` });
+      },
+      (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Command', detail: `${command}` });
       }
     );
   }
