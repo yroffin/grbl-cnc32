@@ -16,6 +16,9 @@
       "dom"
     ]
   },
+  "files": [
+    "paper.d.ts"
+  ],
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
     "strictInjectionParameters": true

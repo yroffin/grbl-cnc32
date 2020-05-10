@@ -28,6 +28,15 @@ export class GrblService {
       );
   }
 
+  setStatus(body: string): Observable<Status> {
+    console.info('set', body);
+    return this.http.put<Status>(this.configUrl + 'v1/simulate', body)
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError) // then handle the error
+      );
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.

@@ -1,1 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import url("../node_modules/primeicons/primeicons.css");
+@import url("../node_modules/primeng/resources/themes/nova-light/theme.css");
+@import url("../node_modules/primeng/resources/primeng.min.css");
+@import url("../node_modules/primeflex/primeflex.css");
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+canvas[resize] {
+    width  : 100%;
+    height : 100%;
+}

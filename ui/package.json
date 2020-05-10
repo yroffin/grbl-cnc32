@@ -30,7 +30,8 @@
     "primeng": "^9.0.6",
     "primeicons": "2.0.0",
     "primeflex": "1.0.0",
-    "lodash": "4.17.15"
+    "lodash": "4.17.15",
+    "paper": "0.12.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.1",
@@ -40,6 +41,7 @@
     "@types/node": "^12.11.1",
     "@types/jasmine": "~3.5.0",
     "@types/jasminewd2": "~2.0.3",
+    "@types/paper": "0.12.3",
     "codelyzer": "^5.1.2",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~4.2.1",
