@@ -1,3 +1,7 @@
+# 0.84
+
+Write from api (wifi) on console
+
 # 0.83
 
 Add script capacity in commands
