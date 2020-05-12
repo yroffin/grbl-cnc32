@@ -1,6 +1,6 @@
 export class Status {
-    stored: Dump;
-    working: Dump;
+    stored?: Dump;
+    working?: Dump;
 }
 
 export class Dump {
