@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { GrblService } from 'src/app/services/grbl.service';
-import { Status } from 'src/app/models/grbl';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { GrblService } from '../../services/grbl.service';
+import { Status } from '../../models/grbl';
 import * as paper from 'paper';
 import { MessageService } from 'primeng/api';
+import { StoreService } from '../../store/store.service';
 
 @Component({
   selector: 'app-console',
@@ -15,62 +15,36 @@ import { MessageService } from 'primeng/api';
 })
 export class ConsoleComponent implements OnInit {
 
-  status: Status;
-  registerForm: FormGroup;
-  submitted = false;
-  step = 1;
-
-  private formBuilder = new FormBuilder();
-
-  constructor(private grblService: GrblService, private messageService: MessageService) {
-    this.grblService.getStatus().subscribe(
+  constructor(private storeService: StoreService, private grblService: GrblService, private messageService: MessageService) {
+    storeService.getStatus().subscribe(
       (status) => {
-        this.status = status;
+        if (status.working) {
+          this.status = status;
+          if (this.toolsXY) {
+            const deltaXY = new paper.Point(this.status.working.wpos.x, this.status.working.wpos.y).subtract(this.toolsXY.position);
+            this.toolsXY.translate(deltaXY);
+          }
+          if (this.toolsZ) {
+            const deltaZ = new paper.Point(
+              this.status.working.wpos.x,
+              this.status.working.wpos.z).subtract(this.toolsZ.bounds.topCenter);
+            this.toolsZ.translate(deltaZ);
+          }
+        }
       }
     );
   }
 
+  status: Status;
+  step = 1;
+  toolsXY: paper.Path.Circle;
+  toolsZ: paper.Path.Rectangle;
+
   ngOnInit(): void {
-    this.registerForm = this.formBuilder.group({
-      wmposx: [],
-      wmposy: [],
-      wmposz: [],
-      wwposx: [],
-      wwposy: [],
-      wwposz: [],
-      wm: [],
-      wa: [],
-      smposx: [],
-      smposy: [],
-      smposz: [],
-      swposx: [],
-      swposy: [],
-      swposz: [],
-      sm: [],
-      sa: [],
-      acceptTerms: [false, Validators.requiredTrue]
-    }, {
-    });
-  }
-
-  // convenience getter for easy access to form fields
-  get f() { return this.registerForm.controls; }
-
-  onSubmit() {
-    this.submitted = true;
-
-    // stop here if form is invalid
-    if (this.registerForm.invalid) {
-      return;
-    }
   }
 
   refresh(event: any) {
-    this.grblService.getStatus().subscribe(
-      (status) => {
-        this.status = status;
-      }
-    );
+    this.storeService.dispatchSetStatus();
   }
 
   selectXY(event: any) {
@@ -85,6 +59,12 @@ export class ConsoleComponent implements OnInit {
       strokeColor: 'black',
       strokeWidth: 1
     });
+    this.toolsXY = new paper.Path.Circle({
+      center: new paper.Point(0, 0),
+      radius: 10,
+      strokeColor: 'black',
+      strokeWidth: 1
+    });
   }
 
   selectZ(event: any) {
@@ -96,6 +76,12 @@ export class ConsoleComponent implements OnInit {
     const rect = new paper.Path.Rectangle({
       from: new paper.Point(0, 0),
       to: new paper.Size(80, 30),
+      strokeColor: 'black',
+      strokeWidth: 1
+    });
+    this.toolsZ = new paper.Path.Rectangle({
+      from: new paper.Point(-5, 0),
+      to: new paper.Size(5, 20),
       strokeColor: 'black',
       strokeWidth: 1
     });
