@@ -2,6 +2,10 @@
 
 Write from api (wifi) on console
 
+# 0.84
+
+Add webserver feature
+
 # 0.83
 
 Add script capacity in commands
