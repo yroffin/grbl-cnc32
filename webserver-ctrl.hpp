@@ -44,6 +44,7 @@ class WebServerCtrl : public WebServer
 public:
   WebServerCtrl();
   void mount(const char *uri, const char *path, const char *cache_header);
+  void handleClient();
 
 private:
 };
@@ -80,16 +81,18 @@ public:
     String path(requestUri);
     path.replace(_uri, _path);
 
-    String contentType = getContentType(path);
-
     File f = SD.open(path);
     if (!f)
       return false;
+
+    String contentType = getContentType(path);
 
     if (_cache_header.length() != 0)
       server.sendHeader("Cache-Control", _cache_header);
 
     server.streamFile(f, contentType);
+
+    f.close();
     return true;
   }
 
