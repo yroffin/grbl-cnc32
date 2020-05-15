@@ -1,4 +1,5 @@
 #include "wifi-ctrl.hpp"
+#include "webserver-ctrl.hpp"
 #include "i18n-ctrl.hpp"
 #include "grbl-ctrl.hpp"
 #include "storage-ctrl.hpp"
@@ -23,7 +24,7 @@ WifiCtrl::WifiCtrl()
 }
 
 // webserver
-WebServer server(80);
+WebServerCtrl server;
 
 void HomePage()
 {
@@ -46,42 +47,42 @@ void Simulate()
     switch (server.method())
     {
     case HTTP_GET:
-        {
-            JsonObject store = doc.createNestedObject("stored");
-            JsonObject mpos = store.createNestedObject("mpos");
-            float x, y ,z;
-            bool metric,abs;
-            GrblCtrl::instance()->getStoredMpos(&x,&y,&z);
-            mpos["x"] = x;
-            mpos["y"] = y;
-            mpos["z"] = z;
-            JsonObject wpos = store.createNestedObject("wpos");
-            GrblCtrl::instance()->getStoredWpos(&x,&y,&z);
-            wpos["x"] = x;
-            wpos["y"] = y;
-            wpos["z"] = z;
-            JsonObject smodal = store.createNestedObject("modal");
-            GrblCtrl::instance()->getStoredModal(&metric,&abs);
-            smodal["metric"] = metric;
-            smodal["abs"] = abs;
-            JsonObject working = doc.createNestedObject("working");
-            JsonObject mposw = working.createNestedObject("mpos");
-            GrblCtrl::instance()->getWorkingMpos(&x,&y,&z);
-            mposw["x"] = x;
-            mposw["y"] = y;
-            mposw["z"] = z;
-            JsonObject wposw = working.createNestedObject("wpos");
-            GrblCtrl::instance()->getWorkingWpos(&x,&y,&z);
-            wposw["x"] = x;
-            wposw["y"] = y;
-            wposw["z"] = z;
-            JsonObject wmodal = working.createNestedObject("modal");
-            GrblCtrl::instance()->getWorkingModal(&metric,&abs);
-            wmodal["metric"] = metric;
-            wmodal["abs"] = abs;
-            serializeJson(doc, buffer);
-            break;
-        }
+    {
+        JsonObject store = doc.createNestedObject("stored");
+        JsonObject mpos = store.createNestedObject("mpos");
+        float x, y, z;
+        bool metric, abs;
+        GrblCtrl::instance()->getStoredMpos(&x, &y, &z);
+        mpos["x"] = x;
+        mpos["y"] = y;
+        mpos["z"] = z;
+        JsonObject wpos = store.createNestedObject("wpos");
+        GrblCtrl::instance()->getStoredWpos(&x, &y, &z);
+        wpos["x"] = x;
+        wpos["y"] = y;
+        wpos["z"] = z;
+        JsonObject smodal = store.createNestedObject("modal");
+        GrblCtrl::instance()->getStoredModal(&metric, &abs);
+        smodal["metric"] = metric;
+        smodal["abs"] = abs;
+        JsonObject working = doc.createNestedObject("working");
+        JsonObject mposw = working.createNestedObject("mpos");
+        GrblCtrl::instance()->getWorkingMpos(&x, &y, &z);
+        mposw["x"] = x;
+        mposw["y"] = y;
+        mposw["z"] = z;
+        JsonObject wposw = working.createNestedObject("wpos");
+        GrblCtrl::instance()->getWorkingWpos(&x, &y, &z);
+        wposw["x"] = x;
+        wposw["y"] = y;
+        wposw["z"] = z;
+        JsonObject wmodal = working.createNestedObject("modal");
+        GrblCtrl::instance()->getWorkingModal(&metric, &abs);
+        wmodal["metric"] = metric;
+        wmodal["abs"] = abs;
+        serializeJson(doc, buffer);
+        break;
+    }
     case HTTP_PUT:
         for (int i = 0; i < server.args(); i++)
         {
@@ -163,14 +164,16 @@ void Print()
             {
                 strcpy(buffer, server.arg(i).c_str());
                 deserializeJson(doc, buffer);
-                if(doc.containsKey("command")) {
-                    const char* command = doc["command"];
+                if (doc.containsKey("command"))
+                {
+                    const char *command = doc["command"];
                     // switch to command mode
                     StorageCtrl::instance()->commands();
                     GrblCtrl::instance()->print(command);
                 }
-                if(doc.containsKey("file")) {
-                    const char* file = doc["file"];
+                if (doc.containsKey("file"))
+                {
+                    const char *file = doc["file"];
                     // switch to file mode
                     StorageCtrl::instance()->files();
                     GrblCtrl::instance()->print(file);
@@ -250,13 +253,14 @@ void WifiCtrl::loop()
         break;
     case wifiConnected:
         WiFi.setSleep(false);
-        server.on("/", HomePage);
+        server.on("/test", HomePage);
         server.on("/api/v1/config/config.json", HTTP_ANY, ApiConfig);
         server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18nEnUS);
         server.on("/api/v1/i18n/i18n_frFR.json", HTTP_ANY, ApiI18nFrFR);
         server.on("/api/v1/simulate", HTTP_ANY, Simulate);
         server.on("/api/v1/reboot", Reboot);
         server.on("/api/v1/print", Print);
+        server.mount("/ui", "/static", "");
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "SRV", 80));
         this->phase = unixTime;
