@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Effect, Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { GrblService } from '../services/grbl.service';
 import { Status } from '../models/grbl';
@@ -22,7 +22,6 @@ export class StoreService {
                 case AllActionType.setStatusOk:
                     return action.payload;
                 default:
-                    console.log(`action ${action.type}`);
                     return state;
             }
         }
@@ -66,30 +65,13 @@ export class ActionListenerEffects {
     @Effect()
     addAction$: Observable<StatusAction> = this.actions$.pipe(
         ofType<StatusAction>(AllActionType.setStatus),
-        switchMap((action: StatusAction) => {
-            /**
-             * action logique here
-             */
-            // return this.grblService.getStatus();
-            return of<StatusAction>({
-                type: AllActionType.setStatusOk, payload: {
-                    working: {
-                        mpos: {
-                            x: Math.floor(Math.random() * Math.floor(100)),
-                            y: Math.floor(Math.random() * Math.floor(100)),
-                            z: Math.floor(Math.random() * Math.floor(100))
-                        },
-                        wpos: {
-                            x: Math.floor(Math.random() * Math.floor(100)),
-                            y: Math.floor(Math.random() * Math.floor(100)),
-                            z: Math.floor(Math.random() * Math.floor(100))
-                        },
-                        modal: {
-                            abs: true,
-                            metric: true
-                        }
-                    }
-                }
+        switchMap((action) => {
+            return this.grblService.getStatus();
+        }),
+        switchMap((payload: Status) => {
+            return of({
+                type: AllActionType.setStatusOk,
+                payload
             });
         })
     );
