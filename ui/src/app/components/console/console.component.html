@@ -23,10 +23,11 @@
             </div>
         </ng-template>
     </p-tabPanel>
+    <p-tabPanel header="Gcode">
+        <pre>{{commands | json}}</pre>
+    </p-tabPanel>
     <p-tabPanel header="Debug">
-        <pre>
-{{status | json}}
-        </pre>
+        <pre>{{status | json}}</pre>
     </p-tabPanel>
     <p-tabPanel header="Control">
         <div align="center" class="p-grid">

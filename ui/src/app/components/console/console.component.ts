@@ -1,22 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GrblService } from '../../services/grbl.service';
 import { Status } from '../../models/grbl';
 import * as paper from 'paper';
 import { MessageService } from 'primeng/api';
 import { StoreService } from '../../store/store.service';
+import { TerminalService } from 'primeng/terminal';
+import { Subscription } from 'rxjs';
+import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-console',
   templateUrl: './console.component.html',
   styleUrls: ['./console.component.css'],
   providers: [
-    MessageService
+    MessageService,
+    TerminalService
   ]
 })
-export class ConsoleComponent implements OnInit {
+export class ConsoleComponent implements OnInit, OnDestroy {
 
-  constructor(private storeService: StoreService, private grblService: GrblService, private messageService: MessageService) {
-    storeService.getStatus().subscribe(
+  subscriptions: Subscription[] = [];
+
+  status: Status;
+  commands: string[];
+  step = 1;
+  toolsXY: paper.Path.Circle;
+  toolsZ: paper.Path.Rectangle;
+
+  constructor(
+    private terminalService: TerminalService,
+    private storeService: StoreService,
+    private messageService: MessageService) {
+    this.subscriptions.push(storeService.getStatus().subscribe(
       (status) => {
         if (status.working) {
           this.status = status;
@@ -32,19 +48,34 @@ export class ConsoleComponent implements OnInit {
           }
         }
       }
-    );
+    ));
+    this.subscriptions.push(storeService.getCommands().subscribe(
+      (commands) => {
+        this.commands = commands;
+        // this.terminalService.sendCommand('xxx');
+        this.terminalService.sendResponse('response');
+        // this.messageService.add({ severity: 'success', summary: 'Command', detail: `${commands}` });
+      },
+      (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Command', detail: `${error}` });
+      }
+    ));
+    this.subscriptions.push(this.terminalService.commandHandler.subscribe(command => {
+      // this.terminalService.sendResponse('response');
+    }));
   }
-
-  status: Status;
-  step = 1;
-  toolsXY: paper.Path.Circle;
-  toolsZ: paper.Path.Rectangle;
 
   ngOnInit(): void {
   }
 
+  ngOnDestroy() {
+    _.each(this.subscriptions, (subscription) => {
+      subscription.unsubscribe();
+    });
+  }
+
   refresh(event: any) {
-    this.storeService.dispatchSetStatus();
+    this.storeService.dispatchGetStatus();
   }
 
   selectXY(event: any) {
@@ -146,13 +177,6 @@ export class ConsoleComponent implements OnInit {
   }
 
   private command(command: string) {
-    this.grblService.setStatus(command).subscribe(
-      (result) => {
-        this.messageService.add({ severity: 'success', summary: 'Command', detail: `${command}` });
-      },
-      (error) => {
-        this.messageService.add({ severity: 'error', summary: 'Command', detail: `${command}` });
-      }
-    );
+    this.storeService.dispatchSetStatus(command);
   }
 }

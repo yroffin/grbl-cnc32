@@ -50,7 +50,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
     if (event.key === 'Shift') {
-      console.log('down');
       this.shiftIsDown = true;
     }
   }
@@ -58,7 +57,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   @HostListener('window:keyup', ['$event'])
   handleKeyUp(event: KeyboardEvent) {
     if (event.key === 'Shift') {
-      console.log('down');
       this.shiftIsDown = false;
     }
   }
