@@ -1,9 +1,14 @@
+<p-messages [(value)]="messages"></p-messages>
 <p-tabView>
+    <p-tabPanel header="3D">
+        <app-babylon></app-babylon>
+    </p-tabPanel>
     <p-tabPanel header="Plan X/Y">
         <ng-template pTemplate="content">
             <div class="p-grid">
                 <div class="p-col-1">
                     <p-button label="Refresh" (click)="refresh($event)"></p-button>
+                    <p-button label="Draw" (click)="refreshXY($event)"></p-button>
                 </div>
                 <div class="p-col-11">
                     <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
@@ -16,6 +21,7 @@
             <div class="p-grid">
                 <div class="p-col-1">
                     <p-button label="Refresh" (click)="refresh($event)"></p-button>
+                    <p-button label="Draw" (click)="refreshZ($event)"></p-button>
                 </div>
                 <div class="p-col-11">
                     <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
@@ -25,9 +31,11 @@
     </p-tabPanel>
     <p-tabPanel header="Gcode">
         <pre>{{commands | json}}</pre>
+        <p-terminal welcomeMessage="Bienvenue sur la console gcode" prompt="gcode $"></p-terminal>
     </p-tabPanel>
     <p-tabPanel header="Debug">
         <pre>{{status | json}}</pre>
+        <pre>{{stlInfo | json}}</pre>
     </p-tabPanel>
     <p-tabPanel header="Control">
         <div align="center" class="p-grid">

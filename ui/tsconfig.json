@@ -16,6 +16,9 @@
       "dom"
     ]
   },
+  "types": [
+    "babylonjs-loaders"
+  ],
   "files": [
     "paper.d.ts"
   ],

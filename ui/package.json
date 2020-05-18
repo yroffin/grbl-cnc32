@@ -32,7 +32,10 @@
     "primeicons": "2.0.0",
     "primeflex": "1.0.0",
     "lodash": "4.17.15",
-    "paper": "0.12.4"
+    "paper": "0.12.4",
+    "babylonjs": "4.1.0",
+    "babylonjs-loaders": "4.1.0",
+    "babylonjs-gui": "4.1.0"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",

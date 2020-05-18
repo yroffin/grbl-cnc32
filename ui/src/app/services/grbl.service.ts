@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { throwError, Observable } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
+import { catchError, retry, timeout } from 'rxjs/operators';
 import { Status } from '../models/grbl';
 
 export interface Config {
@@ -24,7 +24,8 @@ export class GrblService {
     return this.http.get<Status>(this.configUrl + 'v1/simulate')
       .pipe(
         retry(0), // retry a failed request up to 3 times
-        catchError(this.handleError) // then handle the error
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
       );
   }
 
@@ -32,7 +33,8 @@ export class GrblService {
     return this.http.put<string>(this.configUrl + 'v1/simulate', body, { responseType: 'text' as 'json' })
       .pipe(
         retry(0), // retry a failed request up to 3 times
-        catchError(this.handleError) // then handle the error
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
       );
   }
 
