@@ -1,22 +1,78 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GrblService } from '../../services/grbl.service';
-import { Status } from '../../models/grbl';
+import { Status, StlInfo } from '../../models/grbl';
 import * as paper from 'paper';
-import { MessageService } from 'primeng/api';
+import { MessageService, Message } from 'primeng/api';
 import { StoreService } from '../../store/store.service';
+import { TerminalService } from 'primeng/terminal';
+import { Subscription } from 'rxjs';
+import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-console',
   templateUrl: './console.component.html',
   styleUrls: ['./console.component.css'],
   providers: [
-    MessageService
+    MessageService,
+    TerminalService
   ]
 })
-export class ConsoleComponent implements OnInit {
+export class ConsoleComponent implements OnInit, OnDestroy {
 
-  constructor(private storeService: StoreService, private grblService: GrblService, private messageService: MessageService) {
-    storeService.getStatus().subscribe(
+  subscriptions: Subscription[] = [];
+
+  status: Status;
+  commands: string[];
+  stlInfo: StlInfo;
+  messages: Message[];
+
+  step = 1;
+  toolsXY: paper.Path.Circle;
+  toolsZ: paper.Path.Rectangle;
+
+  planXY: paper.Path.Rectangle;
+  planZ: paper.Path.Rectangle;
+
+  xy: paper.Project;
+  z: paper.Project;
+
+  constructor(
+    private terminalService: TerminalService,
+    private storeService: StoreService,
+    private messageService: MessageService) {
+    // Error handling
+    this.subscriptions.push(storeService.getErrors().subscribe(
+      (error: any) => {
+        if (error.severity) {
+          this.messages = [error];
+        }
+      }
+    ));
+    // Handle stl info
+    this.subscriptions.push(storeService.getStlInfo().subscribe(
+      (info: StlInfo) => {
+        if (info.min) {
+          const maxX = Math.abs(info.max.x - info.min.x);
+          const maxY = Math.abs(info.max.y - info.min.y);
+          const maxZ = Math.abs(info.max.z - info.min.z);
+          this.stlInfo = {
+            min: {
+              x: 0,
+              y: 0,
+              z: 0
+            },
+            max: {
+              x: maxX,
+              y: maxZ,
+              z: maxY
+            }
+          };
+        }
+      }
+    ));
+    // Handle status
+    this.subscriptions.push(storeService.getStatus().subscribe(
       (status) => {
         if (status.working) {
           this.status = status;
@@ -32,19 +88,42 @@ export class ConsoleComponent implements OnInit {
           }
         }
       }
-    );
+    ));
+    // Emit command from terminal
+    this.subscriptions.push(this.terminalService.commandHandler.subscribe(command => {
+      this.command(command);
+    }));
   }
-
-  status: Status;
-  step = 1;
-  toolsXY: paper.Path.Circle;
-  toolsZ: paper.Path.Rectangle;
 
   ngOnInit(): void {
   }
 
+  ngOnDestroy() {
+    _.each(this.subscriptions, (subscription) => {
+      subscription.unsubscribe();
+    });
+  }
+
   refresh(event: any) {
-    this.storeService.dispatchSetStatus();
+    this.storeService.dispatchGetStatus();
+  }
+
+  refreshXY(event: any) {
+    this.planXY.segments = [
+      new paper.Segment(new paper.Point(0, 0)),
+      new paper.Segment(new paper.Point(this.stlInfo.max.x, 0)),
+      new paper.Segment(new paper.Point(this.stlInfo.max.x, this.stlInfo.max.y)),
+      new paper.Segment(new paper.Point(0, this.stlInfo.max.y))];
+    this.xy.view.update();
+  }
+
+  refreshZ(event: any) {
+    this.planZ.segments = [
+      new paper.Segment(new paper.Point(0, 0)),
+      new paper.Segment(new paper.Point(this.stlInfo.max.y, 0)),
+      new paper.Segment(new paper.Point(this.stlInfo.max.y, this.stlInfo.max.z)),
+      new paper.Segment(new paper.Point(0, this.stlInfo.max.z))];
+    this.z.view.update();
   }
 
   selectXY(event: any) {
@@ -53,9 +132,10 @@ export class ConsoleComponent implements OnInit {
 
   drawXY(project: paper.Project) {
     project.activate();
-    const rect = new paper.Path.Rectangle({
+    this.xy = project;
+    this.planXY = new paper.Path.Rectangle({
       from: new paper.Point(0, 0),
-      to: new paper.Size(245, 80),
+      to: new paper.Size(0, 0),
       strokeColor: 'black',
       strokeWidth: 1
     });
@@ -73,9 +153,10 @@ export class ConsoleComponent implements OnInit {
 
   drawZ(project: paper.Project) {
     project.activate();
-    const rect = new paper.Path.Rectangle({
+    this.z = project;
+    this.planZ = new paper.Path.Rectangle({
       from: new paper.Point(0, 0),
-      to: new paper.Size(80, 30),
+      to: new paper.Size(0, 0),
       strokeColor: 'black',
       strokeWidth: 1
     });
@@ -146,13 +227,6 @@ export class ConsoleComponent implements OnInit {
   }
 
   private command(command: string) {
-    this.grblService.setStatus(command).subscribe(
-      (result) => {
-        this.messageService.add({ severity: 'success', summary: 'Command', detail: `${command}` });
-      },
-      (error) => {
-        this.messageService.add({ severity: 'error', summary: 'Command', detail: `${command}` });
-      }
-    );
+    this.storeService.dispatchAddCommand(command);
   }
 }

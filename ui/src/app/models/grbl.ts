@@ -3,6 +3,11 @@ export class Status {
     working?: Dump;
 }
 
+export class StlInfo {
+    min?: Vector;
+    max?: Vector;
+}
+
 export class Dump {
     mpos: Vector;
     wpos: Vector;

@@ -19,7 +19,6 @@ export enum PaperAction {
 export class PaperjsComponent implements OnInit, AfterViewInit {
 
   @ViewChild('paperView') paperCanvas: ElementRef;
-  @ViewChild('paperCube') paperCube: ElementRef;
 
   store: any;
   container: HTMLElement;
@@ -51,7 +50,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
     if (event.key === 'Shift') {
-      console.log('down');
       this.shiftIsDown = true;
     }
   }
@@ -59,7 +57,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   @HostListener('window:keyup', ['$event'])
   handleKeyUp(event: KeyboardEvent) {
     if (event.key === 'Shift') {
-      console.log('down');
       this.shiftIsDown = false;
     }
   }
@@ -72,7 +69,6 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     const height = this.paperCanvas.nativeElement.offsetHeight;
     const width = this.paperCanvas.nativeElement.offsetWidth;
-    this.messageService.add({ severity: 'success', summary: 'Native', detail: `To ${width},${height}` });
 
     this.project = new paper.Project(this.paperCanvas.nativeElement);
     this.project.view.center = new paper.Point(width / 8, height / 8);
@@ -83,8 +79,13 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
     };
 
     this.drawGrid(width, height, 10, 1);
-    this.setZoom(3);
     this.ready.emit(this.project);
+    // Finalize view init in async
+    setTimeout(
+      () => {
+        this.setZoom(3);
+        this.messageService.add({ severity: 'success', summary: 'Native', detail: `Canvas size ${width},${height}` });
+      }, 1000);
   }
 
   onZoomChange(event: any) {

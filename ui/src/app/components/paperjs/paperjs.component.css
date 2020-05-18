@@ -5,7 +5,7 @@
 
 .editor-2d-container .hud {
     position: relative;
-    top: 48px;
+    top: 0px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -14,8 +14,8 @@
     align-items: flex-end;
 }
 
-.editor-2d-container .hud .view-cube {
-    left: 0px;
+.editor-2d-container .hud .view-pos-x {
+    right: 0px;
     top: 0px;
     display: block;
     position: absolute;
@@ -25,20 +25,9 @@
     transition: opacity 0.2s ease;
 }
 
-.editor-2d-container .hud .view-pos-x {
-    left: 20px;
-    top: 120px;
-    display: block;
-    position: absolute;
-    outline: none;
-    opacity: 1 !important;
-    margin: 0;
-    transition: opacity 0.2s ease;
-}
-
 .editor-2d-container .hud .view-pos-y{
-    left: 20px;
-    top: 140px;
+    right: 0px;
+    top: 20px;
     display: block;
     position: absolute;
     outline: none;
