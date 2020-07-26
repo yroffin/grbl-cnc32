@@ -73,6 +73,18 @@ const char *StorageCtrl::path(int index)
     }
 }
 
+boolean StorageCtrl::isFile(int index)
+{
+    switch (this->state)
+    {
+    case FILES:
+        return !this->fileStore.get(index)->isDirectory();
+        break;
+    case COMMANDS:
+        return false;
+    }
+}
+
 int StorageCtrl::open(const char *filename)
 {
     switch (this->state)

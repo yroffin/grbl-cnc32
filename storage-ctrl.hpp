@@ -82,6 +82,7 @@ public:
   selector commands();
   boolean isFiles();
   boolean isCommands();
+  boolean isFile(int index);
 
   int scan();
   const char *path(int index);
