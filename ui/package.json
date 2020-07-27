@@ -35,7 +35,8 @@
     "paper": "0.12.4",
     "babylonjs": "4.1.0",
     "babylonjs-loaders": "4.1.0",
-    "babylonjs-gui": "4.1.0"
+    "babylonjs-gui": "4.1.0",
+    "@angular/material": "10.1.1"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",

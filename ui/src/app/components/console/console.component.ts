@@ -40,11 +40,29 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   xy: paper.Project;
   z: paper.Project;
+  responsiveOptions: any;
 
   constructor(
     private terminalService: TerminalService,
     private storeService: StoreService,
     private messageService: MessageService) {
+    this.responsiveOptions = [
+      {
+        breakpoint: '1024px',
+        numVisible: 3,
+        numScroll: 3
+      },
+      {
+        breakpoint: '768px',
+        numVisible: 2,
+        numScroll: 2
+      },
+      {
+        breakpoint: '560px',
+        numVisible: 1,
+        numScroll: 1
+      }
+    ];
     // Error handling
     this.subscriptions.push(storeService.getMessages().subscribe(
       (error: any) => {

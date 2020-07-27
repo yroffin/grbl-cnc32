@@ -27,6 +27,8 @@ import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
 import { MessageService } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { CarouselModule } from 'primeng/carousel';
 
 @NgModule({
   declarations: [
@@ -58,7 +60,9 @@ import { MessageService } from 'primeng/api';
     MessageModule,
     MessagesModule,
     TableModule,
-    ToastModule
+    ToastModule,
+    TooltipModule,
+    CarouselModule
   ],
   providers: [MessageService],
   bootstrap: [AppComponent]

@@ -25,8 +25,9 @@
                             <span class="ui-column-title">Nom</span>
                             {{rowData?.name}}
                         </td>
-                        <td (click)="handleSelect(rowData)">
-                            Print
+                        <td>
+                            <button pButton type="button" class="ui-button-secondary" icon="pi pi-print"
+                                (click)="handleSelect(rowData)"></button>
                         </td>
                     </tr>
                 </ng-template>
@@ -72,68 +73,45 @@
     </p-tabPanel>
     <p-tabPanel header="Control">
         <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="Ok" (click)="setOk($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setOk($event)">
+                <i class="pi pi-thumbs-up" pTooltip="Envoyer ok" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2">
-                <p-button label="Unlock" (click)="setUnlock($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setUnlock($event)">
+                <i class="pi pi-unlock" pTooltip="Unlock" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2">
-                <p-button label="Reset" (click)="setReset($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setReset($event)">
+                <i class="pi pi-refresh" pTooltip="Refresh" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2">
-                <p-button label="Pause" (click)="setPause($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setPause($event)">
+                <i class="pi pi-pause" pTooltip="Pause" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2">
-                <p-button label="Resume" (click)="setResume($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setResume($event)">
+                <i class="pi pi-sign-in" pTooltip="Resume" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2">
-                <p-button label="Status" (click)="setStatus($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="SetX" (click)="setX($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetY" (click)="setY($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetZ" (click)="setZ($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetAll" (click)="setAll($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetHome" (click)="setDefinedHome($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Home" (click)="setHome($event)"></p-button>
-            </div>
-            <div class="p-col-2">
+            <div class="p-col-2 paddle" (click)="setStatus($event)">
+                <i class="pi pi-question-circle" pTooltip="Status" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2">
             </div>
         </div>
         <div align="center" class="p-grid">
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Back" (click)="setBack($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setX($event)">x
+                <i class="pi pi-cog" pTooltip="Set x" tooltipPosition="bottom"></i>
             </div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Up" (click)="setUp($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setY($event)">y
+                <i class="pi pi-cog" pTooltip="Set y" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setZ($event)">z
+                <i class="pi pi-cog" pTooltip="Set y" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setAll($event)">all
+                <i class="pi pi-cog" pTooltip="Set all" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setHome($event)">home
+                <i class="pi pi-cog" pTooltip="Home" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setDefinedHome($event)">defined
+                <i class="pi pi-cog" pTooltip="Defined home" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2">
             </div>
@@ -141,14 +119,37 @@
             </div>
         </div>
         <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="Left" (click)="setLeft($event)"></p-button>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+        </div>
+        <div align="center" class="p-grid">
+            <div class="p-col-2"></div>
+            <div class="p-col-2 paddle" (click)="setBack($event)">
+                <i class="pi pi-arrow-up" pTooltip="Reculer" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2"></div>
+            <div class="p-col-2 paddle" (click)="setUp($event)">
+                <i class="pi pi-arrow-up" pTooltip="Monter" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2">
-                <p-button label="Step" (click)="setStep($event)"></p-button>
             </div>
             <div class="p-col-2">
-                <p-button label="Right" (click)="setRight($event)"></p-button>
+            </div>
+        </div>
+        <div align="center" class="p-grid">
+            <div class="p-col-2 paddle" (click)="setLeft($event)">
+                <i class="pi pi-arrow-left" pTooltip="Déplacement à gauche" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setStep($event)">
+                <i class="pi pi-circle-off" pTooltip="Modification du step" tooltipPosition="bottom"></i>
+            </div>
+            <div class="p-col-2 paddle" (click)="setRight($event)">
+                <i class="pi pi-arrow-right" pTooltip="Déplacement à droite" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2"></div>
             <div class="p-col-2"></div>
@@ -159,13 +160,13 @@
         </div>
         <div align="center" class="p-grid">
             <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Front" (click)="setFront($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setFront($event)">
+                <i class="pi pi-arrow-down" pTooltip="Avancer" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2"></div>
             <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Down" (click)="setDown($event)"></p-button>
+            <div class="p-col-2 paddle" (click)="setDown($event)">
+                <i class="pi pi-arrow-down" pTooltip="Baisser" tooltipPosition="bottom"></i>
             </div>
             <div class="p-col-2">
             </div>
