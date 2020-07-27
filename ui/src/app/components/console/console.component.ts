@@ -24,8 +24,12 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   status: Status;
   commands: string[];
+  files: string[];
+  cols = [{
+    'header': 'Nom',
+    'field': 'name'
+  }];
   stlInfo: StlInfo;
-  messages: Message[];
 
   step = 1;
   toolsXY: paper.Path.Circle;
@@ -42,11 +46,9 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     private storeService: StoreService,
     private messageService: MessageService) {
     // Error handling
-    this.subscriptions.push(storeService.getErrors().subscribe(
+    this.subscriptions.push(storeService.getMessages().subscribe(
       (error: any) => {
-        if (error.severity) {
-          this.messages = [error];
-        }
+        this.messageService.add(error);
       }
     ));
     // Handle stl info
@@ -89,6 +91,20 @@ export class ConsoleComponent implements OnInit, OnDestroy {
         }
       }
     ));
+    // Handle files
+    this.subscriptions.push(storeService.getFiles().subscribe(
+      (files) => {
+        console.log('file', files);
+        this.files = _.map(_.filter(files, (file: string) => {
+          return file.endsWith('gcode')
+        }), (file: string) => {
+          return {
+            name: file
+          }
+        });
+        console.log(this.files);
+      }
+    ));
     // Emit command from terminal
     this.subscriptions.push(this.terminalService.commandHandler.subscribe(command => {
       this.command(command);
@@ -96,6 +112,7 @@ export class ConsoleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.storeService.dispatchBrowseFiles();
   }
 
   ngOnDestroy() {
@@ -168,6 +185,9 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     });
   }
 
+  handleSelect(file: any) {
+    this.storeService.dispatchPrintFile(file);
+  }
   setHome(event: any) {
     this.command('$H');
   }
