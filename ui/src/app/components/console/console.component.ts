@@ -96,6 +96,7 @@ export class ConsoleComponent implements OnInit, OnDestroy {
       (files) => {
         console.log('file', files);
         this.files = _.map(_.filter(files, (file: string) => {
+          // filter on gcode files
           return file.endsWith('gcode')
         }), (file: string) => {
           return {
