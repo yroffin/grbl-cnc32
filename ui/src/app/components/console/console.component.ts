@@ -207,40 +207,6 @@ export class ConsoleComponent implements OnInit, OnDestroy {
   handleSelect(file: any) {
     this.storeService.dispatchPrintFile(file);
   }
-  setHome(event: any) {
-    this.command('$H');
-  }
-  setUnlock(event: any) {
-    this.command('$X');
-  }
-  setReset(event: any) {
-    this.command(String.fromCharCode(0x18, 0x10));
-  }
-  setPause(event: any) {
-    this.command('!');
-  }
-  setResume(event: any) {
-    this.command('~');
-  }
-  setStatus(event: any) {
-    this.command('?');
-  }
-
-  setX(event: any) {
-    this.command('G10 L20 P1 X0');
-  }
-  setY(event: any) {
-    this.command('G10 L20 P1 Y0');
-  }
-  setZ(event: any) {
-    this.command('G10 L20 P1 Z0');
-  }
-  setAll(event: any) {
-    this.command('G10 L20 P1 X0 Y0 Z0');
-  }
-  setDefinedHome(event: any) {
-    this.command('G28.1');
-  }
   setRight(event: any) {
     this.command(`$J=G91 G21 X${this.step.toFixed(3)} F100`);
   }
