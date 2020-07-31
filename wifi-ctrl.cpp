@@ -187,6 +187,65 @@ void Print()
     server.send(200, "application/json", buffer);
 }
 
+void Write()
+{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[2048];
+    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<1024> output;
+    switch (server.method())
+    {
+    case HTTP_POST:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                int mode = 0;
+                const char *file;
+                strcpy(buffer, server.arg(i).c_str());
+                deserializeJson(doc, buffer);
+                if (doc.containsKey("op"))
+                {
+                    const char *op = doc["op"];
+                    // read operation (append)
+                    if (strcmp(op, "append") == 0)
+                    {
+                        mode = 1;
+                    }
+                    if (strcmp(op, "init") == 0)
+                    {
+                        mode = 0;
+                    }
+                }
+                if (doc.containsKey("file"))
+                {
+                    file = doc["file"];
+                }
+                if (doc.containsKey("data"))
+                {
+                    const char *data = doc["data"];
+                    switch (mode)
+                    {
+                    case 0:
+                        output["written"] = StorageCtrl::instance()->touch(file, data);
+                        break;
+                    case 1:
+                        output["written"] = StorageCtrl::instance()->append(file, data);
+                        break;
+                    }
+                }
+            }
+        }
+        serializeJson(output, buffer, sizeof(buffer));
+        break;
+    }
+    // send body
+    server.setContentLength(strlen(buffer));
+    server.send(200, "application/json", buffer);
+}
+
 void Files()
 {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -290,6 +349,7 @@ void WifiCtrl::loop()
         server.on("/api/v1/reboot", Reboot);
         server.on("/api/v1/print", Print);
         server.on("/api/v1/files", Files);
+        server.on("/api/v1/file", Write);
         server.mount("/ui", "/static", "");
         server.begin();
         TFT_Screen::instance()->outputConsole(I18nCtrl::instance()->translate(I18N_STD, "SRV", 80));

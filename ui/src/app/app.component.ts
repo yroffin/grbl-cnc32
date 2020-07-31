@@ -1,6 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { MenuItem, MessageService } from 'primeng/api';
 import { StoreService } from './store/store.service';
+import { Editor } from 'primeng/editor';
+import * as _ from 'lodash';
+import { GrblService } from './services/grbl.service';
+import { Sema } from 'async-sema';
 
 @Component({
   selector: 'app-root',
@@ -10,11 +14,19 @@ import { StoreService } from './store/store.service';
     MessageService
   ]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   title = 'ui';
   items: MenuItem[];
+  display: boolean = false;
+  text: string;
+  public progress = 0;
+  public filename = "test.gcode";
+
+  public quill: any;
+  @ViewChild(Editor) editorComponent: Editor;
 
   constructor(
+    private grblService: GrblService,
     private storeService: StoreService,
     private messageService: MessageService
   ) {
@@ -22,6 +34,17 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.items = [
+      {
+        label: 'Files',
+        items: [{
+          label: 'Write',
+          icon: 'pi pi-fw pi-file-o',
+          command: () => {
+            this.display = true;
+          }
+        }
+        ]
+      },
       {
         label: 'System',
         items: [{
@@ -116,6 +139,40 @@ export class AppComponent implements OnInit {
         ]
       }
     ];
+  }
+
+  ngAfterViewInit() {
+    this.quill = this.editorComponent.quill;
+  }
+
+  write() {
+    const s = new Sema(
+      4, // Allow 4 concurrent async calls
+      {
+        capacity: 100 // Prealloc space for 100 tokens
+      }
+    );
+
+    let offset = 0;
+    let data = this.quill.getText();
+    let maxLine = data.split('\n').length;
+    let maxData = data.length;
+    let curData = 0;
+    let promises = _.map(data.split('\n'), (line: string) => {
+      return new Promise(async (resolve) => {
+        offset++;
+        await s.acquire()
+        this.grblService.writeFile('/' + this.filename, line, offset === 0 ? true : false).toPromise().then((result: any) => {
+          curData += result.written + 2;
+          this.progress = Math.trunc(curData * 100 / maxData);
+          s.release();
+          resolve(result.written + 2);
+        });
+      });
+    });
+    Promise.all(promises).then((values) => {
+      this.progress = 100;
+    });
   }
 
   private command(command: string) {

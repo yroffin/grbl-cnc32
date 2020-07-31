@@ -84,6 +84,9 @@ public:
   boolean isCommands();
   boolean isFile(int index);
 
+  int touch(const char *filename, const char *data);
+  int append(const char *filename, const char *data);
+
   int scan();
   const char *path(int index);
   int open(const char *filename);

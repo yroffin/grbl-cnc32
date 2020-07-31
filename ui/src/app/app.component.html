@@ -1,3 +1,17 @@
 <p-toast></p-toast>
 <p-menubar [model]="items"></p-menubar>
 <router-outlet></router-outlet>
+<p-dialog header="Godfather I" [(visible)]="display" [modal]="true" [style]="{width: '100vw'}"
+    [contentStyle]="{minHeight: '450px'}" [baseZIndex]="10000" [draggable]="false" [resizable]="false">
+    <span class="ui-float-label">
+        <input [(ngModel)]="filename" id="float-input" type="text" size="30" pInputText>
+        <label for="float-input">Username</label>
+    </span>
+    <p-progressBar [value]="progress" [showValue]="true"></p-progressBar>
+    <p-editor [(ngModel)]="text"></p-editor>
+    <p-footer>
+        <button type="button" pButton icon="pi pi-check" (click)="write()" label="Write"></button>
+        <button type="button" pButton icon="pi pi-times" (click)="display=false" label="Close"
+            class="ui-button-secondary"></button>
+    </p-footer>
+</p-dialog>

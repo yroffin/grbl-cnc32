@@ -2,6 +2,7 @@
 #include "storage-ctrl.hpp"
 #include "json-config.hpp"
 #include "utils.hpp"
+#include "i18n-ctrl.hpp"
 
 // Storage controller
 StorageCtrl *__instance_storage = 0;
@@ -23,6 +24,31 @@ StorageCtrl::StorageCtrl()
 void StorageCtrl::init()
 {
     this->state = FILES;
+}
+
+int _write(const char *filename, const char *data, bool remove)
+{
+    log_i("check %s %d", filename, SD.exists(filename));
+    if (remove && SD.exists(filename))
+    {
+        log_i("remove %s", filename);
+        SD.remove(filename);
+    }
+    File file = SD.open(filename, FILE_APPEND);
+    log_i("open %s %08x", filename, file);
+    int count = file.println(data);
+    file.close();
+    return count;
+}
+
+int StorageCtrl::touch(const char *filename, const char *data)
+{
+    return _write(filename, data, true);
+}
+
+int StorageCtrl::append(const char *filename, const char *data)
+{
+    return _write(filename, data, false);
 }
 
 selector StorageCtrl::files()

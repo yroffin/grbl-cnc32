@@ -31,6 +31,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CarouselModule } from 'primeng/carousel';
 import { MenubarModule } from 'primeng/menubar';
 import { AccordionModule } from 'primeng/accordion';
+import { DialogModule } from 'primeng/dialog';
+import { EditorModule } from 'primeng/editor';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 @NgModule({
   declarations: [
@@ -66,7 +69,10 @@ import { AccordionModule } from 'primeng/accordion';
     TooltipModule,
     CarouselModule,
     MenubarModule,
-    AccordionModule
+    AccordionModule,
+    DialogModule,
+    EditorModule,
+    ProgressBarModule
   ],
   providers: [MessageService],
   bootstrap: [AppComponent]

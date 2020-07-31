@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { GrblService } from '../../services/grbl.service';
 import { Status, StlInfo } from '../../models/grbl';
 import * as paper from 'paper';
 import { MessageService, Message } from 'primeng/api';
