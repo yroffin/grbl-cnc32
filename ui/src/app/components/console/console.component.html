@@ -42,106 +42,100 @@
                     </p-table>
                 </ng-template>
             </p-accordionTab>
+            <p-accordionTab header="Navigation">
+                <div class="p-grid">
+                    <div class="p-col-6">
+                        <div class="p-grid">
+                            <div class="p-col-12">
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-up" (click)="setBack($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-left" (click)="setLeft($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-circle-off" (click)="setStep($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-right" (click)="setRight($event)">
+                                        </p-button>
+                                    </div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-down" (click)="setFront($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-replay" (click)="refresh($event)">
+                                </p-button>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-chart-line" (click)="refreshXY($event)">
+                                </p-button>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-sort-amount-up" (click)="refreshZ($event)">
+                                </p-button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-col-3">
+                        <div class="p-grid">
+                            <div class="p-col-12">
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-up" (click)="setUp($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-circle-off" (click)="setStep($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-down" (click)="setDown($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
         </p-accordion>
     </div>
     <div class="p-col-9">
         <p-tabView>
             <p-tabPanel header="Plan X/Y">
                 <ng-template pTemplate="content">
-                    <div class="p-grid">
-                        <div class="p-col-3">
-                            <div class="p-grid">
-                                <div class="p-col-6">
-                                    <p-button icon="pi pi-replay" (click)="refresh($event)">
-                                    </p-button>
-                                </div>
-                                <div class="p-col-6">
-                                    <p-button icon="pi pi-refresh" (click)="refreshXY($event)">
-                                    </p-button>
-                                </div>
-                                <div class="p-col-12">
-                                    <div class="p-grid">
-                                        <div class="p-col-3"></div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-up" (click)="setBack($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3"></div>
-                                    </div>
-                                    <div class="p-grid">
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-left" (click)="setLeft($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-circle-off" (click)="setStep($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-right" (click)="setRight($event)">
-                                            </p-button>
-                                        </div>
-                                    </div>
-                                    <div class="p-grid">
-                                        <div class="p-col-3"></div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-down" (click)="setFront($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-col-9">
-                            <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
-                        </div>
-                    </div>
+                    <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
                 </ng-template>
             </p-tabPanel>
             <p-tabPanel header="Plan Z">
                 <ng-template pTemplate="content">
-                    <div class="p-grid">
-                        <div class="p-col-3">
-                            <div class="p-grid">
-                                <div class="p-col-6">
-                                    <p-button icon="pi pi-replay" (click)="refresh($event)"></p-button>
-                                </div>
-                                <div class="p-col-6">
-                                    <p-button icon="pi pi-refresh" (click)="refreshZ($event)"></p-button>
-                                </div>
-                                <div class="p-col-12">
-                                    <div class="p-grid">
-                                        <div class="p-col-3"></div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-up" (click)="setUp($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3"></div>
-                                    </div>
-                                    <div class="p-grid">
-                                        <div class="p-col-3"></div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-circle-off" (click)="setStep($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3"></div>
-                                    </div>
-                                    <div class="p-grid">
-                                        <div class="p-col-3"></div>
-                                        <div class="p-col-3">
-                                            <p-button icon="pi pi-arrow-down" (click)="setDown($event)">
-                                            </p-button>
-                                        </div>
-                                        <div class="p-col-3"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-col-9">
-                            <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
-                        </div>
-                    </div>
+                    <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
                 </ng-template>
             </p-tabPanel>
             <p-tabPanel header="Gcode">

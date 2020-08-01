@@ -48,6 +48,16 @@ export class AppComponent implements OnInit, AfterViewInit {
       {
         label: 'System',
         items: [{
+          label: 'Reboot',
+          icon: 'pi pi-fw pi-power-off',
+          command: () => {
+            this.grblService.reboot().toPromise().then(() => {
+            }).catch(err => {
+              this.messageService.add({ severity: 'info', summary: 'Command', detail: 'reboot' });
+            });
+          }
+        },
+        {
           label: 'Envoyer Ok',
           icon: 'pi pi-fw pi-thumbs-up',
           command: () => {

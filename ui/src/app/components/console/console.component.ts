@@ -111,7 +111,6 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     // Handle files
     this.subscriptions.push(storeService.getFiles().subscribe(
       (files) => {
-        console.log('file', files);
         this.files = _.map(_.filter(files, (file: string) => {
           // filter on gcode files
           return file.endsWith('gcode')
@@ -120,7 +119,6 @@ export class ConsoleComponent implements OnInit, OnDestroy {
             name: file
           }
         });
-        console.log(this.files);
       }
     ));
     // Emit command from terminal

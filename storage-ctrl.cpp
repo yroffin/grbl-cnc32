@@ -28,14 +28,11 @@ void StorageCtrl::init()
 
 int _write(const char *filename, const char *data, bool remove)
 {
-    log_i("check %s %d", filename, SD.exists(filename));
     if (remove && SD.exists(filename))
     {
-        log_i("remove %s", filename);
         SD.remove(filename);
     }
     File file = SD.open(filename, FILE_APPEND);
-    log_i("open %s %08x", filename, file);
     int count = file.println(data);
     file.close();
     return count;

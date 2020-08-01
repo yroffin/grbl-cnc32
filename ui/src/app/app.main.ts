@@ -34,6 +34,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { DialogModule } from 'primeng/dialog';
 import { EditorModule } from 'primeng/editor';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { FileUploadModule } from 'primeng/fileupload';
 
 @NgModule({
   declarations: [
@@ -72,7 +73,8 @@ import { ProgressBarModule } from 'primeng/progressbar';
     AccordionModule,
     DialogModule,
     EditorModule,
-    ProgressBarModule
+    ProgressBarModule,
+    FileUploadModule
   ],
   providers: [MessageService],
   bootstrap: [AppComponent]

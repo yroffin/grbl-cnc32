@@ -29,6 +29,15 @@ export class GrblService {
       );
   }
 
+  reboot(): Observable<any> {
+    return this.http.get<any>(this.configUrl + 'v1/reboot')
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
   browseFile(): Observable<string[]> {
     return this.http.get<string[]>(this.configUrl + 'v1/files')
       .pipe(
