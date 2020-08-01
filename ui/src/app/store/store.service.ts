@@ -9,6 +9,7 @@ import { Status, StlInfo, Vector } from '../models/grbl';
 import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
 import * as _ from 'lodash';
 import { Message } from 'primeng/api/message';
+import { MessageService } from 'primeng/api';
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +25,14 @@ export class StoreService {
             switch (action.type) {
                 case AllActionType.getStatusOk:
                     return action.payload;
+                default:
+                    return state;
+            }
+        },
+        files: (state: string[] = [], action: AllAction): string[] => {
+            switch (action.type) {
+                case AllActionType.browseFileOk:
+                    return _.union(state, action.payload);
                 default:
                     return state;
             }
@@ -44,12 +53,18 @@ export class StoreService {
                     return state;
             }
         },
-        errors: (state: Message = {}, action: AllAction): Message => {
+        messages: (state: Message = {}, action: AllAction): Message => {
             switch (action.type) {
                 case AllActionType.getStatusKo:
                     return action.payload;
                 case AllActionType.addCommandKo:
                     return action.payload;
+                case AllActionType.printFileKo:
+                    return action.payload;
+                case AllActionType.printFileOk:
+                    return {
+                        severity: 'success', summary: 'Printing ok', detail: JSON.stringify(action.payload)
+                    };
                 default:
                     return state;
             }
@@ -70,6 +85,13 @@ export class StoreService {
         });
     }
 
+    dispatchPrintFile(body: string) {
+        this.store.dispatch({
+            type: AllActionType.printFile,
+            payload: body
+        });
+    }
+
     dispatchStlInfo(min: Vector, max: Vector) {
         this.store.dispatch({
             type: AllActionType.stlInfo,
@@ -80,8 +102,18 @@ export class StoreService {
         });
     }
 
+    dispatchBrowseFiles() {
+        this.store.dispatch({
+            type: AllActionType.browseFile
+        });
+    }
+
     getStatus() {
         return this.store.select(s => s.status);
+    }
+
+    getFiles() {
+        return this.store.select(s => s.files);
     }
 
     getCommands() {
@@ -92,8 +124,8 @@ export class StoreService {
         return this.store.select(s => s.stlInfo);
     }
 
-    getErrors() {
-        return this.store.select(s => s.errors);
+    getMessages() {
+        return this.store.select(s => s.messages);
     }
 }
 
@@ -101,8 +133,10 @@ export class StoreService {
 export interface IAppState {
     status: Status;
     commands: string[];
+    files: string[];
     stlInfo: StlInfo;
-    errors: any[];
+    messages: any[];
+    infos: any[];
 }
 
 // anum of all action
@@ -110,9 +144,15 @@ export enum AllActionType {
     getStatus = 'getStatus',
     getStatusOk = 'getStatusOk',
     getStatusKo = 'getStatusKo',
+    browseFile = 'browseFile',
+    browseFileOk = 'browseFileOk',
+    browseFileKo = 'browseFileKo',
     addCommand = 'addCommand',
     addCommandOk = 'addCommandOk',
     addCommandKo = 'addCommandKo',
+    printFile = 'printFile',
+    printFileOk = 'printFileOk',
+    printFileKo = 'printFileKo',
     stlInfo = 'stlInfo',
     stlInfoOk = 'stlInfoOk'
 }
@@ -163,6 +203,48 @@ export class ActionListenerEffects {
                 catchError((error) => {
                     return of({
                         type: AllActionType.addCommandKo,
+                        payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
+                    });
+                })
+            )
+        )
+    );
+
+    @Effect()
+    browseFile$: Observable<AllAction> = this.actions$.pipe(
+        ofType<AllAction>(AllActionType.browseFile),
+        switchMap((action) =>
+            this.grblService.browseFile().pipe(
+                switchMap((payload: string[]) => {
+                    return of({
+                        type: AllActionType.browseFileOk,
+                        payload
+                    });
+                }),
+                catchError((error) => {
+                    return of({
+                        type: AllActionType.browseFileKo,
+                        payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
+                    });
+                })
+            )
+        )
+    );
+
+    @Effect()
+    printFile$: Observable<AllAction> = this.actions$.pipe(
+        ofType<AllAction>(AllActionType.printFile),
+        switchMap((action) =>
+            this.grblService.printFile(action.payload.name).pipe(
+                switchMap((payload: any) => {
+                    return of({
+                        type: AllActionType.printFileOk,
+                        payload
+                    });
+                }),
+                catchError((error) => {
+                    return of({
+                        type: AllActionType.printFileKo,
                         payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
                     });
                 })

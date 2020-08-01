@@ -1,144 +1,150 @@
-<p-messages [(value)]="messages"></p-messages>
-<p-tabView>
-    <p-tabPanel header="3D">
-        <app-babylon></app-babylon>
-    </p-tabPanel>
-    <p-tabPanel header="Plan X/Y">
-        <ng-template pTemplate="content">
-            <div class="p-grid">
-                <div class="p-col-1">
-                    <p-button label="Refresh" (click)="refresh($event)"></p-button>
-                    <p-button label="Draw" (click)="refreshXY($event)"></p-button>
-                </div>
-                <div class="p-col-11">
-                    <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
-                </div>
-            </div>
-        </ng-template>
-    </p-tabPanel>
-    <p-tabPanel header="Plan Z">
-        <ng-template pTemplate="content">
-            <div class="p-grid">
-                <div class="p-col-1">
-                    <p-button label="Refresh" (click)="refresh($event)"></p-button>
-                    <p-button label="Draw" (click)="refreshZ($event)"></p-button>
-                </div>
-                <div class="p-col-11">
-                    <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
-                </div>
-            </div>
-        </ng-template>
-    </p-tabPanel>
-    <p-tabPanel header="Gcode">
-        <pre>{{commands | json}}</pre>
-        <p-terminal welcomeMessage="Bienvenue sur la console gcode" prompt="gcode $"></p-terminal>
-    </p-tabPanel>
-    <p-tabPanel header="Debug">
-        <pre>{{status | json}}</pre>
-        <pre>{{stlInfo | json}}</pre>
-    </p-tabPanel>
-    <p-tabPanel header="Control">
-        <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="Ok" (click)="setOk($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Unlock" (click)="setUnlock($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Reset" (click)="setReset($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Pause" (click)="setPause($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Resume" (click)="setResume($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Status" (click)="setStatus($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="SetX" (click)="setX($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetY" (click)="setY($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetZ" (click)="setZ($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetAll" (click)="setAll($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="SetHome" (click)="setDefinedHome($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Home" (click)="setHome($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Back" (click)="setBack($event)"></p-button>
-            </div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Up" (click)="setUp($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2">
-                <p-button label="Left" (click)="setLeft($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Step" (click)="setStep($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-                <p-button label="Right" (click)="setRight($event)"></p-button>
-            </div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-        <div align="center" class="p-grid">
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Front" (click)="setFront($event)"></p-button>
-            </div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2"></div>
-            <div class="p-col-2">
-                <p-button label="Down" (click)="setDown($event)"></p-button>
-            </div>
-            <div class="p-col-2">
-            </div>
-            <div class="p-col-2">
-            </div>
-        </div>
-    </p-tabPanel>
-</p-tabView>
 <p-toast></p-toast>
+<div class="p-grid">
+    <div class="p-col-3">
+        <p-accordion>
+            <p-accordionTab header="Status">
+                <pre>{{status | json}}</pre>
+            </p-accordionTab>
+            <p-accordionTab header="Stl">
+                <pre>{{stlInfo | json}}</pre>
+            </p-accordionTab>
+            <p-accordionTab header="Fichier(s)">
+                <ng-template pTemplate="content">
+                    <p-table [columns]="cols" [value]="files" [responsive]="true">
+                        <ng-template pTemplate="caption">
+                            Liste des fichier(s)
+                        </ng-template>
+                        <ng-template pTemplate="header" let-columns>
+                            <tr>
+                                <th>
+                                    Nom
+                                </th>
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-rowData>
+                            <tr>
+                                <td>
+                                    <span class="ui-column-title">Nom</span>
+                                    {{rowData?.name}}
+                                </td>
+                                <td>
+                                    <button pButton type="button" class="ui-button-secondary" icon="pi pi-print"
+                                        (click)="handleSelect(rowData)"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            Il y a {{files?.length}} fichier(s)
+                        </ng-template>
+                    </p-table>
+                </ng-template>
+            </p-accordionTab>
+            <p-accordionTab header="Navigation">
+                <div class="p-grid">
+                    <div class="p-col-6">
+                        <div class="p-grid">
+                            <div class="p-col-12">
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-up" (click)="setBack($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-left" (click)="setLeft($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-circle-off" (click)="setStep($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-right" (click)="setRight($event)">
+                                        </p-button>
+                                    </div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-down" (click)="setFront($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-replay" (click)="refresh($event)">
+                                </p-button>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-chart-line" (click)="refreshXY($event)">
+                                </p-button>
+                            </div>
+                            <div class="p-col-3">
+                                <p-button icon="pi pi-sort-amount-up" (click)="refreshZ($event)">
+                                </p-button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-col-3">
+                        <div class="p-grid">
+                            <div class="p-col-12">
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-up" (click)="setUp($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-circle-off" (click)="setStep($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                                <div class="p-grid">
+                                    <div class="p-col-3"></div>
+                                    <div class="p-col-3">
+                                        <p-button icon="pi pi-arrow-down" (click)="setDown($event)">
+                                        </p-button>
+                                    </div>
+                                    <div class="p-col-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p-accordionTab>
+        </p-accordion>
+    </div>
+    <div class="p-col-9">
+        <p-tabView>
+            <p-tabPanel header="Plan X/Y">
+                <ng-template pTemplate="content">
+                    <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
+                </ng-template>
+            </p-tabPanel>
+            <p-tabPanel header="Plan Z">
+                <ng-template pTemplate="content">
+                    <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
+                </ng-template>
+            </p-tabPanel>
+            <p-tabPanel header="Gcode">
+                <pre>{{commands | json}}</pre>
+                <p-terminal welcomeMessage="Bienvenue sur la console gcode" prompt="gcode $"></p-terminal>
+            </p-tabPanel>
+            <p-tabPanel header="3D">
+                <app-babylon></app-babylon>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>

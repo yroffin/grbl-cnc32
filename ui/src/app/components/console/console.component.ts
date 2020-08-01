@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { GrblService } from '../../services/grbl.service';
 import { Status, StlInfo } from '../../models/grbl';
 import * as paper from 'paper';
 import { MessageService, Message } from 'primeng/api';
@@ -24,8 +23,12 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   status: Status;
   commands: string[];
+  files: string[];
+  cols = [{
+    'header': 'Nom',
+    'field': 'name'
+  }];
   stlInfo: StlInfo;
-  messages: Message[];
 
   step = 1;
   toolsXY: paper.Path.Circle;
@@ -36,17 +39,33 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   xy: paper.Project;
   z: paper.Project;
+  responsiveOptions: any;
 
   constructor(
     private terminalService: TerminalService,
     private storeService: StoreService,
     private messageService: MessageService) {
+    this.responsiveOptions = [
+      {
+        breakpoint: '1024px',
+        numVisible: 3,
+        numScroll: 3
+      },
+      {
+        breakpoint: '768px',
+        numVisible: 2,
+        numScroll: 2
+      },
+      {
+        breakpoint: '560px',
+        numVisible: 1,
+        numScroll: 1
+      }
+    ];
     // Error handling
-    this.subscriptions.push(storeService.getErrors().subscribe(
+    this.subscriptions.push(storeService.getMessages().subscribe(
       (error: any) => {
-        if (error.severity) {
-          this.messages = [error];
-        }
+        this.messageService.add(error);
       }
     ));
     // Handle stl info
@@ -89,6 +108,19 @@ export class ConsoleComponent implements OnInit, OnDestroy {
         }
       }
     ));
+    // Handle files
+    this.subscriptions.push(storeService.getFiles().subscribe(
+      (files) => {
+        this.files = _.map(_.filter(files, (file: string) => {
+          // filter on gcode files
+          return file.endsWith('gcode')
+        }), (file: string) => {
+          return {
+            name: file
+          }
+        });
+      }
+    ));
     // Emit command from terminal
     this.subscriptions.push(this.terminalService.commandHandler.subscribe(command => {
       this.command(command);
@@ -96,6 +128,7 @@ export class ConsoleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.storeService.dispatchBrowseFiles();
   }
 
   ngOnDestroy() {
@@ -168,39 +201,8 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     });
   }
 
-  setHome(event: any) {
-    this.command('$H');
-  }
-  setUnlock(event: any) {
-    this.command('$X');
-  }
-  setReset(event: any) {
-    this.command(String.fromCharCode(0x18, 0x10));
-  }
-  setPause(event: any) {
-    this.command('!');
-  }
-  setResume(event: any) {
-    this.command('~');
-  }
-  setStatus(event: any) {
-    this.command('?');
-  }
-
-  setX(event: any) {
-    this.command('G10 L20 P1 X0');
-  }
-  setY(event: any) {
-    this.command('G10 L20 P1 Y0');
-  }
-  setZ(event: any) {
-    this.command('G10 L20 P1 Z0');
-  }
-  setAll(event: any) {
-    this.command('G10 L20 P1 X0 Y0 Z0');
-  }
-  setDefinedHome(event: any) {
-    this.command('G28.1');
+  handleSelect(file: any) {
+    this.storeService.dispatchPrintFile(file);
   }
   setRight(event: any) {
     this.command(`$J=G91 G21 X${this.step.toFixed(3)} F100`);

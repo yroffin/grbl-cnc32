@@ -1,1 +1,32 @@
+<p-toast></p-toast>
+<p-menubar [model]="items"></p-menubar>
 <router-outlet></router-outlet>
+<p-dialog header="Export" [(visible)]="display" [modal]="true" [style]="{width: '100vw'}"
+    [contentStyle]="{minHeight: '450px'}" [baseZIndex]="10000" [draggable]="false" [resizable]="false">
+    <p-editor [(ngModel)]="text">
+        <p-header>
+        </p-header>
+    </p-editor>
+    <p-footer>
+        <div class="p-grid">
+            <div class="p-col-12">
+                <p-progressBar [value]="progress" [showValue]="true"></p-progressBar>
+            </div>
+        </div>
+        <div class="p-grid">
+            <div class="p-col-8">
+                <div class="ui-inputgroup">
+                    <span class="ui-inputgroup-addon"><i class="pi pi-file"></i></span>
+                    <input [(ngModel)]="filename" type="text" pInputText placeholder="test.gcode">
+                </div>
+            </div>
+            <div class="p-col-2">
+                <button type="button" pButton icon="pi pi-check" (click)="write()" label="Write"></button>
+            </div>
+            <div class="p-col-2">
+                <button type="button" pButton icon="pi pi-times" (click)="display=false" label="Close"
+                    class="ui-button-secondary"></button>
+            </div>
+        </div>
+    </p-footer>
+</p-dialog>

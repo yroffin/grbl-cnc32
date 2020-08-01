@@ -25,6 +25,16 @@ import { TerminalModule } from 'primeng/terminal';
 import { BabylonComponent } from './components/babylon/babylon.component';
 import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
+import { TableModule } from 'primeng/table';
+import { MessageService } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
+import { CarouselModule } from 'primeng/carousel';
+import { MenubarModule } from 'primeng/menubar';
+import { AccordionModule } from 'primeng/accordion';
+import { DialogModule } from 'primeng/dialog';
+import { EditorModule } from 'primeng/editor';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { FileUploadModule } from 'primeng/fileupload';
 
 @NgModule({
   declarations: [
@@ -54,9 +64,19 @@ import { MessageModule } from 'primeng/message';
     SliderModule,
     TerminalModule,
     MessageModule,
-    MessagesModule
+    MessagesModule,
+    TableModule,
+    ToastModule,
+    TooltipModule,
+    CarouselModule,
+    MenubarModule,
+    AccordionModule,
+    DialogModule,
+    EditorModule,
+    ProgressBarModule,
+    FileUploadModule
   ],
-  providers: [],
+  providers: [MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

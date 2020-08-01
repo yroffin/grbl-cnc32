@@ -1,9 +1,8 @@
 import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import {
-  Engine, Scene, FreeCamera, Vector3, HemisphericLight, Mesh,
-  ArcRotateCamera, AnimationPropertiesOverride, Color3, DirectionalLight, ShadowGenerator, SceneLoader, GizmoManager, AbstractMesh
+  Engine, Scene, Vector3, HemisphericLight, Mesh,
+  ArcRotateCamera, Color3, DirectionalLight, ShadowGenerator, SceneLoader, GizmoManager, AbstractMesh, VirtualJoysticksCamera
 } from 'babylonjs';
-import { Button, Control, AdvancedDynamicTexture, StackPanel } from 'babylonjs-gui';
 import 'babylonjs-loaders';
 import * as _ from 'lodash';
 import { StoreService } from '../../store/store.service';
@@ -18,6 +17,8 @@ export class BabylonComponent implements OnInit, AfterViewInit {
   @ViewChild('myCanvas') myCanvas: ElementRef;
 
   private engine: Engine;
+  private scene: Scene;
+  private camera: ArcRotateCamera;
 
   constructor(private storeService: StoreService) { }
 
@@ -28,15 +29,20 @@ export class BabylonComponent implements OnInit, AfterViewInit {
     // Load the 3D engine
     this.engine = new Engine(this.myCanvas.nativeElement, true, { preserveDrawingBuffer: true, stencil: true });
     // Create the scene
-    const scene = this.altScene(this.myCanvas.nativeElement);
+    this.createScene(this.myCanvas.nativeElement);
     // render world
-    this.createWorld(scene);
+    this.createWorld();
   }
 
-  private createWorld(scene: Scene) {
+  async myUploader(event) {
+    let fileURL = window.URL.createObjectURL(event.files[0]);
+    this.load(fileURL);
+  }
+
+  private createWorld() {
     // run the render loop
     this.engine.runRenderLoop(() => {
-      scene.render();
+      this.scene.render();
     });
     // the canvas/window resize event handler
     window.addEventListener('resize', () => {
@@ -44,28 +50,23 @@ export class BabylonComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private altScene(element: any) {
-    // Model by Mixamo
+  private createScene(element: any): void {
     this.engine.enableOfflineSupport = false;
 
     // This is really important to tell js to use decomposeLerp and matrix interpolation
     // Animation.AllowMatricesInterpolation = true;
 
-    const scene = new Scene(this.engine);
+    this.scene = new Scene(this.engine);
 
-    const camera = new ArcRotateCamera('camera1', Math.PI / 2, Math.PI / 4, 3, new Vector3(0, 1, 0), scene);
-    camera.attachControl(element, true);
+    this.camera = new ArcRotateCamera('camera1', 0, 0, 200, new Vector3(0, 0, 0), this.scene, true);
+    this.camera.attachControl(element, true);
 
-    camera.lowerRadiusLimit = 2;
-    camera.upperRadiusLimit = 10;
-    camera.wheelDeltaPercentage = 0.01;
-
-    const light = new HemisphericLight('light1', new Vector3(0, 1, 0), scene);
+    const light = new HemisphericLight('light1', new Vector3(0, 1, 0), this.scene);
     light.intensity = 0.6;
-    light.specular = Color3.Black();
+    light.specular = Color3.Yellow();
 
-    const light2 = new DirectionalLight('dir01', new Vector3(0, -0.5, -1.0), scene);
-    light2.position = new Vector3(0, 5, 5);
+    const light2 = new DirectionalLight('dir01', new Vector3(0, -0.5, -1.0), this.scene);
+    light2.position = new Vector3(0, 5, 50);
 
     // Shadows
     const shadowGenerator = new ShadowGenerator(1024, light2);
@@ -73,9 +74,16 @@ export class BabylonComponent implements OnInit, AfterViewInit {
     shadowGenerator.blurKernel = 64;
 
     this.engine.displayLoadingUI();
+  }
 
-    SceneLoader.Append('assets/', 'test.stl', scene, (sc) => {
-      scene.createDefaultCameraOrLight(true, true, true);
+  private load(url: string) {
+    const decode = url.split('/');
+    SceneLoader.Append(decode[0] + '//' + decode[2] + '/', decode[3], this.scene, (sc) => {
+
+      this.engine.resize();
+
+      console.log(sc.meshes);
+      this.camera.focusOn(sc.meshes);
       let min = null;
       let max = null;
       _.each(sc.meshes, (mesh: AbstractMesh) => {
@@ -100,9 +108,11 @@ export class BabylonComponent implements OnInit, AfterViewInit {
           z: max.z
         }
       );
-    });
+    }, () => {
 
-    return scene;
+    }, () => {
+
+    }, '.stl');
   }
 
 }

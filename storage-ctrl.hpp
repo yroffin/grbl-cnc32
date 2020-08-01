@@ -82,6 +82,10 @@ public:
   selector commands();
   boolean isFiles();
   boolean isCommands();
+  boolean isFile(int index);
+
+  int touch(const char *filename, const char *data);
+  int append(const char *filename, const char *data);
 
   int scan();
   const char *path(int index);

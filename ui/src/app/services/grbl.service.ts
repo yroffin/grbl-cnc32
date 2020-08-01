@@ -29,6 +29,48 @@ export class GrblService {
       );
   }
 
+  reboot(): Observable<any> {
+    return this.http.get<any>(this.configUrl + 'v1/reboot')
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
+  browseFile(): Observable<string[]> {
+    return this.http.get<string[]>(this.configUrl + 'v1/files')
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
+  printFile(filename: string): Observable<string> {
+    return this.http.post<string>(this.configUrl + 'v1/print', {
+      file: filename
+    }, { responseType: 'text' as 'json' })
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
+  writeFile(filename: string, data: string, touch: boolean): Observable<string> {
+    return this.http.post<string>(this.configUrl + 'v1/file', {
+      file: filename,
+      data,
+      op: touch ? "init" : "append"
+    })
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
   addCommand(body: string): Observable<string> {
     return this.http.put<string>(this.configUrl + 'v1/simulate', body, { responseType: 'text' as 'json' })
       .pipe(
