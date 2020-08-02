@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { throwError, Observable } from 'rxjs';
 import { catchError, retry, timeout } from 'rxjs/operators';
-import { Status } from '../models/grbl';
+import { Status, Command } from '../models/grbl';
 
 export interface Config {
   heroesUrl: string;
@@ -82,8 +82,8 @@ export class GrblService {
       );
   }
 
-  addCommand(body: string): Observable<string> {
-    return this.http.put<string>(this.configUrl + 'v1/simulate', body, { responseType: 'text' as 'json' })
+  addCommand(body: Command): Observable<string> {
+    return this.http.post<string>(this.configUrl + 'v1/command', JSON.stringify(body))
       .pipe(
         retry(0), // retry a failed request up to 3 times
         catchError(this.handleError), // then handle the error

@@ -3,6 +3,12 @@ export class Status {
     working?: Dump;
 }
 
+export class Command {
+    tryWrite?: string;
+    forceWrite?: string;
+    reset?: string;
+}
+
 export class StlInfo {
     min?: Vector;
     max?: Vector;

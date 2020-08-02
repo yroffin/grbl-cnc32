@@ -25,7 +25,7 @@ GrblCtrl::GrblCtrl()
 void GrblCtrl::setup()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
-    Utils::strcpy(sim, "", MAXSIZE_OF_SIM);
+    memset(sim, 0, MAXSIZE_OF_SIM);
     // stored
     this->stored.mpos.x = 0.;
     this->stored.mpos.y = 0.;
@@ -44,8 +44,8 @@ void GrblCtrl::setup()
     this->working.wpos.z = 0.;
     this->working.grblStatusMetric = true;
     this->working.grblStatusAbs = true;
+    // idx is a pointer on sim to permit alternate byte input (sim + serial)
     idx = sim;
-    this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
 
     // move
@@ -73,7 +73,6 @@ void GrblCtrl::loop(void)
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
     if (this->uTime != jsonConfig->getAsInt("fingerprint", "uTime", 0))
     {
-        this->simulation = jsonConfig->getAsBoolean("grbl", "emulate", false);
         this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
     }
 
@@ -148,7 +147,7 @@ void GrblCtrl::getWorkingModal(bool *metric, bool *abs)
 }
 
 // Simulate a write
-void GrblCtrl::simulate(const char *message)
+void GrblCtrl::serial(const char *message)
 {
     /*
     Sample code
@@ -160,28 +159,18 @@ void GrblCtrl::simulate(const char *message)
     Utils::strcpy(sim, "error:20\n\r", MAXSIZE_OF_SIM);
     */
 
+    memset(sim, 0, MAXSIZE_OF_SIM);
     sprintf(sim, "%s\n", message);
-    if (this->simulation)
-    {
-        idx = sim;
-        log_i("GRBL: [%s]", message);
-    }
-    else
-    {
-        // in real write as it come from console
-        this->tryWrite(true, sim);
-    }
+    idx = sim;
+    log_i("GRBL: [%s]", message);
 }
 
 // Scan new available bytes
 int GrblCtrl::available()
 {
-    if (this->simulation)
+    // if byte in idx then use it else read on serial2
+    if (*idx != 0)
     {
-        if (*idx == 0)
-        {
-            return 0;
-        }
         return 1;
     }
     else
@@ -193,7 +182,8 @@ int GrblCtrl::available()
 // Read one byte
 int GrblCtrl::read()
 {
-    if (simulation)
+    // consume all bytes in idx before reading on serial
+    if (*idx != 0)
     {
         int c = *idx;
         idx++;

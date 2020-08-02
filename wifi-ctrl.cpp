@@ -89,7 +89,11 @@ void Simulate()
             if (strcmp(server.argName(i).c_str(), "plain") == 0)
             {
                 strcpy(buffer, server.arg(i).c_str());
-                GrblCtrl::instance()->simulate(buffer);
+                GrblCtrl::instance()->serial(buffer);
+                // send body with 204
+                server.setContentLength(0);
+                server.send(204, "application/json", "");
+                return;
             }
         }
         break;
@@ -185,6 +189,68 @@ void Print()
     // send body
     server.setContentLength(strlen(buffer));
     server.send(200, "application/json", buffer);
+}
+
+void Command()
+{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[4096];
+    StaticJsonDocument<256> doc;
+    switch (server.method())
+    {
+    case HTTP_POST:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                strcpy(buffer, server.arg(i).c_str());
+                deserializeJson(doc, buffer);
+                if (doc.containsKey("tryWrite"))
+                {
+                    const char *command = doc["tryWrite"];
+                    bool result = GrblCtrl::instance()->tryWrite(true, "%s\n", command);
+                    if (result)
+                    {
+                        // send body
+                        server.setContentLength(0);
+                        server.send(204, "application/json", "\0");
+                        return;
+                    }
+                    else
+                    {
+                        // send body with bad request
+                        server.setContentLength(strlen("{}"));
+                        server.send(400, "application/json", "{}");
+                        return;
+                    }
+                }
+                if (doc.containsKey("forceWrite"))
+                {
+                    const char *command = doc["forceWrite"];
+                    GrblCtrl::instance()->forceWrite(true, "%s\n", command);
+                    // send body
+                    server.setContentLength(0);
+                    server.send(204, "application/json", "\0");
+                    return;
+                }
+                if (doc.containsKey("reset"))
+                {
+                    const char *command = doc["reset"];
+                    GrblCtrl::instance()->reset();
+                    // send body
+                    server.setContentLength(0);
+                    server.send(204, "application/json", "\0");
+                    return;
+                }
+            }
+        }
+        break;
+    }
+    // send body
+    server.setContentLength(0);
+    server.send(204, "application/json", "\0");
 }
 
 void Delete()
@@ -376,6 +442,7 @@ void WifiCtrl::loop()
         server.on("/api/v1/i18n/i18n_enUS.json", HTTP_ANY, ApiI18nEnUS);
         server.on("/api/v1/i18n/i18n_frFR.json", HTTP_ANY, ApiI18nFrFR);
         server.on("/api/v1/simulate", HTTP_ANY, Simulate);
+        server.on("/api/v1/command", HTTP_ANY, Command);
         server.on("/api/v1/reboot", Reboot);
         server.on("/api/v1/print", Print);
         server.on("/api/v1/delete", Delete);

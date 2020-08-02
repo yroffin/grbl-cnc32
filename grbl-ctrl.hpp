@@ -81,7 +81,8 @@ public:
   void remove(const char *filename);
   void spool();
 
-  void simulate(const char *message);
+  void serial(const char *message);
+
   void setBusy(boolean _busyState);
   boolean isBusy();
 
@@ -110,6 +111,9 @@ public:
   void getStoredModal(bool *metric, bool *abs);
   void getWorkingModal(bool *metric, bool *abs);
 
+  void forceWrite(boolean flush, const char *grbl, ...);
+  bool tryWrite(boolean flush, const char *grbl, ...);
+
 protected:
   void error(const char *message);
   void alarm(const char *message);
@@ -128,9 +132,6 @@ protected:
 
   void script(const char *input, char *output);
   void evaluate(const char *input, char *output, int sz);
-
-  void forceWrite(boolean flush, const char *grbl, ...);
-  bool tryWrite(boolean flush, const char *grbl, ...);
 
 private:
   // jog
@@ -194,7 +195,6 @@ private:
   // only for simulation
   char sim[MAXSIZE_OF_SIM];
   char *idx;
-  boolean simulation = true;
   int uTime = 0;
 };
 

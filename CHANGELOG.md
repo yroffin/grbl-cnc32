@@ -1,3 +1,14 @@
+# 0.86
+
+Rework command api
+- add tryWrite
+- add forceWrite
+- and reset
+
+# 0.85
+
+Add GRBL file transfer
+
 # 0.84
 
 Write from api (wifi) on console
