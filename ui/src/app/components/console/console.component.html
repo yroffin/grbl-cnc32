@@ -148,8 +148,12 @@
                 </ng-template>
             </p-tabPanel>
             <p-tabPanel header="Gcode">
-                <pre>{{commands | json}}</pre>
                 <p-terminal welcomeMessage="Bienvenue sur la console gcode" prompt="gcode $"></p-terminal>
+                <div class="ui-inputgroup">
+                    <span class="ui-inputgroup-addon">Simulation serie</span>
+                    <input (keydown.enter)="simulate($event.target.value)" value="ok" class="edit" type="text"
+                        pInputText placeholder="ok">
+                </div>
             </p-tabPanel>
             <p-tabPanel header="3D">
                 <app-babylon></app-babylon>
