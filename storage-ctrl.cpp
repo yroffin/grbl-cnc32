@@ -33,9 +33,17 @@ int _write(const char *filename, const char *data, bool remove)
         SD.remove(filename);
     }
     File file = SD.open(filename, FILE_APPEND);
-    int count = file.println(data);
+    int count = file.print(data);
     file.close();
     return count;
+}
+
+void StorageCtrl::remove(const char *filename)
+{
+    if (SD.exists(filename))
+    {
+        SD.remove(filename);
+    }
 }
 
 int StorageCtrl::touch(const char *filename, const char *data)

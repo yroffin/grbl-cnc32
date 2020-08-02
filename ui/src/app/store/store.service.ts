@@ -32,7 +32,7 @@ export class StoreService {
         files: (state: string[] = [], action: AllAction): string[] => {
             switch (action.type) {
                 case AllActionType.browseFileOk:
-                    return _.union(state, action.payload);
+                    return _.clone(action.payload);
                 default:
                     return state;
             }
@@ -65,6 +65,12 @@ export class StoreService {
                     return {
                         severity: 'success', summary: 'Printing ok', detail: JSON.stringify(action.payload)
                     };
+                case AllActionType.deleteFileKo:
+                    return action.payload;
+                case AllActionType.deleteFileOk:
+                    return {
+                        severity: 'success', summary: 'Delete ok', detail: JSON.stringify(action.payload)
+                    };
                 default:
                     return state;
             }
@@ -88,6 +94,13 @@ export class StoreService {
     dispatchPrintFile(body: string) {
         this.store.dispatch({
             type: AllActionType.printFile,
+            payload: body
+        });
+    }
+
+    dispatchDeleteFile(body: string) {
+        this.store.dispatch({
+            type: AllActionType.deleteFile,
             payload: body
         });
     }
@@ -153,6 +166,9 @@ export enum AllActionType {
     printFile = 'printFile',
     printFileOk = 'printFileOk',
     printFileKo = 'printFileKo',
+    deleteFile = 'deleteFile',
+    deleteFileOk = 'deleteFileOk',
+    deleteFileKo = 'deleteFileKo',
     stlInfo = 'stlInfo',
     stlInfoOk = 'stlInfoOk'
 }
@@ -245,6 +261,27 @@ export class ActionListenerEffects {
                 catchError((error) => {
                     return of({
                         type: AllActionType.printFileKo,
+                        payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
+                    });
+                })
+            )
+        )
+    );
+
+    @Effect()
+    deleteFile$: Observable<AllAction> = this.actions$.pipe(
+        ofType<AllAction>(AllActionType.deleteFile),
+        switchMap((action) =>
+            this.grblService.deleteFile(action.payload.name).pipe(
+                switchMap((payload: any) => {
+                    return of({
+                        type: AllActionType.deleteFileOk,
+                        payload
+                    });
+                }),
+                catchError((error) => {
+                    return of({
+                        type: AllActionType.deleteFileKo,
                         payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
                     });
                 })

@@ -66,6 +66,9 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     this.subscriptions.push(storeService.getMessages().subscribe(
       (error: any) => {
         this.messageService.add(error);
+        if (error.summary === 'Delete ok') {
+          this.storeService.dispatchBrowseFiles();
+        }
       }
     ));
     // Handle stl info
@@ -111,6 +114,7 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     // Handle files
     this.subscriptions.push(storeService.getFiles().subscribe(
       (files) => {
+        console.log('files', files);
         this.files = _.map(_.filter(files, (file: string) => {
           // filter on gcode files
           return file.endsWith('gcode')
@@ -203,6 +207,12 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   handleSelect(file: any) {
     this.storeService.dispatchPrintFile(file);
+  }
+  handleRefresh() {
+    this.storeService.dispatchBrowseFiles();
+  }
+  handleDelete(file: any) {
+    this.storeService.dispatchDeleteFile(file);
   }
   setRight(event: any) {
     this.command(`$J=G91 G21 X${this.step.toFixed(3)} F100`);

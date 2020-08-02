@@ -84,6 +84,7 @@ public:
   boolean isCommands();
   boolean isFile(int index);
 
+  void remove(const char *filename);
   int touch(const char *filename, const char *data);
   int append(const char *filename, const char *data);
 

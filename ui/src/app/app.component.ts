@@ -165,18 +165,21 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     let offset = 0;
     let data = this.quill.getText();
-    let maxLine = data.split('\n').length;
     let maxData = data.length;
     let curData = 0;
-    let promises = _.map(data.split('\n'), (line: string) => {
+    let promises = _.map(_.chunk(data.split(''), 512), (chunk: []) => {
+      const line = _.join(chunk, '');
       return new Promise(async (resolve) => {
         offset++;
         await s.acquire()
         this.grblService.writeFile('/' + this.filename, line, offset === 0 ? true : false).toPromise().then((result: any) => {
-          curData += result.written + 2;
+          curData += result.written;
+          if (line.length !== result.written) {
+            console.error(`Write error ${offset} ${line.length}/${result.written}`);
+          }
           this.progress = Math.trunc(curData * 100 / maxData);
           s.release();
-          resolve(result.written + 2);
+          resolve(result.written);
         });
       });
     });

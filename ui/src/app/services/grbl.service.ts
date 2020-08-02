@@ -58,6 +58,17 @@ export class GrblService {
       );
   }
 
+  deleteFile(filename: string): Observable<string> {
+    return this.http.post<string>(this.configUrl + 'v1/delete', {
+      file: filename
+    })
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
   writeFile(filename: string, data: string, touch: boolean): Observable<string> {
     return this.http.post<string>(this.configUrl + 'v1/file', {
       file: filename,

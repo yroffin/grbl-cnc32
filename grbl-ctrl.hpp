@@ -78,6 +78,7 @@ public:
   void loop();
 
   void print(const char *filename);
+  void remove(const char *filename);
   void spool();
 
   void simulate(const char *message);
@@ -152,10 +153,12 @@ private:
 
   struct
   {
-    struct {
+    struct
+    {
       float x, y, z;
     } mpos;
-    struct {
+    struct
+    {
       float x, y, z;
     } wpos;
     boolean grblStatusMetric;
@@ -164,10 +167,12 @@ private:
 
   struct
   {
-    struct {
+    struct
+    {
       float x, y, z;
     } mpos;
-    struct {
+    struct
+    {
       float x, y, z;
     } wpos;
     boolean grblStatusMetric;
