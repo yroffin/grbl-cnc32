@@ -7,6 +7,7 @@ import { TerminalService } from 'primeng/terminal';
 import { Subscription } from 'rxjs';
 import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
 import * as _ from 'lodash';
+import { GrblService } from '../../services/grbl.service';
 
 @Component({
   selector: 'app-console',
@@ -42,6 +43,7 @@ export class ConsoleComponent implements OnInit, OnDestroy {
   responsiveOptions: any;
 
   constructor(
+    private grblService: GrblService,
     private terminalService: TerminalService,
     private storeService: StoreService,
     private messageService: MessageService) {
@@ -244,5 +246,13 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     this.storeService.dispatchAddCommand({
       tryWrite: command
     });
+  }
+
+  public simulate(value: string) {
+    this.grblService.simulate(value).subscribe(
+      () => {
+
+      }
+    );
   }
 }
