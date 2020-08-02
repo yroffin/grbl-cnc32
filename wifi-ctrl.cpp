@@ -187,6 +187,36 @@ void Print()
     server.send(200, "application/json", buffer);
 }
 
+void Delete()
+{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    server.sendHeader("Pragma", "no-cache");
+    server.sendHeader("Expires", "-1");
+    char buffer[4096];
+    StaticJsonDocument<256> doc;
+    switch (server.method())
+    {
+    case HTTP_POST:
+        for (int i = 0; i < server.args(); i++)
+        {
+            if (strcmp(server.argName(i).c_str(), "plain") == 0)
+            {
+                strcpy(buffer, server.arg(i).c_str());
+                deserializeJson(doc, buffer);
+                if (doc.containsKey("file"))
+                {
+                    const char *file = doc["file"];
+                    GrblCtrl::instance()->remove(file);
+                }
+            }
+        }
+        break;
+    }
+    // send body
+    server.setContentLength(0);
+    server.send(204, "application/json", "\0");
+}
+
 void Write()
 {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -348,6 +378,7 @@ void WifiCtrl::loop()
         server.on("/api/v1/simulate", HTTP_ANY, Simulate);
         server.on("/api/v1/reboot", Reboot);
         server.on("/api/v1/print", Print);
+        server.on("/api/v1/delete", Delete);
         server.on("/api/v1/files", Files);
         server.on("/api/v1/file", Write);
         server.mount("/ui", "/static", "");

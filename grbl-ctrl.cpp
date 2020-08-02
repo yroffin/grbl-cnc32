@@ -549,6 +549,13 @@ bool GrblCtrl::tryWrite(boolean flush, const char *grbl, ...)
 }
 
 // start printing
+void GrblCtrl::remove(const char *filename)
+{
+    TFT_Screen::instance()->outputConsole("delete: %s", filename);
+    StorageCtrl::instance()->remove(filename);
+}
+
+// start printing
 void GrblCtrl::print(const char *filename)
 {
     TFT_Screen::instance()->outputConsole("printing: %s", filename);

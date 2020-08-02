@@ -13,6 +13,8 @@
                     <p-table [columns]="cols" [value]="files" [responsive]="true">
                         <ng-template pTemplate="caption">
                             Liste des fichier(s)
+                            <button pButton type="button" class="ui-button-secondary" icon="pi pi-refresh"
+                                (click)="handleRefresh()"></button>
                         </ng-template>
                         <ng-template pTemplate="header" let-columns>
                             <tr>
@@ -20,7 +22,10 @@
                                     Nom
                                 </th>
                                 <th>
-                                    Action
+                                    Print
+                                </th>
+                                <th>
+                                    delete
                                 </th>
                             </tr>
                         </ng-template>
@@ -33,6 +38,10 @@
                                 <td>
                                     <button pButton type="button" class="ui-button-secondary" icon="pi pi-print"
                                         (click)="handleSelect(rowData)"></button>
+                                </td>
+                                <td>
+                                    <button pButton type="button" class="ui-button-secondary" icon="pi pi-trash"
+                                        (click)="handleDelete(rowData)"></button>
                                 </td>
                             </tr>
                         </ng-template>
