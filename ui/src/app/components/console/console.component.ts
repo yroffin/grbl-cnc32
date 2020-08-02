@@ -127,7 +127,9 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     ));
     // Emit command from terminal
     this.subscriptions.push(this.terminalService.commandHandler.subscribe(command => {
-      this.command(command);
+      this.storeService.dispatchAddCommand({
+        forceWrite: command
+      });
     }));
   }
 
@@ -239,6 +241,8 @@ export class ConsoleComponent implements OnInit, OnDestroy {
   }
 
   private command(command: string) {
-    this.storeService.dispatchAddCommand(command);
+    this.storeService.dispatchAddCommand({
+      tryWrite: command
+    });
   }
 }

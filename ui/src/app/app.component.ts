@@ -75,7 +75,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           label: 'Envoyer Reset',
           icon: 'pi pi-fw pi-refresh',
           command: () => {
-            this.command(String.fromCharCode(0x18, 0x10));
+            this.reset();
           }
         },
         {
@@ -190,6 +190,15 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private command(command: string) {
     this.messageService.add({ severity: 'info', summary: 'Command', detail: command });
-    this.storeService.dispatchAddCommand(command);
+    this.storeService.dispatchAddCommand({
+      tryWrite: command
+    });
+  }
+
+  private reset() {
+    this.messageService.add({ severity: 'info', summary: 'Reset', detail: '' });
+    this.storeService.dispatchAddCommand({
+      reset: ''
+    });
   }
 }

@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { GrblService } from '../services/grbl.service';
-import { Status, StlInfo, Vector } from '../models/grbl';
+import { Status, StlInfo, Vector, Command } from '../models/grbl';
 import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
 import * as _ from 'lodash';
 import { Message } from 'primeng/api/message';
@@ -84,7 +84,7 @@ export class StoreService {
         });
     }
 
-    dispatchAddCommand(body: string) {
+    dispatchAddCommand(body: Command) {
         this.store.dispatch({
             type: AllActionType.addCommand,
             payload: body
