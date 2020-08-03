@@ -133,7 +133,7 @@ paths:
   /v1/print:
     post:
       tags:
-      - misc
+      - files
       summary: Print a command or a file
       operationId: Print
       requestBody:
@@ -145,6 +145,61 @@ paths:
             example:
               command: "sample"
               file: "sample"
+        required: true
+      responses:
+        200:
+          description: successful operation
+  /v1/files:
+    get:
+      tags:
+      - files
+      summary: Read files on sdcard
+      operationId: Files
+      responses:
+        200:
+          description: successful operation
+  /v1/simulate:
+    get:
+      tags:
+      - misc
+      summary: Get data (wpos, ...)
+      operationId: Simulate
+      responses:
+        200:
+          description: successful operation
+    post:
+      tags:
+      - misc
+      summary: Simulate serial data (for dev)
+      operationId: SimulateWrite
+      requestBody:
+        description: Object for update operation
+        content:
+          application/json:
+            schema:
+                type: string
+            example:
+              "ok"
+        required: true
+      responses:
+        200:
+          description: successful operation
+  /v1/command:
+    post:
+      tags:
+      - misc
+      summary: Execute a command
+      operationId: ExecCommand
+      requestBody:
+        description: Object for update operation
+        content:
+          application/json:
+            schema:
+                type: object
+            example:
+              tryWrite: "ok"
+              forceWrite: "ok"
+              reset: ""
         required: true
       responses:
         200:
