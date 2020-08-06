@@ -25,7 +25,6 @@ GrblCtrl::GrblCtrl()
 void GrblCtrl::setup()
 {
     JsonConfigCtrl *jsonConfig = JsonConfigCtrl::instance();
-    memset(sim, 0, MAXSIZE_OF_SIM);
     // stored
     this->stored.mpos.x = 0.;
     this->stored.mpos.y = 0.;
@@ -44,8 +43,10 @@ void GrblCtrl::setup()
     this->working.wpos.z = 0.;
     this->working.grblStatusMetric = true;
     this->working.grblStatusAbs = true;
-    // idx is a pointer on sim to permit alternate byte input (sim + serial)
-    idx = sim;
+    // internalSerialBuffer permit alternate byte input (internalSerialBuffer + serial)
+    memset(internalSerialBuffer, 0, MAXSIZE_OF_SIM);
+    internalSerialIndex = 0;
+    internalSerialCounter = 0;
     this->uTime = jsonConfig->getAsInt("fingerprint", "uTime", 0);
 
     // move
@@ -151,25 +152,26 @@ void GrblCtrl::serial(const char *message)
 {
     /*
     Sample code
-    Utils::strcpy(sim, "<Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>\n", MAXSIZE_OF_SIM);
-    Utils::strcpy(sim, "<Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>\n", MAXSIZE_OF_SIM);
-    Utils::strcpy(sim, "[Caution: Unlocked]\r\n", MAXSIZE_OF_SIM);
-    Utils::strcpy(sim, "error:Modal group violation\n\r", MAXSIZE_OF_SIM);
-    Utils::strcpy(sim, "<Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>\n", MAXSIZE_OF_SIM);
-    Utils::strcpy(sim, "error:20\n\r", MAXSIZE_OF_SIM);
+    <Idle|MPos:1.000,0.200,0.030|FS:0.0,0|WCO:8.000,0.700,0.006>
+    <Jog|WPos:1329.142,0.580,1.000|Bf:32,254|FS:2000,0|Ov:101,102,100|A:FM>
+    [Caution: Unlocked]
+    error:Modal group violation
+    <Idle,MPos:0.000,0.000,0.000,WPos:0.000,0.000,0.000>
+    error:20
     */
 
-    memset(sim, 0, MAXSIZE_OF_SIM);
-    sprintf(sim, "%s\n", message);
-    idx = sim;
+    memset(internalSerialBuffer, 0, MAXSIZE_OF_SIM);
+    sprintf(internalSerialBuffer, "%s\n", message);
+    internalSerialIndex = 0;
+    internalSerialCounter = strlen(internalSerialBuffer);
     log_i("GRBL: [%s]", message);
 }
 
 // Scan new available bytes
 int GrblCtrl::available()
 {
-    // if byte in idx then use it else read on serial2
-    if (*idx != 0)
+    // if byte in internalSerialBuffer then use it else read on serial2
+    if (internalSerialIndex < internalSerialCounter)
     {
         return 1;
     }
@@ -182,12 +184,10 @@ int GrblCtrl::available()
 // Read one byte
 int GrblCtrl::read()
 {
-    // consume all bytes in idx before reading on serial
-    if (*idx != 0)
+    // consume all bytes in internalSerialIndex before reading on serial
+    if (internalSerialIndex < internalSerialCounter)
     {
-        int c = *idx;
-        idx++;
-        return c;
+        return internalSerialBuffer[internalSerialIndex++];
     }
     else
     {
@@ -598,6 +598,8 @@ void GrblCtrl::script(const char *input, char *output)
             }
         }
     }
+    // add leading lf
+    output[out++] = 10;
     output[out++] = 0;
 }
 
@@ -652,6 +654,21 @@ void GrblCtrl::evaluate(const char *script, char *output, int sz)
     }
 }
 
+// check status of grbl controller
+// true grbl is healthy
+// false status is send to know grbl healh
+bool GrblCtrl::heartbeat()
+{
+    // send status only every 1000 ms
+    if (millis() - this->lastStatus > 1000)
+    {
+        this->lastStatus = millis();
+        this->status();
+        return false;
+    }
+    return true;
+}
+
 // printer spooler
 void GrblCtrl::spool()
 {
@@ -661,10 +678,8 @@ void GrblCtrl::spool()
         {
         case empty:
             // send status only when ready, in order to not flood grbl controller
-            if (millis() - this->lastStatus > 2000)
+            if (!this->heartbeat())
             {
-                this->lastStatus = millis();
-                this->status();
                 this->grblPrintStatus = waitForStatus;
             }
             else
@@ -715,12 +730,8 @@ void GrblCtrl::spool()
     // while non printing compute status
     if (!this->isPrinting)
     {
-        // send status only when ready, in order to not flood grbl controller
-        if (millis() - this->lastStatus > 1000)
-        {
-            this->lastStatus = millis();
-            this->status();
-        }
+        // send status
+        this->heartbeat();
     }
 }
 

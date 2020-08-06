@@ -132,6 +132,7 @@ protected:
 
   void script(const char *input, char *output);
   void evaluate(const char *input, char *output, int sz);
+  bool heartbeat();
 
 private:
   // jog
@@ -193,8 +194,9 @@ private:
   GrblStep step = M1;
   long lastStatus = 0;
   // only for simulation
-  char sim[MAXSIZE_OF_SIM];
-  char *idx;
+  char internalSerialBuffer[MAXSIZE_OF_SIM];
+  int internalSerialIndex = 0;
+  int internalSerialCounter = 0;
   int uTime = 0;
 };
 
