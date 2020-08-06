@@ -1,7 +1,7 @@
 #ifndef _GRBL_CONTROLLER_
 #define _GRBL_CONTROLLER_
 
-#include "config.h"
+#include "vars.hpp"
 #include "ui.hpp"
 #include "evt-ctrl.hpp"
 

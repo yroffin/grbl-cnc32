@@ -1,6 +1,6 @@
 #include "json-config.hpp"
 #include "ui.hpp"
-#include "config.h"
+#include "vars.hpp"
 
 // I18nCtrl controller
 JsonConfigCtrl *__instance_json_config = 0;

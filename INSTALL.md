@@ -3,6 +3,7 @@
 ## Setup arduino
 
 Simply compil and deploy arduino part (vscode plugin is very cool for that)
+* see firmware/grbl-cnc32.ino
 
 ## Setup ui
 

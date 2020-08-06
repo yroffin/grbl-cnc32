@@ -1,29 +1,41 @@
 # grbl-cnc32
 
 Simple controller for my RS-CNC32, this Grbl controller runs on a ESP32.
+
 Swagger here : https://yroffin.github.io/grbl-cnc32/swagger-ui
 
 Work based on https://github.com/mstrens/grbl_controller_esp32.
 
 Thanks to https://github.com/mstrens for his initial work.
 
+dependencies
+* webui i angular 2.x based (with no CORS enabled).
+* ArduinoJson and TFT_eSPI_ms on firmware part
+
 # features and todos
 
 ## feature
 
-* move your tools on each axis with TFT or a nunchuk
-* order homing, set coordinate ...
-* get usefull statistics (logs, GRBL output)
-* mount a SDCARD and print your GCODE files
-* handle GRBL admin order (reset, alarm ...)
-* wifi and rest server support
+* firmware
+  * move your tools on each axis with TFT or a nunchuk
+  * order homing, set coordinate ...
+  * get usefull statistics (logs, GRBL output)
+  * mount a SDCARD and print your GCODE files
+  * handle GRBL admin order (reset, alarm ...)
+  * ntp connect to obtain local time
+  * wifi and rest server support
     * all configuration handle by api rest (read and write)
-* ntp connect to obtain local time
+    * try a list a access point
+  * local serial simulation for developpment
+* webui
+    * all feature can be reach from this ui
+    * graphic positionning
+    * load stl files
+    * upload gcode files
 
 ## todo
 
-* design telnet feature
-* slack alerting, or any other kind of tools
+* edit gcode directly a sdcard
 
 # api
 
@@ -66,4 +78,3 @@ Take care that if you do not use my configuration, you can have:
 Note: the pins used for the SPI signals (MOSI, MISO, SCLK) are currently hardcoded.
 Please note that many ESP32 pins are reserved and can't ne used (reserved for bootup, for internal flash, input only,...).
 See doc on ESP for more details.
-

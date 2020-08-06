@@ -1,3 +1,7 @@
+# 1.00
+
+Official 1.00 version after one year of work
+
 # 0.86
 
 Rework command api

@@ -1,6 +1,6 @@
 #include "TFT_eSPI_ms/TFT_eSPI.cpp" // setup file has to be edited for some parameters like screen device, pins
 
-#include "config.h"
+#include "vars.hpp"
 #include "widget.hpp"
 #include "evt-ctrl.hpp"
 #include "wifi-ctrl.hpp"
