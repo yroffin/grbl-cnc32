@@ -1,7 +1,7 @@
 #ifndef _WIFI_CONTROLLER_
 #define _WIFI_CONTROLLER_
 
-#include "config.h"
+#include "vars.hpp"
 #include "ui.hpp"
 #include "evt-ctrl.hpp"
 #include "WebServer.h"

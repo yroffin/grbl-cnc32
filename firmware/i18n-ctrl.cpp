@@ -1,6 +1,6 @@
 #include "json-config.hpp"
 #include "i18n-ctrl.hpp"
-#include "config.h"
+#include "vars.hpp"
 #include "utils.hpp"
 
 // I18nCtrl controller

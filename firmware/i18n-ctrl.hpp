@@ -3,7 +3,7 @@
 
 #include "json-store.hpp"
 
-#include "config.h"
+#include "vars.hpp"
 
 #include "stdio.h"
 #include "stdarg.h"

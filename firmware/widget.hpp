@@ -2,7 +2,7 @@
 #define _WIDGET_TFT_
 
 #include "stdio.h"
-#include "config.h"
+#include "vars.hpp"
 #include "TFT_eSPI_ms/TFT_eSPI.h"
 #include "evt-ctrl.hpp"
 #include "json-config.hpp"

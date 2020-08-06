@@ -1,7 +1,7 @@
 #ifndef _WEBSERVER_CONTROLLER_
 #define _WEBSERVER_CONTROLLER_
 
-#include "config.h"
+#include "vars.hpp"
 #include "ui.hpp"
 #include "WebServer.h"
 #include "SD.h"
