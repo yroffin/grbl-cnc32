@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { throwError, Observable } from 'rxjs';
 import { catchError, retry, timeout } from 'rxjs/operators';
-import { Status, Command } from '../models/grbl';
+import { Status, Command, ConfigJson } from '../models/grbl';
 
 export interface Config {
   heroesUrl: string;
@@ -40,6 +40,15 @@ export class GrblService {
 
   browseFile(): Observable<string[]> {
     return this.http.get<string[]>(this.configUrl + 'v1/files')
+      .pipe(
+        retry(0), // retry a failed request up to 3 times
+        catchError(this.handleError), // then handle the error
+        timeout(2000)
+      );
+  }
+
+  getConfig(): Observable<ConfigJson> {
+    return this.http.get<ConfigJson>(this.configUrl + 'v1/config/config.json')
       .pipe(
         retry(0), // retry a failed request up to 3 times
         catchError(this.handleError), // then handle the error

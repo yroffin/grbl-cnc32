@@ -5,7 +5,7 @@ import { of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { GrblService } from '../services/grbl.service';
-import { Status, StlInfo, Vector, Command } from '../models/grbl';
+import { Status, StlInfo, Vector, Command, ConfigJson } from '../models/grbl';
 import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
 import * as _ from 'lodash';
 import { Message } from 'primeng/api/message';
@@ -53,6 +53,16 @@ export class StoreService {
                     return state;
             }
         },
+        configJson: (state: ConfigJson = {}, action: AllAction): ConfigJson => {
+            switch (action.type) {
+                case AllActionType.configJson:
+                    return action.payload;
+                case AllActionType.configJsonOk:
+                    return action.payload;
+                default:
+                    return state;
+            }
+        },
         messages: (state: Message = {}, action: AllAction): Message => {
             switch (action.type) {
                 case AllActionType.getStatusKo:
@@ -88,6 +98,14 @@ export class StoreService {
         this.store.dispatch({
             type: AllActionType.addCommand,
             payload: body
+        });
+    }
+
+    dispatchGetConfigJson() {
+        this.store.dispatch({
+            type: AllActionType.configJson,
+            payload: {
+            }
         });
     }
 
@@ -137,6 +155,10 @@ export class StoreService {
         return this.store.select(s => s.stlInfo);
     }
 
+    getConfigJson() {
+        return this.store.select(s => s.configJson);
+    }
+
     getMessages() {
         return this.store.select(s => s.messages);
     }
@@ -148,6 +170,7 @@ export interface IAppState {
     commands: string[];
     files: string[];
     stlInfo: StlInfo;
+    configJson: ConfigJson;
     messages: any[];
     infos: any[];
 }
@@ -170,7 +193,10 @@ export enum AllActionType {
     deleteFileOk = 'deleteFileOk',
     deleteFileKo = 'deleteFileKo',
     stlInfo = 'stlInfo',
-    stlInfoOk = 'stlInfoOk'
+    stlInfoOk = 'stlInfoOk',
+    configJson = 'configJson',
+    configJsonOk = 'configJsonOk',
+    configJsonKo = 'configJsonKo'
 }
 
 // all action
@@ -198,6 +224,27 @@ export class ActionListenerEffects {
                 catchError((error) => {
                     return of({
                         type: AllActionType.getStatusKo,
+                        payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
+                    });
+                })
+            )
+        )
+    );
+
+    @Effect()
+    getConfigJson$: Observable<AllAction> = this.actions$.pipe(
+        ofType<AllAction>(AllActionType.configJson),
+        switchMap((action) =>
+            this.grblService.getConfig().pipe(
+                switchMap((payload: ConfigJson) => {
+                    return of({
+                        type: AllActionType.configJsonOk,
+                        payload
+                    });
+                }),
+                catchError((error) => {
+                    return of({
+                        type: AllActionType.configJsonKo,
                         payload: { severity: 'error', summary: 'Error Message', detail: JSON.stringify(error) }
                     });
                 })

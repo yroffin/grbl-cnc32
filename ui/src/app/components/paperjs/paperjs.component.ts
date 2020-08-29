@@ -1,8 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, EventEmitter, Output, AfterViewInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, EventEmitter, Output, AfterViewInit, ChangeDetectorRef, HostListener, OnDestroy, Input } from '@angular/core';
 import * as paper from 'paper';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import * as _ from 'lodash';
+import { Subscription } from 'rxjs';
+import { StoreService } from '../../store/store.service';
+import { ConfigJson } from '../../models/grbl';
 
 export enum PaperAction {
   StoredWithShift
@@ -16,7 +19,7 @@ export enum PaperAction {
     MessageService
   ]
 })
-export class PaperjsComponent implements OnInit, AfterViewInit {
+export class PaperjsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('paperView') paperCanvas: ElementRef;
 
@@ -26,6 +29,9 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   x = 0;
   y = 0;
   z = 0;
+  width = 0;
+  height = 0;
+  subscriptions: Subscription[] = [];
 
   oldZoom = 1;
   zoom = 1;
@@ -35,16 +41,35 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
   private formBuilder = new FormBuilder();
 
   shiftIsDown = false;
+  configJson: ConfigJson;
 
+  @Input() isPlan: boolean;
   @Output() flag: EventEmitter<any> = new EventEmitter();
   @Output() ready: EventEmitter<any> = new EventEmitter();
 
-  constructor(private cdr: ChangeDetectorRef, private messageService: MessageService) {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private storeService: StoreService,
+    private messageService: MessageService) {
     this.registerForm = this.formBuilder.group({
       x: [],
       y: [],
       z: [],
     });
+
+    // Config store
+    this.subscriptions.push(storeService.getConfigJson().subscribe(
+      (configJson: ConfigJson) => {
+        this.configJson = configJson;
+        if (this.configJson.sys) {
+          if (this.isPlan) {
+            this.setWorkbench(this.configJson.sys.workbench.width, this.configJson.sys.workbench.length);
+          } else {
+            this.setWorkbench(this.configJson.sys.workbench.length, this.configJson.sys.workbench.height);
+          }
+        }
+      }
+    ));
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -86,6 +111,18 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
         this.setZoom(3);
         this.messageService.add({ severity: 'success', summary: 'Native', detail: `Canvas size ${width},${height}` });
       }, 1000);
+  }
+
+  setWorkbench(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+  }
+
+  refreshWorkbench(width: number, height: number) {
+    const h = this.paperCanvas.nativeElement.offsetHeight;
+    const w = this.paperCanvas.nativeElement.offsetWidth;
+    const zoom = width / width;
+    this.setZoom(zoom);
   }
 
   onZoomChange(event: any) {
@@ -157,5 +194,11 @@ export class PaperjsComponent implements OnInit, AfterViewInit {
         strokeWidth: (y % heavy === 0) ? 0.2 : 0.1
       });
     }
+  }
+
+  ngOnDestroy() {
+    _.each(this.subscriptions, (subscription) => {
+      subscription.unsubscribe();
+    });
   }
 }

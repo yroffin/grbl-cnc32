@@ -35,6 +35,7 @@ import { DialogModule } from 'primeng/dialog';
 import { EditorModule } from 'primeng/editor';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { FileUploadModule } from 'primeng/fileupload';
+import { PanelModule } from 'primeng/panel';
 
 @NgModule({
   declarations: [
@@ -74,7 +75,8 @@ import { FileUploadModule } from 'primeng/fileupload';
     DialogModule,
     EditorModule,
     ProgressBarModule,
-    FileUploadModule
+    FileUploadModule,
+    PanelModule
   ],
   providers: [MessageService],
   bootstrap: [AppComponent]

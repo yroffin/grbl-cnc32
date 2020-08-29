@@ -14,6 +14,28 @@ export class StlInfo {
     max?: Vector;
 }
 
+export class ConfigJsonSpeed {
+    l1: number;
+    l2: number;
+    l3: number;
+}
+
+export class ConfigJsonWorkbench {
+    width: number;
+    height: number;
+    length: number;
+}
+
+export class ConfigJsonSys {
+    lang: string;
+    speed: ConfigJsonSpeed;
+    workbench: ConfigJsonWorkbench;
+}
+
+export class ConfigJson {
+    sys?: ConfigJsonSys;
+}
+
 export class Dump {
     mpos: Vector;
     wpos: Vector;

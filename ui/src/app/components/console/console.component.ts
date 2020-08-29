@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Status, StlInfo } from '../../models/grbl';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
+import { Status, StlInfo, ConfigJson } from '../../models/grbl';
 import * as paper from 'paper';
 import { MessageService, Message } from 'primeng/api';
 import { StoreService } from '../../store/store.service';
@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { _ACTIVE_RUNTIME_CHECKS } from '@ngrx/store/src/tokens';
 import * as _ from 'lodash';
 import { GrblService } from '../../services/grbl.service';
+import { PaperjsComponent } from '../../components/paperjs/paperjs.component';
 
 @Component({
   selector: 'app-console',
@@ -18,11 +19,12 @@ import { GrblService } from '../../services/grbl.service';
     TerminalService
   ]
 })
-export class ConsoleComponent implements OnInit, OnDestroy {
+export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   subscriptions: Subscription[] = [];
 
   status: Status;
+  configJson: ConfigJson;
   commands: string[];
   files: string[];
   cols = [{
@@ -73,6 +75,12 @@ export class ConsoleComponent implements OnInit, OnDestroy {
         }
       }
     ));
+    // Config store
+    this.subscriptions.push(storeService.getConfigJson().subscribe(
+      (configJson: ConfigJson) => {
+        this.configJson = configJson;
+      }
+    ));
     // Handle stl info
     this.subscriptions.push(storeService.getStlInfo().subscribe(
       (info: StlInfo) => {
@@ -116,7 +124,6 @@ export class ConsoleComponent implements OnInit, OnDestroy {
     // Handle files
     this.subscriptions.push(storeService.getFiles().subscribe(
       (files) => {
-        console.log('files', files);
         this.files = _.map(_.filter(files, (file: string) => {
           // filter on gcode files
           return file.endsWith('gcode')
@@ -137,6 +144,10 @@ export class ConsoleComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.storeService.dispatchBrowseFiles();
+    this.storeService.dispatchGetConfigJson();
+  }
+
+  ngAfterViewInit(): void {
   }
 
   ngOnDestroy() {

@@ -1,8 +1,11 @@
 <div class="p-grid">
     <div class="p-col-2">
-        <p-checkbox name="groupname" value="true" label="Shift hold" [(ngModel)]="shiftIsDown" [binary]="true"></p-checkbox>
+        <p-checkbox name="groupname" value="true" label="Shift hold" [(ngModel)]="shiftIsDown" [binary]="true">
+        </p-checkbox>
         <h3>Zoom: {{zoom}}</h3>
         <p-slider [(ngModel)]="zoom" [min]="1" [max]="20" (onChange)="onZoomChange($event)"></p-slider>
+        <p>Width: {{width}}</p>
+        <p>Height: {{height}}</p>
     </div>
     <div class="p-col-10">
         <div class="editor-2d-container" (click)="onCapture()">
