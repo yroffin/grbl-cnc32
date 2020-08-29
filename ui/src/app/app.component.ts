@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { MenuItem, MessageService } from 'primeng/api';
 import { StoreService } from './store/store.service';
 import { Editor } from 'primeng/editor';
 import * as _ from 'lodash';
 import { GrblService } from './services/grbl.service';
 import { Sema } from 'async-sema';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -14,13 +15,16 @@ import { Sema } from 'async-sema';
     MessageService
   ]
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'ui';
+  files: string[];
   items: MenuItem[];
-  display: boolean = false;
+  displayWrite: boolean = false;
+  displayFiles: boolean = false;
   text: string;
   public progress = 0;
   public filename = "test.gcode";
+  subscriptions: Subscription[] = [];
 
   public quill: any;
   @ViewChild(Editor) editorComponent: Editor;
@@ -30,6 +34,19 @@ export class AppComponent implements OnInit, AfterViewInit {
     private storeService: StoreService,
     private messageService: MessageService
   ) {
+    // Handle files
+    this.subscriptions.push(storeService.getFiles().subscribe(
+      (files) => {
+        this.files = _.map(_.filter(files, (file: string) => {
+          // filter on gcode files
+          return file.endsWith('gcode')
+        }), (file: string) => {
+          return {
+            name: file
+          }
+        });
+      }
+    ));
   }
 
   ngOnInit() {
@@ -40,7 +57,14 @@ export class AppComponent implements OnInit, AfterViewInit {
           label: 'Write',
           icon: 'pi pi-fw pi-file-o',
           command: () => {
-            this.display = true;
+            this.displayWrite = true;
+          }
+        },
+        {
+          label: 'Files',
+          icon: 'pi pi-fw pi-file-o',
+          command: () => {
+            this.displayFiles = true;
           }
         }
         ]
@@ -199,6 +223,22 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.messageService.add({ severity: 'info', summary: 'Reset', detail: '' });
     this.storeService.dispatchAddCommand({
       reset: ''
+    });
+  }
+
+  handleSelect(file: any) {
+    this.storeService.dispatchPrintFile(file);
+  }
+  handleRefresh() {
+    this.storeService.dispatchBrowseFiles();
+  }
+  handleDelete(file: any) {
+    this.storeService.dispatchDeleteFile(file);
+  }
+
+  ngOnDestroy() {
+    _.each(this.subscriptions, (subscription) => {
+      subscription.unsubscribe();
     });
   }
 }

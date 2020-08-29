@@ -8,6 +8,9 @@
             <p-accordionTab header="Stl">
                 <pre>{{stlInfo | json}}</pre>
             </p-accordionTab>
+            <p-accordionTab header="Configuration">
+                <pre>{{configJson | json}}</pre>
+            </p-accordionTab>
             <p-accordionTab header="Fichier(s)">
                 <ng-template pTemplate="content">
                     <p-table [columns]="cols" [value]="files" [responsive]="true">
@@ -139,12 +142,12 @@
         <p-tabView>
             <p-tabPanel header="Plan X/Y">
                 <ng-template pTemplate="content">
-                    <app-paperjs (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
+                    <app-paperjs #xyView isPlan="true" (flag)="selectXY($event)" (ready)="drawXY($event)"></app-paperjs>
                 </ng-template>
             </p-tabPanel>
             <p-tabPanel header="Plan Z">
                 <ng-template pTemplate="content">
-                    <app-paperjs (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
+                    <app-paperjs #zView isPlan="false" (flag)="selectZ($event)" (ready)="drawZ($event)"></app-paperjs>
                 </ng-template>
             </p-tabPanel>
             <p-tabPanel header="Gcode">
